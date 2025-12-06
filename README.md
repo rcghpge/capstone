@@ -1,8 +1,8 @@
 <div align="center">
 
-<h1 style="font-size: clamp(20px, 4.5vw, 28px) !important; color: #6a737d; margin: 0 0 20px 0 !important; font-weight: 600 !important;">
+<h2 style="font-size: clamp(20px, 4.5vw, 28px) !important; color: #6a737d; margin: 0 0 20px 0 !important; font-weight: 600 !important;">
   Capstone Project 1 | Division of Data Science | University of Texas at Arlington
-</h1>
+</h2>
 
 <table style="width: 100%; margin: 40px auto 30px auto; border-collapse: collapse;">
   <tr>
