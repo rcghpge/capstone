@@ -1,12 +1,12 @@
 <div align="center">
 
-<h1 style="font-size: clamp(28px, 5vw, 48px); font-weight: 700; color: #1f6feb; margin: 0 0 10px 0; letter-spacing: -0.02em;">
+<div style="font-size: clamp(28px, 5vw, 48px); font-weight: 700; color: #1f6feb; margin: 0 0 10px 0; letter-spacing: -0.02em; line-height: 1.2;">
   Capstone Project 1
-</h1>
+</div>
 
-<h2 style="font-size: clamp(18px, 4vw, 24px); color: #6a737d; margin: 0 0 40px 0; font-weight: 600; letter-spacing: -0.01em;">
+<div style="font-size: clamp(18px, 4vw, 24px); color: #6a737d; margin: 0 0 40px 0; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3;">
   Division of Data Science | The University of Texas at Arlington
-</h2>
+</div>
 
 <table style="width: 100%; max-width: 300px; margin: 0 auto 30px auto; border-collapse: collapse;">
   <tr>
@@ -24,17 +24,12 @@
 
 </div>
 
-<div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px;">
+<div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
 
-<p style="font-size: 16px; line-height: 1.6; color: #24292f; margin: 0; text-align: left !important;">
-  <strong>References</strong>
-</p>
-<p style="font-size: 16px; line-height: 1.6; color: #24292f; margin: 0; text-align: left !important;">
-  Health Analytics. India. Annual Health Survey (AHS)
-</p>
-<p style="font-size: 16px; line-height: 1.6; color: #24292f; margin: 0; text-align: left !important;">
-  <strong>Kaggle:</strong> <a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey</a>
-</p>
+<strong>References</strong><br>
+Health Analytics. India. Annual Health Survey (AHS)<br>
+<strong>Kaggle:</strong> <a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey</a>
+
 </div>
 
 ---
