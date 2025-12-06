@@ -8,8 +8,6 @@
   Division of Data Science | University of Texas at Arlington
 </h2>
 
----
-
 <table style="width: 100%; margin: 40px auto 30px auto; border-collapse: collapse;">
   <tr>
     <td style="padding: 20px 0; text-align: center; border-top: 3px solid #1f6feb; border-bottom: 3px solid #1f6feb;">
