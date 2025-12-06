@@ -8,7 +8,8 @@
   Division of Data Science | The University of Texas at Arlington
 </div>
 
-<!-- ORIGINAL DIVIDER TABLE -->
+---
+
 <table style="width: 100%; margin: 40px auto 30px auto; border-collapse: collapse;">
   <tr>
     <td style="padding: 20px 0; text-align: center; border-top: 3px solid #1f6feb; border-bottom: 3px solid #1f6feb;">
@@ -22,7 +23,6 @@
 <p style="font-size: clamp(16px, 3.5vw, 20px); line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto 20px auto;">
   Machine learning utilizing key health indicators for infant mortality rate prediction.
 </p>
-
 </div>
 
 <div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
