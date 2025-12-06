@@ -1,12 +1,12 @@
 <div align="center">
 
-<div style="font-size: clamp(28px, 5vw, 48px); font-weight: 700; color: #1f6feb; margin: 0 0 10px 0; letter-spacing: -0.02em; line-height: 1.2;">
+<h1 style="font-size: clamp(32px, 6vw, 56px) !important; color: #1f6feb; margin: 0 0 15px 0 !important; font-weight: 700 !important;">
   Capstone Project 1
-</div>
+</h1>
 
-<div style="font-size: clamp(18px, 4vw, 24px); color: #6a737d; margin: 0 0 20px 0; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3;">
-  Division of Data Science | The University of Texas at Arlington
-</div>
+<h2 style="font-size: clamp(20px, 4.5vw, 28px) !important; color: #6a737d; margin: 0 0 20px 0 !important; font-weight: 600 !important;">
+  Division of Data Science | University of Texas at Arlington
+</h2>
 
 ---
 
@@ -23,13 +23,14 @@
 <p style="font-size: clamp(16px, 3.5vw, 20px); line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto 20px auto;">
   Machine learning utilizing key health indicators for infant mortality rate prediction.
 </p>
-</div>
 
 <div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
 
 <strong>References</strong><br>
 Health Analytics. India. Annual Health Survey (AHS)<br>
 <strong>Kaggle:</strong> <a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey</a>
+
+</div>
 
 </div>
 
