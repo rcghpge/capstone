@@ -4,13 +4,14 @@
   Capstone Project 1
 </div>
 
-<div style="font-size: clamp(18px, 4vw, 24px); color: #6a737d; margin: 0 0 40px 0; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3;">
+<div style="font-size: clamp(18px, 4vw, 24px); color: #6a737d; margin: 0 0 20px 0; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3;">
   Division of Data Science | The University of Texas at Arlington
 </div>
 
-<table style="width: 100%; max-width: 300px; margin: 0 auto 30px auto; border-collapse: collapse;">
+<!-- ORIGINAL DIVIDER TABLE -->
+<table style="width: 100%; margin: 40px auto 30px auto; border-collapse: collapse;">
   <tr>
-    <td style="padding: 20px; text-align: center;">
+    <td style="padding: 20px 0; text-align: center; border-top: 3px solid #1f6feb; border-bottom: 3px solid #1f6feb;">
       <img src="assets/UTA Celebrating 130 Years logo white circle.png" 
            alt="UTA Logo" 
            style="width: 100%; height: auto; max-width: 200px; border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,0.15);" />
