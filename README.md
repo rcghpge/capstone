@@ -17,15 +17,12 @@
 <p style="font-size: clamp(16px, 3.5vw, 20px); line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto 20px auto;">
   Machine learning utilizing key health indicators for infant mortality rate prediction.
 </p>
-
+</div>
 <div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
-
 <strong>References</strong><br>
 Health Analytics. India. Annual Health Survey (AHS)<br>
 <strong>Kaggle:</strong> <a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey</a>
-
 </div>
-
 </div>
 
 ---
