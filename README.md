@@ -40,8 +40,8 @@ Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
 ├── LICENSE
 ├── README.md
 ├── __init__.py
-├── requirements.txt
-└── pyproject.yml
+├── pyproject.toml
+└── requirements.txt
 
 4 directories, 8 files
 ```
