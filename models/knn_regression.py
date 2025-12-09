@@ -778,7 +778,6 @@ def main(args):
     plot_model_comparison(train_metrics, test_metrics, out_dir)
     print("📊 Generating model learning curve...")
     plot_learning_curve(model, X_train_selected, y_train.values.ravel(), out_dir, cv=5)
-    #plot_learning_curve(model, X_train_selected, y_train, out_dir, cv=5)
     print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, 
                            state_col='State_Name', district_col='State_District_Name')
     print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, orig_indices=test_indices, 
