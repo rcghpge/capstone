@@ -31,19 +31,20 @@ import warnings
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from scipy import stats
 from pathlib import Path
+from sklearn.base import clone
 import matplotlib.pyplot as plt
 from contextlib import contextmanager
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.feature_selection import RFECV
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
+from sklearn.model_selection import train_test_split, KFold, learning_curve
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from scipy import stats
 
 """
 Example Usage: See Jupyter Notebooks for more information
@@ -328,7 +329,7 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
     non_selected_corrs = [c for c, s in zip(top_corrs, is_selected) if not s]
     ax2.hist(
         [selected_corrs, non_selected_corrs],
-        bins=10,
+        bins=5,
         alpha=0.7,
         label=['Selected', 'Not Selected'],
         color=['steelblue', 'coral'],
@@ -630,7 +631,7 @@ def plot_prediction_distribution(y_true, y_pred, out_dir, split_name):
     plt.title("Predicted vs True")
     plt.grid(True, alpha=0.5)
     plt.tight_layout()
-    plt.savefig(Path(out_dir) / f"{split_name.lower()}_distribution.png", dpi=300, bbox_inches="tight")
+    plt.savefig(Path(out_dir)/f"{split_name.lower()}_distribution.png", dpi=300, bbox_inches="tight")
     plt.close()
     print(f"✓ {split_name.lower()}_distribution.png")
 
@@ -653,6 +654,43 @@ def plot_model_comparison(train_metrics, test_metrics, out_dir):
     plt.savefig(Path(out_dir)/'model_comparison.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ model_comparison.png")
+
+def plot_learning_curve(estimator, X_df, y, out_dir, cv=5, train_sizes=np.linspace(0.1, 1.0, 10)):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    
+    est = clone(estimator)
+    
+    train_sizes, train_scores, val_scores = learning_curve(
+        est, X_df, y,  
+        train_sizes=train_sizes, cv=cv, scoring='r2',
+        n_jobs=-1, shuffle=True, random_state=42,
+        error_score='raise'  
+    )
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_sizes, np.mean(train_scores, axis=1), 'o-', color='steelblue', label='Training R²', lw=2)
+    plt.plot(train_sizes, np.mean(val_scores, axis=1), 'o-', color='coral', label='CV R²', lw=2)
+    plt.fill_between(train_sizes, 
+                     np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), 
+                     alpha=0.2, color='steelblue')
+    plt.fill_between(train_sizes, 
+                     np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), 
+                     alpha=0.2, color='coral')
+    plt.xlabel('Training Set Size')
+    plt.ylabel('R² Score')
+    plt.title('KNN + RFECV Regression Model Learning Curve')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(out_dir/'learning_curve.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("✓ learning_curve.png saved")
+    print(f"✓ Final CV R²: {np.mean(val_scores[-1]):.4f} ± {np.std(val_scores[-1]):.4f}")
+    print(f"✓ Final Train R²: {np.mean(train_scores[-1]):.4f} ± {np.std(train_scores[-1]):.4f}")
+
 
 def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None, orig_indices=None, state_col='State_Name', district_col='State_District_Name'):
     print(f"\n🔍 {split_name} Outlier Analysis")
@@ -827,13 +865,13 @@ def main(args):
     
     train_metrics = {'R2': train_r2, 'Adj_R2': train_adj_r2, 'RMSE': train_rmse, 'MAE': train_mae}
     test_metrics = {'R2': test_r2, 'Adj_R2': test_adj_r2, 'RMSE': test_rmse, 'MAE': test_mae}
-    
+
     joblib.dump(model, out_dir/'knn_model.joblib')
     joblib.dump(preprocessor, out_dir/'preprocessor.joblib')
     joblib.dump(selector, out_dir/'rfecv_selector.joblib')
     save_metrics(train_metrics, test_metrics, out_dir)
     
-    print("\n📈 Generating model inference plots...")
+    print("\n📊 Generating model inference plots...")
     plot_residuals(y_train, y_train_pred, out_dir, "Train")
     plot_residuals(y_test, y_test_pred, out_dir, "Test")
     plot_residuals_granularity(y_train, y_train_pred, out_dir, "Training")
@@ -847,6 +885,9 @@ def main(args):
     plot_prediction_distribution(y_train, y_train_pred, out_dir, 'Train')
     plot_prediction_distribution(y_test, y_test_pred, out_dir, 'Test')
     plot_model_comparison(train_metrics, test_metrics, out_dir)
+    print("📊 Generating model learning curve...")
+    plot_learning_curve(model, X_train_selected, y_train.values.ravel(), out_dir, cv=5)
+    #plot_learning_curve(model, X_train_selected, y_train, out_dir, cv=5)
     print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, 
                            state_col='State_Name', district_col='State_District_Name')
     print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, orig_indices=test_indices, 
