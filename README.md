@@ -69,7 +69,7 @@ pip install -e .[dev]
 # Environment Checks
 python -c "from models import *; print('✅ Model import dependencies OK')"
 bandit -r models/
-bandit -r models/ -f json -o security-report.jon # secure report summary
+bandit -r models/ -f json -o security-report.json # secure report summary
 pip-audit -r requirements.txt
 pip check
 pytest --cov=models/ --cov-report=term-missing
