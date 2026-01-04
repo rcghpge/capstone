@@ -73,6 +73,8 @@ bandit -r models/ -f json -o security-report.json # secure report summary
 pip-audit -r requirements.txt
 pip check
 pytest --cov=models/ --cov-report=term-missing
+pip install -r requirements.txt --upgrade # upgrade build environment
+
 
 # Run Python models and Launch Jupyter for EDA 
 jupyter lab notebooks/ # run in a web browser environment

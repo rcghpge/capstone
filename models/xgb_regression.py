@@ -35,35 +35,42 @@ from scipy import stats
 from pathlib import Path
 from sklearn.base import clone
 import matplotlib.pyplot as plt
+from xgboost import XGBRegressor
 from contextlib import contextmanager
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.feature_selection import RFECV
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from sklearn.model_selection import train_test_split, KFold, learning_curve
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from xgboost import XGBRegressor
-from sklearn.ensemble import RandomForestRegressor
 """
 Example usage: See Jupyter Notebooks for more information.
 
 # Base model run
 python xgb_regression.py \
-    --data ../data/KeyIndicatorDistrictwise.csv \
-    --target "InfantMortalityRateImrTotalPerson" \
-    --id-cols "StateName" "StateDistrictName" \
+    --data ../data/Key_indicator_districtwise.csv \
+    --target "Infant_Mortality_Rate_Imr_Total_Person" \
+    --id-cols "State_Name" "State_District_Name" \
     --correlation 70 \
     --test-size 0.15 \
     --random-state 42 \
     --outdir artifacts/xgb
 
-# Tune hyperparameters
-python xgb_optimized_regression.py ... \
+# Hyperparameter Tuning - add these params with above example usage.
+python xgb_regression.py \
+    --data ../data/Key_indicator_districtwise.csv \
+    --target "Infant_Mortality_Rate_Imr_Total_Person" \
+    --id-cols "State_Name" "State_District_Name" \
+    --correlation 70 \
+    --test-size 0.15 \
+    --random-state 42 \
     --n-estimators 3000 \
     --learning-rate 0.02 \
     --max-depth 8 \
-    --reg-alpha 0.5
+    --reg-alpha 0.5 \
+    --outdir artifacts/xgb
 """
 
 warnings.filterwarnings('ignore')
@@ -74,7 +81,7 @@ logging.basicConfig(
     level=logging.DEBUG if '--debug' in sys.argv else logging.INFO,
     format='%(asctime)s | %(levelname)s | %(message)s',
     handlers=[
-        logging.FileHandler('xgb_optimized.log'),
+        logging.FileHandler('xgb_regression.log'),
         logging.StreamHandler()
     ]
 )
@@ -84,24 +91,22 @@ TITLE = "XGBoost Regression Model"
 
 @contextmanager
 def spinner_progress(total_steps=64, spinners='|/-\r'):
-    """Progress spinner for long-running operations."""
     start = time.time()
     itercount = 0
     def update(n_features):
         nonlocal itercount
         itercount += 1
         elapsed = time.time() - start
-        eta = elapsed * (total_steps - itercount) / itercount * 60 if itercount > 0 else 0
-        pct = min(100, itercount / total_steps * 100)
+        eta = elapsed * (total_steps - itercount)/itercount * 60 if itercount > 0 else 0
+        pct = min(100, itercount/total_steps * 100)
         spinner = spinners[itercount % 4]
         sys.stdout.write(f'\r{spinner} [{itercount:3d}/{total_steps}] {n_features:4d} feats | ETA {eta:.0f}m ({pct:3.0f}%)')
         sys.stdout.flush()
     yield update
     elapsed = time.time() - start
-    print(f'\nRFECV Feature Selection Complete! {elapsed/60:.1f}m total')
+    print(f'\n✅ RFECV Feature Selection Complete! {elapsed/60:.1f}m total')
 
 def load_data(datapath):
-    """Load CSV or Parquet data."""
     if datapath.endswith('.csv'):
         return pd.read_csv(datapath)
     elif datapath.endswith('.parquet'):
@@ -109,83 +114,82 @@ def load_data(datapath):
     raise ValueError("Unsupported file type. Use .csv or .parquet")
 
 def print_dataset_stats(df, target_col):
-    """Print comprehensive dataset statistics."""
-    print('='*80)
-    print("Raw Dataset Summary")
+    print("\n" + "="*80)
+    print("📈 Raw Dataset Summary")
     print('='*80)
     total_samples, total_features = df.shape
-    print(f"Dataset Shape: {total_samples:,} samples, {total_features:,} features")
-    print(f"Target Column: {target_col}")
+    print(f"📊 Dataset Shape: {total_samples:,} samples, {total_features:,} features")
+    print(f"🎯 Target Column: {target_col}")
     
     total_missing = df.isnull().sum().sum()
-    missing_pct = total_missing / (total_samples * total_features) * 100
-    print(f"Total Missing (Null/NaN) Values: {total_missing:,} ({missing_pct:.2f}%)")
+    missing_pct = total_missing/(total_samples * total_features) * 100
+    print(f"🔍 Total Missing Null/NaN Values: {total_missing:,} ({missing_pct:.2f}%)")
     
     target_missing = df[target_col].isnull().sum()
     target_missing_pct = target_missing / total_samples * 100
-    print(f"Target Missing: {target_missing:,}/{total_samples:,} ({target_missing_pct:.1f}%)")
+    print(f"🎯 Target Missing: {target_missing:,}/{total_samples:,} ({target_missing_pct:.1f}%)")
     
     if target_missing > 0:
-        print("Warning: Target has missing values!")
+        print(f"⚠️ Warning: Target has missing values!")
     
     feature_missing = df.drop(columns=[target_col]).isnull().sum()
     missing_features = feature_missing[feature_missing > 0].sort_values(ascending=False)
     
     if len(missing_features) > 0:
+        print("📋 Top 10 Features with Missing Null/NaN Values")
         print('-'*60)
-        print("Top 10 Features with Missing (Null/NaN) Values")
         for feature, count in missing_features.head(10).items():
             pct = count/total_samples * 100
             print(f"{str(feature):40s} {count:6,} ({pct:5.1f}%)")
-        print(f"Total features with missing values: {len(missing_features)}/{total_features - 1}")
+        print(f"\n📊 Total features with missing values: {len(missing_features)}/{total_features - 1}")
     else:
-        print("No missing values in features!")
+        print("\n✅ No missing values in features!")
     
     dtype_counts = df.dtypes.value_counts()
-    print("Data Types")
+    print("\n🔧 Data Types")
     for dtype, count in dtype_counts.items():
         dtype_str = str(dtype)[:14]
-        print(f"{dtype_str:15s} {count:3d} columns")
+        print(f"{dtype_str:15s} | {count:3d} columns")
     print('='*80)
 
 def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
-    print('='*80)
-    print("Pre-RFECV Feature Selection Summary (Post-Preprocessing + Feature Correlation Drop)")
+    print("\n" + "="*80)
+    print("📈 Pre-RFECV Feature Selection Summary (Post-Preprocessing + Feature Correlation Drop)")
     print('='*80)
     
     n_samples, n_features = X_processed.shape
-    print(f"Processed Dataset: {n_samples:,} samples, {n_features:,} features")
-    print(f"Target Samples: {len(y_train):,}")
-    print(f"Feature Name Count: {len(feature_names):,}")
+    print(f"📊 Processed Dataset: {n_samples:,} samples, {n_features:,} features")
+    print(f"🎯 Target Samples: {len(y_train):,}")
+    print(f"📋 Feature Name Count: {len(feature_names):,}")
     
     total_missing = np.isnan(X_processed).sum()
-    missing_pct = total_missing / (n_samples * n_features) * 100
-    print(f"Post-Preprocessing Missing (Null/NaN) Values: {total_missing:,} ({missing_pct:.2f}%)")
+    missing_pct = total_missing/(n_samples * n_features) * 100
+    print(f"🔍 Post-Preprocessing Missing Null/NaN Values: {total_missing:,} ({missing_pct:.2f}%)")
     
     if total_missing == 0:
-        print("No missing (Null/NaN) values after preprocessing!")
+        print("✅ No missing Null/NaN values after preprocessing!")
     else:
-        print("Warning: Missing (Null/NaN) values persist after preprocessing!")
+        print("⚠️ Warning: Missing Null/NaN values persist after preprocessing!")
     
     y_train = np.asarray(y_train).ravel()
     target_missing = np.isnan(y_train).sum()
-    print(f"Target Missing (Null/NaN) Values: {target_missing:,}/{len(y_train):,} ({target_missing/len(y_train)*100:.1f}%)")
+    print(f"🎯 Target Missing Null/NaN Values: {target_missing:,}/{len(y_train):,} ({target_missing/len(y_train)*100:.1f}%)")
     
     numeric_feats = sum(1 for name in feature_names if any(c.isdigit() or c in '.-' for c in name))
     ohe_features = sum(1 for name in feature_names if '__' in name)
     
-    print("Feature Breakdown")
-    print(f"  Numerical Features: {numeric_feats}/{len(feature_names)}")
-    print(f"  Categorical (Post-OHE): {len(feature_names) - numeric_feats}")
-    print(f"  OHE Features Generated: {ohe_features}")
+    print("\n🔧 Feature Breakdown:")
+    print(f"  📊 Numerical Features: {numeric_feats}/{len(feature_names)}")
+    print(f"  🅰️ Categorical (Post-OHE): {len(feature_names) - numeric_feats}")
+    print(f"  🔄 OHE Features Generated: {ohe_features}")
     
     if n_features > 0:
         corrs = np.corrcoef(X_processed.T, y_train)[-1, :-1]
         abs_corrs = np.abs(corrs)
         top5_idx = np.argsort(abs_corrs)[-5:][::-1]
-        print("Top 5 corr Features With Target Variable")
+        print("\n📊 Top 5 |corr| Features With Target Variable")
         for i in top5_idx:
-            print(f"  {str(feature_names[i])[:40]:40s} {abs_corrs[i]:.4f}")
+            print(f"{str(feature_names[i])[:40]:40s} | {abs_corrs[i]:.4f}")
     print('='*80)
 
 def find_target_column(df, target_name):
@@ -200,18 +204,18 @@ def find_state_column(df, id_cols):
     
     state_patterns = ['state', 'region', 'province', 'county', 'district']
     for pattern in state_patterns:
-        matches = df.columns[df.columns.str.lower().str.contains(pattern, na=False)].tolist()
-        candidates.extend(matches)
+        matches = df.columns[df.columns.str.lower().str.contains(pattern, na=False)]
+        candidates.extend(matches.tolist())
     
     for col in candidates:
-        if col in df.columns and df[col].nunique() <= 50:  # Reasonable state count
+        if col in df.columns and df[col].nunique() <= 50:
             return col
     return None
 
 def calculate_adjusted_r2(r2_score, n_samples, n_features):
     if n_samples <= n_features + 1:
         return np.nan
-    return 1 - (1 - r2_score) * (n_samples - 1) / (n_samples - n_features - 1)
+    return 1 - (1 - r2_score) * (n_samples - 1)/(n_samples - n_features - 1)
 
 def build_preprocessor(X):
     num_cols = X.select_dtypes(include=np.number).columns.tolist()
@@ -248,7 +252,7 @@ def drop_feature_correlations(X_train, X_test, y_train, feature_names, drop_pct)
     
     corrs = np.corrcoef(X_train.T, y_arr)[-1, :-1]
     abs_corrs = np.abs(corrs)
-    n_drop = int(round(n_features * drop_pct / 100.0))
+    n_drop = int(round(n_features * drop_pct/100.0))
     
     if n_drop == 0 or n_drop >= n_features:
         return X_train, X_test, feature_names
@@ -258,7 +262,11 @@ def drop_feature_correlations(X_train, X_test, y_train, feature_names, drop_pct)
     X_test_new = X_test[:, keep_idx]
     feature_names_new = [feature_names[i] for i in keep_idx]
     
-    print(f"Dropped {n_drop}/{n_features} features ({drop_pct:.2f}%) by corr with target ({len(feature_names_new)} remain).")
+    print(
+        f"  ✓ Dropped {n_drop}/{n_features} features " 
+        f"({drop_pct:.2f}%) by |corr| with target; " 
+        f"{len(feature_names_new)} remain."
+    )
     return X_train_new, X_test_new, feature_names_new
 
 def plot_true_vs_pred(y_true, y_pred, outdir, subset_label, metrics):
@@ -278,7 +286,7 @@ def plot_true_vs_pred(y_true, y_pred, outdir, subset_label, metrics):
     plt.tight_layout()
     plt.savefig(Path(outdir)/f'{subset_label.lower()}_scatter.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"{subset_label.lower()}_scatter.png")
+    print(f"✓ {subset_label.lower()}_scatter.png")
 
 def plot_residuals(y_true, y_pred, outdir, split_name):
     residuals = y_true - y_pred
@@ -304,16 +312,16 @@ def plot_residuals(y_true, y_pred, outdir, split_name):
     
     axes[1,1].scatter(range(len(residuals)), residuals, alpha=0.7, s=20, color='steelblue')
     axes[1,1].axhline(0, color='coral', linestyle='--', linewidth=2)
-    axes[1,1].set_xlabel('Index')
+    axes[1,1].set_xlabel('Predicted')
     axes[1,1].set_ylabel('Residuals')
-    axes[1,1].set_title('Residuals vs Index')
+    axes[1,1].set_title('Residuals vs Predicted')
     axes[1,1].grid(True, alpha=0.5)
     
     plt.suptitle(f'{split_name} Residuals Analysis', fontsize=14)
     plt.tight_layout()
-    plt.savefig(Path(outdir) / f'{split_name.lower()}_residuals.png', dpi=300, bbox_inches='tight')
+    plt.savefig(Path(outdir)/f'{split_name.lower()}_residuals.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print(f"{split_name.lower()}_residuals.png")
+    print(f"✓ {split_name.lower()}_residuals.png")
 
 def plot_feature_importance(importances, feature_names, selector_support, outdir, top_n=25):
     top_n = min(top_n, len(importances))
@@ -324,26 +332,26 @@ def plot_feature_importance(importances, feature_names, selector_support, outdir
     bars = plt.barh(range(top_n), importances[idx], color=colors, alpha=0.7)
     plt.yticks(range(top_n), [feature_names[i][:35] + '...' if len(feature_names[i]) > 35 else feature_names[i] for i in idx])
     plt.xlabel('Feature Importance')
-    plt.title('Random Forest (RFECV) Feature Importance - Inputs to XGBoost Model')
+    plt.title('Random Forest RFECV Feature Importance (Inputs to XGBoost Model)')
     plt.gca().invert_yaxis()
     plt.grid(axis='x', alpha=0.5)
     plt.tight_layout()
     plt.savefig(Path(outdir)/'feature_importance.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print("feature_importance.png")
+    print("✓ feature_importance.png")
 
 def plot_learning_curve(estimator, X_df, y, out_dir, cv=5):
     outdir = Path(out_dir)
     outdir.mkdir(parents=True, exist_ok=True)
     
     est = clone(estimator)
-    est.early_stopping_rounds = None  # DISABLE early stopping
-    est.eval_metric = 'rmse'  # Add required metric
+    est.early_stopping_rounds = None 
+    est.eval_metric = 'rmse' 
     
     train_sizes = np.linspace(0.1, 1.0, 10)
     train_sizes, train_scores, val_scores = learning_curve(
         est, X_df, y, train_sizes=train_sizes, cv=cv, scoring='r2', 
-        n_jobs=1,  # Single thread to avoid parallel issues
+        n_jobs=1, 
         shuffle=True, random_state=42, error_score='raise'
     )
     
@@ -362,20 +370,20 @@ def plot_learning_curve(estimator, X_df, y, out_dir, cv=5):
     
     plt.xlabel('Training Set Size')
     plt.ylabel('R² Score')
-    plt.title('XGBoost RFECV Regression Model Learning Curve')
+    plt.title('XGBoost + RFECV Regression Model Learning Curve')
     plt.legend()
     plt.grid(True, alpha=0.5)
     plt.tight_layout()
     plt.savefig(out_dir/'learning_curve.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print("learning_curve.png saved")
+    print("✓ learning_curve.png")
     
-    print(f"Final CV R²: {np.mean(val_scores[-1]):.4f} ± {np.std(val_scores[-1]):.4f}")
-    print(f"Final Train R²: {np.mean(train_scores[-1]):.4f} ± {np.std(train_scores[-1]):.4f}")
+    print(f"✓ Final CV R²: {np.mean(val_scores[-1]):.4f} ± {np.std(val_scores[-1]):.4f}")
+    print(f"✓ Final Train R²: {np.mean(train_scores[-1]):.4f} ± {np.std(train_scores[-1]):.4f}")
 
 def print_outlier_analysis(y_true, y_pred, split_name, outdir, df_deduped=None, orig_indices=None,
-                          state_col='StateName', district_col='StateDistrictName'):
-    print(f'{split_name} Outlier Analysis')
+                          state_col='State_Name', district_col='State_District_Name'):
+    print(f'\n🔍 {split_name} Outlier Analysis')
     print('-'*80)
     
     y_true = np.asarray(y_true).ravel()
@@ -390,11 +398,11 @@ def print_outlier_analysis(y_true, y_pred, split_name, outdir, df_deduped=None, 
     stat_outliers = np.abs(residuals) > np.maximum(np.abs(lower_bound), upper_bound)
     stat_outlier_pct = stat_outliers.sum()/len(residuals) * 100
     
-    print(f"Statistical Outliers (IQR ±1.5): {stat_outliers.sum():3d}/{len(residuals):3d} ({stat_outlier_pct:4.1f}%)")
+    print(f"📊 Statistical Outliers (IQR ±1.5): {stat_outliers.sum():3d}/{len(residuals):3d} ({stat_outlier_pct:4.1f}%)")
     
     worst_idx = np.argsort(abs_residuals)[-5:][::-1]
-    print("Top 5 XGBoost Regression Model Inference Worst Predictions (Residuals/Errors)")
-    print(f"{'#':>3s} {'State':<15s} {'District':<20s} {'True':>6s} {'Pred':>6s} {'Error':>6s}")
+    print("\n🚨 Top 5 XGBoost Regression Model Inference Worst Predictions (Residuals Errors)")
+    print(f"{'#':>3s} | {'State':<15s} | {'District':<20s} | {'True':>6s} | {'Pred':>6s} | {'Error':>6s}")
     print('-'*80)
     
     for i, rel_idx in enumerate(worst_idx):
@@ -440,14 +448,14 @@ def print_outlier_analysis(y_true, y_pred, split_name, outdir, df_deduped=None, 
         outliers_df['district'] = districts
     
     outliers_df.to_csv(Path(outdir)/f'{split_name.lower()}_outliers_summary.csv', index=False)
-    print(f"Saved {split_name.lower()}_outliers_summary.csv")
+    print(f"💾 Saved: {split_name.lower()}_outliers_summary.csv")
     print('='*80)
 
 def save_metrics(train_metrics, test_metrics, outdir):
     results = pd.DataFrame({'train': train_metrics, 'test': test_metrics}, index=['Train', 'Test'])
     results.index.name = 'Split'
     results.to_csv(Path(outdir)/'metrics.csv', float_format='%.4f')
-    print("metrics.csv")
+    print("✓ metrics.csv")
 
 def main(args):
     print(f"{TITLE}")
@@ -459,23 +467,23 @@ def main(args):
     df.columns = [re.sub(r'[A-Z]{2,}', lambda m: m.group(0).lower(), col) for col in df.columns]
     args.target = find_target_column(df, original_target)
 
-    print(f"Dataset: {df.shape}")
-    print(f"Target: {original_target} -> {args.target}")
+    print(f"📊 Dataset: {df.shape}")
+    print(f"🎯 Target: {original_target} -> {args.target}")
 
     id_cols_fixed = [re.sub(r'[A-Z]{2,}', lambda m: m.group(0).lower(), col) for col in args.id_cols]
 
     len_df = len(df)
     mask = ~df.duplicated()
     df_deduped = df[mask].copy()
-    print(f"Deduplicating: {len_df:,} -> {len(df_deduped):,} samples")
+    print(f"🧹 Deduplicating: {len_df:,} -> {len(df_deduped):,} samples")
 
     print_dataset_stats(df_deduped, args.target)
 
     if df_deduped[args.target].isnull().any():
         print("ERROR: Target has missing values. Dropping incomplete rows.")
         df_deduped = df_deduped.dropna(subset=[args.target])
-
-    print(f"After target cleanup: {df_deduped.shape}")
+        print(f"📊 After target cleanup: {df_deduped.shape}")
+    print(f"✅ Raw dataset for preprocessing ({df_deduped.shape})")
 
     if args.target not in df_deduped.columns:
         raise ValueError(f"Target '{args.target}' not found")
@@ -496,12 +504,12 @@ def main(args):
     outdir.mkdir(exist_ok=True, parents=True)
 
     state_col = find_state_column(df_deduped, id_cols_fixed)
-    print(f"State Column: {state_col or 'None'}")
+    print(f"🗺️ State Column: {state_col or 'None'}")
 
     if state_col and state_col in df_deduped.columns:
         pass
 
-    print("Building preprocessor...")
+    print("\n🔧 Building preprocessor...")
     preprocessor = build_preprocessor(X_train)
     X_train_processed = preprocessor.fit_transform(X_train)
     X_test_processed = preprocessor.transform(X_test)
@@ -513,11 +521,11 @@ def main(args):
 
     num_features = X_train_processed.shape[1]
     target_min, target_max = y.min(), y.max()
-    print(f"Features: {num_features:,} | Target Range: {target_min:.1f}-{target_max:.1f}")
+    print(f"  ✓ Features: {num_features:,} | Target Range: {target_min:.1f}-{target_max:.1f}")
     print_pre_rfecv_stats(X_train_processed, y_train, feature_names, num_features)
 
-    print("RFECV Feature Selector")
-    print("Running a pass on the data..")
+    print("🔍 RFECV Feature Selector")
+    print("🔍 Running a pass on the data..")
     cv = KFold(n_splits=5, shuffle=True, random_state=args.random_state)
     rf = RandomForestRegressor(
         n_estimators=100,
@@ -553,16 +561,13 @@ def main(args):
     selected_feature_names = [feature_names[i] for i in keep_idx]
     n_selected = X_train_selected.shape[1]
 
-    print(f"RFECV Input: {X_train_processed.shape[1]} features")
-    print(f"RFECV Selected (after cap): {n_selected} features "
-          f"({n_selected / X_train_processed.shape[1] * 100:.1f}%)")
-    print(f"Features  : {n_selected}/{len(feature_names)}")
-    print(f"RFECV Ranking score: {selector.ranking_[np.argsort(selector.ranking_)[:selector.n_features_]].mean():.3f}")
+    print(f"✅ RFECV Input: {X_train_processed.shape[1]} features")
+    print(f"✅ RFECV Selected: {n_selected} features "
+          f"({n_selected/X_train_processed.shape[1] * 100:.1f}%)")
+    print(f"✅ Features: {n_selected}/{len(feature_names)}")
+    print(f"✅ RFECV Ranking score: {selector.ranking_[np.argsort(selector.ranking_)[:selector.n_features_]].mean():.3f}")
 
-    #X_train_selected = selector.transform(X_train_processed)
-    #X_test_selected = selector.transform(X_test_processed)
-
-    print("\nTraining XGBoost Model...")
+    print("\n📊 Training XGBoost Model...")
     xgb_model = XGBRegressor(
         n_estimators=args.n_estimators,
         learning_rate=args.learning_rate,
@@ -576,7 +581,9 @@ def main(args):
         random_state=args.random_state,
         verbosity=0,
         n_jobs=-1,
-        early_stopping_rounds=args.early_stopping_rounds
+        early_stopping_rounds=args.early_stopping_rounds,
+        tree_method="hist",
+        device="cuda"
     )
 
     xgb_model.fit(
@@ -610,14 +617,14 @@ def main(args):
     joblib.dump(selector, outdir/'rfecv_selector.joblib')
     save_metrics(train_metrics, test_metrics, outdir)
 
-    print("\nGenerating model inference plots...")
+    print("\n📊 Generating model inference plots...")
     plot_residuals(y_train, y_train_pred, outdir, 'Train')
     plot_residuals(y_test, y_test_pred, outdir, 'Test')
     plot_feature_importance(selector.estimator_.feature_importances_, feature_names, support_mask, outdir)
     plot_true_vs_pred(y_train, y_train_pred, outdir, 'Train', train_metrics)
     plot_true_vs_pred(y_test, y_test_pred, outdir, 'Test', test_metrics)
 
-    print("\nGenerating model learning curve...")
+    print("\n📊 Generating model learning curve...")
     plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), outdir, cv=5)
 
     print_outlier_analysis(
@@ -631,15 +638,12 @@ def main(args):
         state_col=state_col or 'State_Name', district_col='State_District_Name'
     )
 
+    print("\n" + "="*70)
+    print("✅ XGBoost Model Results")
     print('=' * 70)
-    print("XGBoost Model Results")
-    print('=' * 70)
-    print(f"Test R²   : {test_r2:.4f}")
-    print(f"Adj R²    : {test_adj_r2:.4f}")
-    print(f"RMSE      : {test_rmse:.4f}")
-    print(f"MAE       : {test_mae:.4f}")
-    print(f"Features  : {selector.n_features_}/{len(feature_names)}")
-    print(f"Outputs   : {outdir}")
+    print(f"🎯 Test: R²={test_r2:.4f} | Adj R²={test_adj_r2:.4f} | RMSE={test_rmse:.4f} | MAE={test_mae:.4f}")
+    print(f"📊 Features: {selector.n_features_}/{len(feature_names)}")
+    print(f"📁 Outputs: {outdir}")
     print('=' * 70)
 
 

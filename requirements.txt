@@ -12,6 +12,7 @@ black==25.11.0
 bleach==6.3.0
 boolean.py==5.0
 CacheControl==0.14.4
+-e git+ssh://git@github.com/rcghpge/capstoneproject.git@72f726ad8ee100466fbd9fb0d8c5f8f689474f0e#egg=capstone_project_1
 certifi==2025.11.12
 cffi==2.0.0
 cfgv==3.5.0
@@ -28,7 +29,7 @@ defusedxml==0.7.1
 distlib==0.4.0
 executing==2.2.1
 fastjsonschema==2.21.2
-filelock==3.20.0
+filelock==3.20.2
 flake8==7.3.0
 fonttools==4.61.0
 fqdn==1.5.1

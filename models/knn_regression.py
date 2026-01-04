@@ -112,7 +112,7 @@ def print_dataset_stats(df, target_col):
     print(f"🎯 Target Missing: {target_missing:,} / {total_samples} ({target_missing_pct:.1f}%)")
     
     if target_missing > 0:
-        print(f"   ⚠️  Warning: Target has missing values!")
+        print(f"⚠️ Warning: Target has missing values!")
 
     feature_missing = df.drop(columns=[target_col]).isnull().sum()
     missing_features = feature_missing[feature_missing > 0].sort_values(ascending=False)
@@ -131,7 +131,7 @@ def print_dataset_stats(df, target_col):
     print(f"\n🔧 Data Types:")
     for dtype, count in dtype_counts.items():
         dtype_str = str(dtype)[:14] 
-        print(f"  {dtype_str:15s} | {count:3d} columns")
+        print(f"{dtype_str:15s} | {count:3d} columns")
     print("="*80)
 
 def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
@@ -151,7 +151,7 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
     if total_missing == 0:
         print("✅ No missing Null/NaN values after preprocessing!")
     else:
-        print("⚠️  Warning: Missing Null/NaN values persist after preprocessing!")
+        print("⚠️ Warning: Missing Null/NaN values persist after preprocessing!")
     
     # Target stats
     y_train = np.asarray(y_train).ravel()
@@ -162,7 +162,7 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
     ohe_features = sum('__' in name for name in feature_names)
     print(f"\n🔧 Feature Breakdown:")
     print(f"  📊 Numerical Features: {numeric_feats}/{len(feature_names)}")
-    print(f"  🅰️Categorical (Post-OHE): {len(feature_names) - numeric_feats}")
+    print(f"  🅰️ Categorical (Post-OHE): {len(feature_names) - numeric_feats}")
     print(f"  🔄 OHE Features Generated: {ohe_features}")
 
     if n_features > 0:
@@ -171,7 +171,7 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
         top5_idx = np.argsort(abs_corrs)[-5:][::-1]
         print(f"\n📊 Top 5 |corr| Features With Target Variable:")
         for i in top5_idx:
-            print(f"  {str(feature_names[i])[:40]:40s} | {abs_corrs[i]:.4f}")
+            print(f"{str(feature_names[i])[:40]:40s} | {abs_corrs[i]:.4f}")
     print("="*80)
 
 def find_target_columns(df, target_name):
@@ -278,9 +278,9 @@ def plot_residuals(y_true, y_pred, out_dir, split_name):
     
     axes[1,1].scatter(range(len(residuals)), residuals, alpha=0.7, s=20, color='steelblue')
     axes[1,1].axhline(0, color='coral', linestyle='--', linewidth=2)
-    axes[1,1].set_xlabel('Index')
+    axes[1,1].set_xlabel('Predicted')
     axes[1,1].set_ylabel('Residuals')
-    axes[1,1].set_title('Residuals vs Index')
+    axes[1,1].set_title('Residuals vs Predicted')
     axes[1,1].grid(True, alpha=0.5)
     
     plt.suptitle(f'{split_name} Residuals Analysis', fontsize=14)

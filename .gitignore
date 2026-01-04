@@ -9,6 +9,7 @@ data/
 # Distribution/packaging
 lib/
 lib64/
+lib64
 *.egg
 *.egg-info/
 eggs/
@@ -23,7 +24,9 @@ var/
 wheels/
 pip-wheel-metadata/
 share/python-wheels/
+bin/
 .installed.cfg
+*.cfg
 MANIFEST
 
 # Python
