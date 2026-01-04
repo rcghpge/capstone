@@ -68,18 +68,19 @@ pip install -e .[dev]
 
 # Environment Checks
 python -c "from models import *; print('✅ Model import dependencies OK')"
-bandit -r models/
+bandit -r models/ # scan Python models
 bandit -r models/ -f json -o security-report.json # secure report summary
-pip-audit -r requirements.txt
-pip check
+pip-audit -r requirements.txt # audit build environment
+pip check # check for broken Python dependencies
 pytest --cov=models/ --cov-report=term-missing
 pip install -r requirements.txt --upgrade # upgrade build environment
-
+pip list --outdated # check for outdated Python packages
+python -m pip lock -e . # lock packages and dependencies in current build environment 
 
 # Run Python models and Launch Jupyter for EDA 
-jupyter lab notebooks/ # run in a web browser environment
+jupyter lab notebooks/ # launch Jupyter Notebook in a web browser environment
 jupyter lab notebooks/ --no-browser # intiliaze Jupyter server with no web browser
-jupyter lab/models/
+jupyter lab/models/ 
 jupyter lab/models/ --no-browser
 ```
 
