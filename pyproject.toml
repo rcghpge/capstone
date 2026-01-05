@@ -3,9 +3,9 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "capstone-project-1"
-version = "0.1.0"
-description = "Capstone Project 1: KNN XGB regression models + Jupyter EDA/model tests. ML for IMR prediction."
+name = "capstone-project"
+version = "0.2.0"
+description = "Capstone Project: KNN XGB regression models + Jupyter EDA/model tests. ML for IMR prediction."
 dependencies = [
     "jupyterlab>=4.0",
     "ipykernel>=6.0",
@@ -25,10 +25,11 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
-    "pytest>=7.4", "pytest-cov", "nbval",
+    "pytest>=9.0.2", "pytest-cov", "nbval",
     "black>=23.0", "flake8",
     "bandit>=1.7", "pip-audit>=2.7",
-    "pre-commit", "jupyterlab-lsp"
+    "pre-commit", "jupyterlab-lsp",
+    "pip-tools"
 ]
 
 [tool.setuptools.packages.find]

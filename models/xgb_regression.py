@@ -43,8 +43,8 @@ from sklearn.feature_selection import RFECV
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
-from sklearn.model_selection import train_test_split, KFold, learning_curve
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.model_selection import train_test_split, KFold, learning_curve, cross_val_score
 """
 Example usage: See Jupyter Notebooks for more information.
 
@@ -72,8 +72,8 @@ python xgb_regression.py \
     --reg-alpha 0.5 \
     --outdir artifacts/xgb
 """
-
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", message="sklearn.utils.parallel.delayed")
 sns.set_palette('husl')
 plt.style.use('default')
 
@@ -136,20 +136,20 @@ def print_dataset_stats(df, target_col):
     missing_features = feature_missing[feature_missing > 0].sort_values(ascending=False)
     
     if len(missing_features) > 0:
-        print("📋 Top 10 Features with Missing Null/NaN Values")
-        print('-'*60)
+        print("\n📋 Top 10 Features with Missing Null/NaN Values")
+        print("-" * 60)
         for feature, count in missing_features.head(10).items():
             pct = count/total_samples * 100
-            print(f"{str(feature):40s} {count:6,} ({pct:5.1f}%)")
+            print(f"{str(feature):40s} | {count:6,} ({pct:5.1f}%)")
         print(f"\n📊 Total features with missing values: {len(missing_features)}/{total_features - 1}")
     else:
         print("\n✅ No missing values in features!")
     
     dtype_counts = df.dtypes.value_counts()
-    print("\n🔧 Data Types")
+    print("\n🔧 Data Types:")
     for dtype, count in dtype_counts.items():
         dtype_str = str(dtype)[:14]
-        print(f"{dtype_str:15s} | {count:3d} columns")
+        print(f"  {dtype_str:10s} | {count:3d} columns")
     print('='*80)
 
 def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
@@ -188,6 +188,7 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
         abs_corrs = np.abs(corrs)
         top5_idx = np.argsort(abs_corrs)[-5:][::-1]
         print("\n📊 Top 5 |corr| Features With Target Variable")
+        print("-" * 60)
         for i in top5_idx:
             print(f"{str(feature_names[i])[:40]:40s} | {abs_corrs[i]:.4f}")
     print('='*80)
@@ -208,7 +209,7 @@ def find_state_column(df, id_cols):
         candidates.extend(matches.tolist())
     
     for col in candidates:
-        if col in df.columns and df[col].nunique() <= 50:
+        if col in df.columns and df[col].nunique() > 1:
             return col
     return None
 
@@ -238,7 +239,9 @@ def build_preprocessor(X):
 
 def get_feature_names(preprocessor):
     feature_names = list(preprocessor.get_feature_names_out())
-    return [name.split('__', 1)[1] if '__' in name else name for name in feature_names]
+    feature_names = [name.split('__', 1)[1] if '__' in name else name for name in feature_names]
+    feature_names = [name[3:] if len(name) > 3 and name[2] == '_' else name for name in feature_names]
+    return feature_names
 
 def drop_feature_correlations(X_train, X_test, y_train, feature_names, drop_pct):
     drop_pct = float(max(0.0, min(100.0, drop_pct)))
@@ -340,6 +343,53 @@ def plot_feature_importance(importances, feature_names, selector_support, outdir
     plt.close()
     print("✓ feature_importance.png")
 
+def plot_statewise_histogram(df, valuecol, statecol, outdir):
+    plt.figure(figsize=(14, 8))
+    state_means = df.groupby(statecol)[valuecol].mean().sort_values()
+    states_order = state_means.index.tolist()
+    plot_data = df[df[statecol].isin(states_order)]
+    palette = sns.color_palette("husl", n_colors=len(states_order))
+
+    sns.histplot(
+        data=plot_data,
+        x=valuecol,
+        hue=statecol,
+        hue_order=states_order,
+        element="step",
+        stat="count",
+        common_norm=False,
+        palette=palette,
+        alpha=0.4,
+        multiple="layer", 
+    )
+
+    plt.title("Infant Mortality Rate by State")
+    plt.xlabel(valuecol)
+    plt.ylabel("Count")
+    plt.tight_layout()
+    plt.grid(True, alpha=0.5)
+    plt.savefig(Path(outdir)/"statewise_histogram.png", dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ statewise_histogram.png")
+    
+def plot_statewise_facets(df, value_col, state_col, out_dir):
+    top_states = df[state_col].value_counts().head(9).index
+    plot_data = df[df[state_col].isin(top_states)]
+
+    g = sns.FacetGrid(plot_data, col=state_col, col_wrap=3, height=3, aspect=1.3, sharex=False, sharey=False)
+    g.map_dataframe(sns.histplot, x=value_col, bins=9, color="steelblue", alpha=0.7)
+    
+    for ax in g.axes.flatten():
+        if ax is not None:
+            ax.grid(True, alpha=0.5)
+
+    g.set_titles("{col_name}")
+    g.set_axis_labels(value_col, "Count")
+    g.fig.suptitle(f"{value_col} by {state_col}", y=1.02)
+    plt.savefig(Path(out_dir)/"statewise_facets.png", dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ statewise_facets.png")
+
 def plot_learning_curve(estimator, X_df, y, out_dir, cv=5):
     outdir = Path(out_dir)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -402,7 +452,7 @@ def print_outlier_analysis(y_true, y_pred, split_name, outdir, df_deduped=None, 
     
     worst_idx = np.argsort(abs_residuals)[-5:][::-1]
     print("\n🚨 Top 5 XGBoost Regression Model Inference Worst Predictions (Residuals Errors)")
-    print(f"{'#':>3s} | {'State':<15s} | {'District':<20s} | {'True':>6s} | {'Pred':>6s} | {'Error':>6s}")
+    print(f"{'#':>3s} | {'State':<10s} | {'District':<10s} | {'True':>6s} | {'Pred':>6s} | {'Error':>6s}")
     print('-'*80)
     
     for i, rel_idx in enumerate(worst_idx):
@@ -460,11 +510,10 @@ def save_metrics(train_metrics, test_metrics, outdir):
 def main(args):
     print(f"{TITLE}")
     print('=' * 70)
-
     df = load_data(args.data)
     original_target = args.target
-
     df.columns = [re.sub(r'[A-Z]{2,}', lambda m: m.group(0).lower(), col) for col in df.columns]
+    df.columns = [col[3:] if len(col) > 3 and col[2] == '_' else col for col in df.columns]
     args.target = find_target_column(df, original_target)
 
     print(f"📊 Dataset: {df.shape}")
@@ -480,7 +529,7 @@ def main(args):
     print_dataset_stats(df_deduped, args.target)
 
     if df_deduped[args.target].isnull().any():
-        print("ERROR: Target has missing values. Dropping incomplete rows.")
+        print("❌ ERROR: Target has missing values. Dropping incomplete rows.")
         df_deduped = df_deduped.dropna(subset=[args.target])
         print(f"📊 After target cleanup: {df_deduped.shape}")
     print(f"✅ Raw dataset for preprocessing ({df_deduped.shape})")
@@ -505,10 +554,10 @@ def main(args):
 
     state_col = find_state_column(df_deduped, id_cols_fixed)
     print(f"🗺️ State Column: {state_col or 'None'}")
-
     if state_col and state_col in df_deduped.columns:
-        pass
-
+        plot_statewise_histogram(df_deduped, args.target, state_col, outdir)
+        plot_statewise_facets(df_deduped, args.target, state_col, outdir)
+ 
     print("\n🔧 Building preprocessor...")
     preprocessor = build_preprocessor(X_train)
     X_train_processed = preprocessor.fit_transform(X_train)
@@ -528,7 +577,7 @@ def main(args):
     print("🔍 Running a pass on the data..")
     cv = KFold(n_splits=5, shuffle=True, random_state=args.random_state)
     rf = RandomForestRegressor(
-        n_estimators=100,
+        n_estimators=200,
         random_state=42,
         n_jobs=-1
     )
@@ -537,10 +586,10 @@ def main(args):
     with spinner_progress(min(64, max(1, total_features//10))):
         selector = RFECV(
             estimator=rf,
-            step=1,
+            step=0.25,
             cv=cv,
             scoring='neg_mean_absolute_error',
-            min_features_to_select=5,
+            min_features_to_select=8,
             verbose=0,
             n_jobs=-1
         )
@@ -592,7 +641,9 @@ def main(args):
         eval_set=[(X_test_selected, y_test)],
         verbose=False
     )
-
+    print(f"✓ RFECV selected {selector.n_features_} features (pre-cap)")
+    print(f"✓ RFECV rank 1 indices: {np.where(selector.ranking_ == 1)[0][:10]}") 
+    
     y_train_pred = xgb_model.predict(X_train_selected)
     y_test_pred = xgb_model.predict(X_test_selected)
 
@@ -625,6 +676,10 @@ def main(args):
     plot_true_vs_pred(y_test, y_test_pred, outdir, 'Test', test_metrics)
 
     print("\n📊 Generating model learning curve...")
+    cv_model = clone(xgb_model)
+    cv_model.set_params(early_stopping_rounds=None)
+    cv_scores = cross_val_score(cv_model, X_train_selected, y_train, cv=5, scoring='r2')
+    print(f"✓ Check 5‑fold CV R²: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
     plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), outdir, cv=5)
 
     print_outlier_analysis(
@@ -642,7 +697,7 @@ def main(args):
     print("✅ XGBoost Model Results")
     print('=' * 70)
     print(f"🎯 Test: R²={test_r2:.4f} | Adj R²={test_adj_r2:.4f} | RMSE={test_rmse:.4f} | MAE={test_mae:.4f}")
-    print(f"📊 Features: {selector.n_features_}/{len(feature_names)}")
+    print(f"📊 Features: {n_selected}/{len(feature_names)}")
     print(f"📁 Outputs: {outdir}")
     print('=' * 70)
 

@@ -109,7 +109,7 @@ def print_dataset_stats(df, target_col):
 
     target_missing = df[target_col].isnull().sum()
     target_missing_pct = (target_missing / total_samples) * 100
-    print(f"🎯 Target Missing: {target_missing:,} / {total_samples} ({target_missing_pct:.1f}%)")
+    print(f"🎯 Target Missing: {target_missing:,}/{total_samples} ({target_missing_pct:.1f}%)")
     
     if target_missing > 0:
         print(f"⚠️ Warning: Target has missing values!")
@@ -121,7 +121,7 @@ def print_dataset_stats(df, target_col):
         print(f"\n📋 Top 10 Features with Missing Null/NaN Values:")
         print("-" * 60)
         for feature, count in missing_features.head(10).items():
-            pct = (count / total_samples) * 100
+            pct = (count/total_samples) * 100
             print(f"  {str(feature):40s} | {count:6,} ({pct:5.1f}%)")
         print(f"\n📊 Total features with missing values: {len(missing_features)}/{total_features - 1}")
     else:
@@ -170,6 +170,7 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
         abs_corrs = np.abs(corrs)
         top5_idx = np.argsort(abs_corrs)[-5:][::-1]
         print(f"\n📊 Top 5 |corr| Features With Target Variable:")
+        print("-" * 60)
         for i in top5_idx:
             print(f"{str(feature_names[i])[:40]:40s} | {abs_corrs[i]:.4f}")
     print("="*80)
@@ -303,7 +304,7 @@ def plot_residuals_granularity(y_true, y_pred, outdir, split_name, jitter_level=
     plt.title(f"{split_name} Residuals Plot (Granularity)")
     plt.grid(True, alpha=0.5)
     plt.tight_layout()
-    plt.savefig(Path(outdir) / f"{split_name.lower()}_residuals_granularity.png", dpi=300, bbox_inches="tight")
+    plt.savefig(Path(outdir)/f"{split_name.lower()}_residuals_granularity.png", dpi=300, bbox_inches="tight")
     plt.close()
     print(f"✓ {split_name.lower()}_residuals_granularity.png")
 
@@ -394,7 +395,7 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
         width = bar.get_width()
         ax1.text(
             width + (0.01 if width >= 0 else -0.03),
-            bar.get_y() + bar.get_height() / 2,
+            bar.get_y() + bar.get_height()/2,
             f"{corr:.3f}",
             ha="left" if width >= 0 else "right",
             va="center",
@@ -429,7 +430,7 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
     ax2.grid(True, alpha=0.5)
 
     plt.tight_layout()
-    plt.savefig(Path(out_dir) / "feature_target_correlations.png", dpi=300, bbox_inches="tight")
+    plt.savefig(Path(out_dir)/"feature_target_correlations.png", dpi=300, bbox_inches="tight")
     plt.close()
     print("✓ feature_target_correlations.png")
 
@@ -476,7 +477,7 @@ def plot_statewise_facets(df, value_col, state_col, out_dir):
     g.set_titles("{col_name}")
     g.set_axis_labels(value_col, "Count")
     g.fig.suptitle(f"{value_col} by {state_col}", y=1.02)
-    plt.savefig(Path(out_dir) / "statewise_facets.png", dpi=300, bbox_inches="tight")
+    plt.savefig(Path(out_dir)/"statewise_facets.png", dpi=300, bbox_inches="tight")
     plt.close()
     print("✓ statewise_facets.png")
 
@@ -597,7 +598,7 @@ def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None,
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
     stat_outliers = np.abs(residuals) > np.max(np.abs([lower_bound, upper_bound]))
-    stat_outlier_pct = stat_outliers.sum() / len(residuals) * 100
+    stat_outlier_pct = stat_outliers.sum()/len(residuals) * 100
     
     print(f"📊 Statistical Outliers (IQR 1.5): {stat_outliers.sum():3d}/{len(residuals):3d} ({stat_outlier_pct:4.1f}%)")
     
@@ -776,7 +777,7 @@ def main(args):
     plot_prediction_distribution(y_train, y_train_pred, out_dir, 'Train')
     plot_prediction_distribution(y_test, y_test_pred, out_dir, 'Test')
     plot_model_comparison(train_metrics, test_metrics, out_dir)
-    print("📊 Generating model learning curve...")
+    print("\n📊 Generating model learning curve...")
     plot_learning_curve(model, X_train_selected, y_train.values.ravel(), out_dir, cv=5)
     print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, 
                            state_col='State_Name', district_col='State_District_Name')

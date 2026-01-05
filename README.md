@@ -74,8 +74,11 @@ bandit -r models/ -f json -o security-report.json # secure report summary
 pip-audit -r requirements.txt # audit build environment
 pip check # check for broken Python dependencies
 pytest --cov=models/ --cov-report=term-missing
-pip install -r requirements.txt --upgrade # upgrade build environment
 pip list --outdated # check for outdated Python packages
+pip install --upgrade <package> # upgrade outdated packages in build environment
+pip install -r requirements.txt --upgrade # upgrade build environment
+pip freeze > requirements.txt # set requirements for current build environment
+python -m venv --upgrade ~/capstoneproject # upgrade build environment with Python
 python -m pip lock -e . # lock packages and dependencies in current build environment 
 
 # Run Python models and Launch Jupyter for EDA 
