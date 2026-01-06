@@ -43,9 +43,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
-from sklearn.model_selection import train_test_split, KFold, learning_curve
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-
+from sklearn.model_selection import train_test_split, KFold, learning_curve, validation_curve
 """
 Example Usage: See Jupyter Notebooks for more information
 
@@ -161,9 +160,9 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
     numeric_feats = sum(1 for name in feature_names if any(c.isdigit() or c in '.-' for c in name))
     ohe_features = sum('__' in name for name in feature_names)
     print(f"\n🔧 Feature Breakdown:")
-    print(f"  📊 Numerical Features: {numeric_feats}/{len(feature_names)}")
-    print(f"  🅰️ Categorical (Post-OHE): {len(feature_names) - numeric_feats}")
-    print(f"  🔄 OHE Features Generated: {ohe_features}")
+    print(f"📊 Numerical Features: {numeric_feats}/{len(feature_names)}")
+    print(f"🅰️ Categorical (Post-OHE): {len(feature_names) - numeric_feats}")
+    print(f"🔄 OHE Features Generated: {ohe_features}")
 
     if n_features > 0:
         corrs = np.corrcoef(X_processed.T, y_train)[-1, :-1]
@@ -583,6 +582,40 @@ def plot_learning_curve(estimator, X_df, y, out_dir, cv=5, train_sizes=np.linspa
     print(f"✓ Final CV R²: {np.mean(val_scores[-1]):.4f} ± {np.std(val_scores[-1]):.4f}")
     print(f"✓ Final Train R²: {np.mean(train_scores[-1]):.4f} ± {np.std(train_scores[-1]):.4f}")
 
+def plot_validation_curve(estimator, X, y, param_name, param_range, out_dir, cv=5, **kwargs):
+    out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
+    
+    est = clone(estimator)
+    
+    train_scores, val_scores = validation_curve(
+        est, X, y, 
+        param_name=param_name, 
+        param_range=param_range,
+        cv=cv, 
+        scoring='r2', 
+        n_jobs=-1
+    )
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(param_range, np.mean(train_scores, axis=1), 'o-', color='steelblue', label='Training R²', lw=2)
+    plt.plot(param_range, np.mean(val_scores, axis=1), 'o-', color='coral', label='CV R²', lw=2)
+    plt.fill_between(param_range, 
+                     np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), 
+                     alpha=0.2, color='steelblue')
+    plt.fill_between(param_range, 
+                     np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), 
+                     alpha=0.2, color='coral')
+    plt.xlabel(param_name.replace('_', ' ').title())
+    plt.ylabel('R² Score')
+    plt.title('KNN + RFECV Regression Model Validation Curve')
+    plt.legend(); plt.grid(True, alpha=0.3); plt.tight_layout()
+    plt.savefig(out_dir/'validation_curve.png', dpi=300, bbox_inches='tight'); plt.close()
+    
+    best_idx = np.argmax(np.mean(val_scores, axis=1))
+    print(f"✓ validation_curve.png | Best CV R²: {np.mean(val_scores[best_idx]):.4f} ±{np.std(val_scores[best_idx]):.4f} (n_neighbors={param_range[best_idx]})")
+
 
 def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None, orig_indices=None, state_col='State_Name', district_col='State_District_Name'):
     print(f"\n🔍 {split_name} Outlier Analysis")
@@ -777,7 +810,8 @@ def main(args):
     plot_prediction_distribution(y_train, y_train_pred, out_dir, 'Train')
     plot_prediction_distribution(y_test, y_test_pred, out_dir, 'Test')
     plot_model_comparison(train_metrics, test_metrics, out_dir)
-    print("\n📊 Generating model learning curve...")
+    print("\n📊 Generating model assessment plots...")
+    plot_validation_curve(model, X_train_selected, y_train.values.ravel(), 'n_neighbors', range(1,51,2), out_dir)
     plot_learning_curve(model, X_train_selected, y_train.values.ravel(), out_dir, cv=5)
     print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, 
                            state_col='State_Name', district_col='State_District_Name')

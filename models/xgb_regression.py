@@ -20,6 +20,17 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import warnings
+warnings.filterwarnings("ignore")
+warnings.filterwarnings(
+    "ignore",
+    message=r"`sklearn.utils.parallel.delayed` should be used with "
+            r"`sklearn.utils.parallel.Parallel` to make it possible to "
+            r"propagate the scikit-learn configuration of the current thread "
+            r"to the joblib workers\.",
+    category=UserWarning,
+)
+
 import re
 import sys
 import time
@@ -27,7 +38,6 @@ import json
 import joblib
 import logging
 import argparse
-import warnings
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -72,8 +82,6 @@ python xgb_regression.py \
     --reg-alpha 0.5 \
     --outdir artifacts/xgb
 """
-warnings.filterwarnings("ignore")
-warnings.filterwarnings("ignore", message="sklearn.utils.parallel.delayed")
 sns.set_palette('husl')
 plt.style.use('default')
 
@@ -179,9 +187,9 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
     ohe_features = sum(1 for name in feature_names if '__' in name)
     
     print("\n🔧 Feature Breakdown:")
-    print(f"  📊 Numerical Features: {numeric_feats}/{len(feature_names)}")
-    print(f"  🅰️ Categorical (Post-OHE): {len(feature_names) - numeric_feats}")
-    print(f"  🔄 OHE Features Generated: {ohe_features}")
+    print(f"📊 Numerical Features: {numeric_feats}/{len(feature_names)}")
+    print(f"🅰️ Categorical (Post-OHE): {len(feature_names) - numeric_feats}")
+    print(f"🔄 OHE Features Generated: {ohe_features}")
     
     if n_features > 0:
         corrs = np.corrcoef(X_processed.T, y_train)[-1, :-1]
@@ -266,7 +274,7 @@ def drop_feature_correlations(X_train, X_test, y_train, feature_names, drop_pct)
     feature_names_new = [feature_names[i] for i in keep_idx]
     
     print(
-        f"  ✓ Dropped {n_drop}/{n_features} features " 
+        f"✓ Dropped {n_drop}/{n_features} features " 
         f"({drop_pct:.2f}%) by |corr| with target; " 
         f"{len(feature_names_new)} remain."
     )
@@ -343,6 +351,115 @@ def plot_feature_importance(importances, feature_names, selector_support, outdir
     plt.close()
     print("✓ feature_importance.png")
 
+def plot_feature_target_correlations(X_processed, y_train, feature_names, selector_support, out_dir, top_n=25, chunk_size=5000):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    X = np.asarray(X_processed)
+    y = np.asarray(y_train).ravel()
+    n_samples, n_features = X.shape
+    if len(feature_names) != n_features:
+        feature_names = feature_names[:n_features]
+    if len(selector_support) != n_features:
+        selector_support = selector_support[:n_features]
+
+    top_n = min(top_n, n_features)
+    y_mean = y.mean()
+    y_std = y.std()
+    if y_std == 0:
+        print("Target has zero variance; skipping correlation plot.")
+        return
+        
+    best = []
+    for start in range(0, n_features, chunk_size):
+        end = min(start + chunk_size, n_features)
+        X_chunk = X[:, start:end]
+
+        Xm = X_chunk - X_chunk.mean(axis=0, keepdims=True)
+        ym = y - y_mean
+
+        num = (Xm * ym[:, None]).sum(axis=0)
+        std_x = Xm.std(axis=0, ddof=0)
+        denom = std_x * y_std * n_samples
+        with np.errstate(divide="ignore", invalid="ignore"):
+            corr_chunk = np.where(denom != 0, num / denom, 0.0)
+
+        abs_corr_chunk = np.abs(corr_chunk)
+        for local_i, (ac, c) in enumerate(zip(abs_corr_chunk, corr_chunk)):
+            g_i = start + local_i
+            if len(best) < top_n:
+                best.append((ac, c, g_i))
+                if len(best) == top_n:
+                    best.sort(key=lambda x: x[0])
+            else:
+                if ac > best[0][0]:
+                    best[0] = (ac, c, g_i)
+                    best.sort(key=lambda x: x[0])
+
+    if not best:
+        print("No correlations computed; skipping correlation plot.")
+        return
+
+    best.sort(key=lambda x: x[0], reverse=True)
+    top_corrs = np.array([b[1] for b in best])
+    top_idx = np.array([b[2] for b in best], dtype=int)
+    top_features = [feature_names[i] for i in top_idx]
+    is_selected = [bool(selector_support[i]) for i in top_idx]
+
+    colors = ["steelblue" if sel else ("coral" if corr > 0 else "darkgreen") for corr, sel in zip(top_corrs, is_selected)]
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12), height_ratios=[3, 1])
+    bars1 = ax1.barh(range(len(top_corrs)), top_corrs, color=colors, alpha=0.7, height=0.7)
+    ax1.set_yticks(range(len(top_corrs)))
+    ax1.set_yticklabels([f[:35] + "..." if len(f) > 35 else f for f in top_features], fontsize=10)
+    ax1.set_xlabel("Correlation with Target", fontsize=12, weight="bold")
+    ax1.set_title("Top XGBoost Feature-Target Correlations Selected", fontsize=14, weight="bold")
+    ax1.grid(axis="x", alpha=0.5)
+    ax1.axvline(0, color="black", linestyle="-", alpha=0.5)
+
+    for bar, corr in zip(bars1, top_corrs):
+        width = bar.get_width()
+        ax1.text(
+            width + (0.01 if width >= 0 else -0.03),
+            bar.get_y() + bar.get_height()/2,
+            f"{corr:.3f}",
+            ha="left" if width >= 0 else "right",
+            va="center",
+            fontsize=9,
+            fontweight="bold",
+        )
+
+    selected_count = sum(is_selected)
+    ax1.text(
+        0.02,
+        0.98,
+        f"RFECV Selected: {selected_count}/{len(top_corrs)}",
+        transform=ax1.transAxes,
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgreen", alpha=0.8),
+        fontsize=11,
+    )
+
+    selected_corrs = [c for c, s in zip(top_corrs, is_selected) if s]
+    non_selected_corrs = [c for c, s in zip(top_corrs, is_selected) if not s]
+    ax2.hist(
+        [selected_corrs, non_selected_corrs],
+        bins=10,
+        alpha=0.7,
+        label=["Selected", "Not Selected"],
+        color=["steelblue", "coral"],
+        density=True,
+    )
+    ax2.set_xlabel("Correlation Coefficient")
+    ax2.set_ylabel("Density")
+    ax2.set_title("Correlation Distribution")
+    ax2.legend()
+    ax2.grid(True, alpha=0.5)
+
+    plt.tight_layout()
+    plt.savefig(Path(out_dir)/"feature_target_correlations.png", dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ feature_target_correlations.png")
+    
 def plot_statewise_histogram(df, valuecol, statecol, outdir):
     plt.figure(figsize=(14, 8))
     state_means = df.groupby(statecol)[valuecol].mean().sort_values()
@@ -431,10 +548,59 @@ def plot_learning_curve(estimator, X_df, y, out_dir, cv=5):
     print(f"✓ Final CV R²: {np.mean(val_scores[-1]):.4f} ± {np.std(val_scores[-1]):.4f}")
     print(f"✓ Final Train R²: {np.mean(train_scores[-1]):.4f} ± {np.std(train_scores[-1]):.4f}")
 
-def print_outlier_analysis(y_true, y_pred, split_name, outdir, df_deduped=None, orig_indices=None,
-                          state_col='State_Name', district_col='State_District_Name'):
-    print(f'\n🔍 {split_name} Outlier Analysis')
-    print('-'*80)
+def plot_loss_curve(xgb_model, outdir, metric='rmse'):
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    results = xgb_model.evals_result()
+    if not results:
+        print("No evals_result found on model; did you pass eval_set and eval_metric?")
+        return
+
+    train_key = 'validation_0'
+    metrics_dict = results.get(train_key, {})
+    if metric not in metrics_dict:
+        print(f"Metric '{metric}' not found in evals_result for {train_key}. "
+              f"Available: {list(metrics_dict.keys())}")
+        return
+
+    train_metric = metrics_dict[metric]
+    epochs = range(len(train_metric))
+
+    plt.figure(figsize=(8, 5))
+    plt.plot(
+        epochs,
+        train_metric,              
+        label=f'{train_key} {metric.upper()}',
+        color='steelblue'            
+    )
+
+    test_key = 'validation_1'
+    if test_key in results and metric in results[test_key]:
+        test_metric = results[test_key][metric]
+        plt.plot(
+            epochs,
+            test_metric,                
+            label=f'{test_key} {metric.upper()}',
+            color='coral'            
+        )
+
+    plt.xlabel('Boosting round')
+    plt.ylabel(metric.upper())
+    plt.title(f'XGBoost + RFECV Regression Model {metric.upper()} Loss Curve')
+    plt.legend()
+    plt.grid(alpha=0.4)
+    plt.tight_layout()
+
+    fname = outdir/f'{metric.lower()}_loss_curve.png'
+    plt.savefig(fname, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"✓ {fname.name}")
+
+
+def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None, orig_indices=None, state_col='State_Name', district_col='State_District_Name'):
+    print(f"\n🔍 {split_name} Outlier Analysis")
+    print("-"*80)
     
     y_true = np.asarray(y_true).ravel()
     y_pred = np.asarray(y_pred).ravel()
@@ -445,61 +611,61 @@ def print_outlier_analysis(y_true, y_pred, split_name, outdir, df_deduped=None, 
     IQR = Q3 - Q1
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
-    stat_outliers = np.abs(residuals) > np.maximum(np.abs(lower_bound), upper_bound)
+    stat_outliers = np.abs(residuals) > np.max(np.abs([lower_bound, upper_bound]))
     stat_outlier_pct = stat_outliers.sum()/len(residuals) * 100
     
     print(f"📊 Statistical Outliers (IQR ±1.5): {stat_outliers.sum():3d}/{len(residuals):3d} ({stat_outlier_pct:4.1f}%)")
     
     worst_idx = np.argsort(abs_residuals)[-5:][::-1]
-    print("\n🚨 Top 5 XGBoost Regression Model Inference Worst Predictions (Residuals Errors)")
-    print(f"{'#':>3s} | {'State':<10s} | {'District':<10s} | {'True':>6s} | {'Pred':>6s} | {'Error':>6s}")
-    print('-'*80)
+    print(f"\n🚨 Top 5 KNN Regression Model Inference Worst Predictions (Residuals Errors):")
+    print(f"{'#':3s} | {'State':15s} | {'District':20s} | {'True':6s} | {'Pred':6s} | {'Error':6s}")
+    print("-" * 80)
     
     for i, rel_idx in enumerate(worst_idx):
         orig_idx = int(orig_indices[rel_idx]) if orig_indices is not None else rel_idx
-        state, district = 'N/A', 'N/A'
+        
+        state = "N/A"
+        district = "N/A"
         if df_deduped is not None:
             try:
                 if 0 <= orig_idx < len(df_deduped):
                     if state_col in df_deduped.columns:
-                        state = str(df_deduped.iloc[orig_idx].get(state_col, 'N/A'))[:14]
+                        state = str(df_deduped.iloc[orig_idx].get(state_col, "N/A"))[:14]
                     if district_col in df_deduped.columns:
-                        district = str(df_deduped.iloc[orig_idx].get(district_col, 'N/A'))[:19]
+                        district = str(df_deduped.iloc[orig_idx].get(district_col, "N/A"))[:19]
             except Exception:
-                state, district = 'LookupError', 'LookupError'
+                state, district = "LookupError", "LookupError"
         
-        print(f"{i+1:>12d} {state:<15s} {district:<20s} {y_true[rel_idx]:>6.1f} {y_pred[rel_idx]:>6.1f} {abs_residuals[rel_idx]:>6.1f}")
+        print(f"{i+1:2d}  | {state:15s} | {district:20s} | "
+              f"{y_true[rel_idx]:6.1f} | {y_pred[rel_idx]:6.1f} | {abs_residuals[rel_idx]:6.1f}")
     
     outliers_df = pd.DataFrame({
         'relative_idx': np.arange(len(residuals)),
         'original_index': orig_indices if orig_indices is not None else np.arange(len(residuals)),
-        'true': y_true,
-        'pred': y_pred,
-        'residual': residuals,
+        'true': y_true, 'pred': y_pred, 'residual': residuals,
         'is_outlier': stat_outliers,
         'abs_error': abs_residuals
     })
     
     if df_deduped is not None:
-        states, districts = [], []
+        states = []
+        districts = []
         for i, orig_idx in enumerate(outliers_df['original_index']):
             try:
                 idx = int(orig_idx)
                 if 0 <= idx < len(df_deduped):
-                    states.append(str(df_deduped.iloc[idx].get(state_col, 'N/A')))
-                    districts.append(str(df_deduped.iloc[idx].get(district_col, 'N/A')))
+                    states.append(str(df_deduped.iloc[idx].get(state_col, "N/A")))
+                    districts.append(str(df_deduped.iloc[idx].get(district_col, "N/A")))
                 else:
-                    states.append('OutOfBounds')
-                    districts.append('OutOfBounds')
+                    states.append("OutOfBounds")
+                    districts.append("OutOfBounds")
             except:
-                states.append('Error')
-                districts.append('Error')
+                states.append("Error")
+                districts.append("Error")
         outliers_df['state'] = states
         outliers_df['district'] = districts
-    
-    outliers_df.to_csv(Path(outdir)/f'{split_name.lower()}_outliers_summary.csv', index=False)
+    outliers_df.to_csv(Path(out_dir)/f'{split_name.lower()}_outliers_summary.csv', index=False)
     print(f"💾 Saved: {split_name.lower()}_outliers_summary.csv")
-    print('='*80)
 
 def save_metrics(train_metrics, test_metrics, outdir):
     results = pd.DataFrame({'train': train_metrics, 'test': test_metrics}, index=['Train', 'Test'])
@@ -570,47 +736,35 @@ def main(args):
 
     num_features = X_train_processed.shape[1]
     target_min, target_max = y.min(), y.max()
-    print(f"  ✓ Features: {num_features:,} | Target Range: {target_min:.1f}-{target_max:.1f}")
+    print(f"✓ Features: {num_features:,} | Target Range: {target_min:.1f}-{target_max:.1f}")
     print_pre_rfecv_stats(X_train_processed, y_train, feature_names, num_features)
 
     print("🔍 RFECV Feature Selector")
     print("🔍 Running a pass on the data..")
     cv = KFold(n_splits=5, shuffle=True, random_state=args.random_state)
     rf = RandomForestRegressor(
-        n_estimators=200,
+        n_estimators=100,
         random_state=42,
         n_jobs=-1
     )
 
     total_features = X_train_processed.shape[1]
     with spinner_progress(min(64, max(1, total_features//10))):
-        selector = RFECV(
-            estimator=rf,
-            step=0.25,
-            cv=cv,
-            scoring='neg_mean_absolute_error',
-            min_features_to_select=8,
-            verbose=0,
-            n_jobs=-1
-        )
+        selector = RFECV(estimator=rf, step=10, cv=cv, scoring='neg_mean_absolute_error', min_features_to_select=5, verbose=0, n_jobs=-1)
+        print("🔍 X_train Shape:", X_train.shape)
+        print("🔍 X_train_processed Shape:", X_train_processed.shape)
+        print("🔍 First 5 Original Features:", list(X_train.columns[:5]))
+        print(f"✅ RFECV Input: {X_train_processed.shape[1]} features")
+        print(f"✅ Original Numeric Columns: {len(X_train.select_dtypes(include=np.number).columns)} features")
         selector.fit(X_train_processed, y_train)
-
-    target_features = 10
-    selected_idx = np.where(selector.ranking_ == 1)[0]
-    if len(selected_idx) > target_features:
-        keep_idx = selected_idx[:target_features]
-    else:
-        keep_idx = selected_idx
-
-    support_mask = np.zeros_like(selector.support_, dtype=bool)
-    support_mask[keep_idx] = True
-
+        print(f"✅ RFECV: {X_train_processed.shape[1]} → {selector.n_features_} features selected")
+    
+    support_mask = selector.support_
     X_train_selected = X_train_processed[:, support_mask]
     X_test_selected  = X_test_processed[:, support_mask]
-    selected_feature_names = [feature_names[i] for i in keep_idx]
+    selected_feature_names = [f for f, keep in zip(feature_names, support_mask) if keep]
     n_selected = X_train_selected.shape[1]
 
-    print(f"✅ RFECV Input: {X_train_processed.shape[1]} features")
     print(f"✅ RFECV Selected: {n_selected} features "
           f"({n_selected/X_train_processed.shape[1] * 100:.1f}%)")
     print(f"✅ Features: {n_selected}/{len(feature_names)}")
@@ -627,6 +781,7 @@ def main(args):
         reg_lambda=args.reg_lambda,
         min_child_weight=args.min_child_weight,
         objective='reg:squarederror',
+        eval_metric=['rmse', 'mae'],
         random_state=args.random_state,
         verbosity=0,
         n_jobs=-1,
@@ -638,7 +793,7 @@ def main(args):
     xgb_model.fit(
         X_train_selected,
         y_train,
-        eval_set=[(X_test_selected, y_test)],
+        eval_set=[(X_train_selected, y_train), (X_test_selected, y_test)],
         verbose=False
     )
     print(f"✓ RFECV selected {selector.n_features_} features (pre-cap)")
@@ -672,27 +827,22 @@ def main(args):
     plot_residuals(y_train, y_train_pred, outdir, 'Train')
     plot_residuals(y_test, y_test_pred, outdir, 'Test')
     plot_feature_importance(selector.estimator_.feature_importances_, feature_names, support_mask, outdir)
+    plot_feature_target_correlations(X_train_processed, y_train, feature_names, selector.support_, outdir)
     plot_true_vs_pred(y_train, y_train_pred, outdir, 'Train', train_metrics)
     plot_true_vs_pred(y_test, y_test_pred, outdir, 'Test', test_metrics)
 
-    print("\n📊 Generating model learning curve...")
+    print("\n📊 Generating model assessment plots...")
+    plot_loss_curve(xgb_model, outdir, metric='mae')
+    plot_loss_curve(xgb_model, outdir, metric='rmse')
+    plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), outdir, cv=5)
     cv_model = clone(xgb_model)
     cv_model.set_params(early_stopping_rounds=None)
     cv_scores = cross_val_score(cv_model, X_train_selected, y_train, cv=5, scoring='r2')
     print(f"✓ Check 5‑fold CV R²: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
-    plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), outdir, cv=5)
-
-    print_outlier_analysis(
-        y_train, y_train_pred, 'Train', outdir,
-        df_deduped=df_deduped, orig_indices=train_indices,
-        state_col=state_col or 'State_Name', district_col='State_District_Name'
-    )
-    print_outlier_analysis(
-        y_test, y_test_pred, 'Test', outdir,
-        df_deduped=df_deduped, orig_indices=test_indices,
-        state_col=state_col or 'State_Name', district_col='State_District_Name'
-    )
-
+    print_outlier_analysis(y_train, y_train_pred, "Train", outdir, df_deduped=df_deduped, orig_indices=train_indices, 
+                           state_col='State_Name', district_col='State_District_Name')
+    print_outlier_analysis(y_test, y_test_pred, "Test", outdir, df_deduped=df_deduped, orig_indices=test_indices, 
+                           state_col='State_Name', district_col='State_District_Name')
     print("\n" + "="*70)
     print("✅ XGBoost Model Results")
     print('=' * 70)
@@ -722,6 +872,5 @@ if __name__ == '__main__':
     parser.add_argument('--min-child-weight', type=float, default=5.0)
     parser.add_argument('--early-stopping-rounds', type=int, default=100)
     parser.add_argument('--debug', action='store_true')
-
     args = parser.parse_args()
     main(args)
