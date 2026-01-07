@@ -70,7 +70,7 @@ pip install -e .[dev]
 
 # Environment Checks
 python -c "from models import *; print('✅ Model import dependencies OK')"
-bandit -r -e . # scan current build environment
+bandit -r . # scan current build environment
 bandit -r models/ # scan Python models
 bandit -r models/ -f json -o security-report.json # secure report summary
 pip-audit -r requirements.txt # audit build environment

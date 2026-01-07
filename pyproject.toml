@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "capstone-project"
-version = "0.2.0"
-description = "Capstone Project: KNN XGB regression models + Jupyter EDA/model tests. ML for IMR prediction."
+version = "0.3.0"
+description = "Capstone Project: KNN + XGB regression models + Jupyter EDA/model tests. ML for IMR prediction."
 dependencies = [
     "jupyterlab>=4.0",
     "ipykernel>=6.0",

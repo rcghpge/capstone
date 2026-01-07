@@ -681,14 +681,14 @@ sha256 = "dc578891de1db95b2a35001b695451767b580bb45753717498213c5ff3c41d63"
 
 [[packages]]
 name = "nvidia-nccl-cu12"
-version = "2.28.9"
+version = "2.29.2"
 
 [[packages.wheels]]
-name = "nvidia_nccl_cu12-2.28.9-py3-none-manylinux_2_18_x86_64.whl"
-url = "https://files.pythonhosted.org/packages/4a/4e/44dbb46b3d1b0ec61afda8e84837870f2f9ace33c564317d59b70bc19d3e/nvidia_nccl_cu12-2.28.9-py3-none-manylinux_2_18_x86_64.whl"
+name = "nvidia_nccl_cu12-2.29.2-py3-none-manylinux_2_18_x86_64.whl"
+url = "https://files.pythonhosted.org/packages/23/2d/609d0392d992259c6dc39881688a7fc13b1397a668bc360fbd68d1396f85/nvidia_nccl_cu12-2.29.2-py3-none-manylinux_2_18_x86_64.whl"
 
 [packages.wheels.hashes]
-sha256 = "485776daa8447da5da39681af455aa3b2c2586ddcf4af8772495e7c532c7e5ab"
+sha256 = "3a9a0bf4142126e0d0ed99ec202579bef8d007601f9fab75af60b10324666b12"
 
 [[packages]]
 name = "packaging"

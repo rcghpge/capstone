@@ -23,12 +23,9 @@
 import warnings
 warnings.filterwarnings("ignore")
 warnings.filterwarnings(
-    "ignore",
-    message=r"`sklearn.utils.parallel.delayed` should be used with "
-            r"`sklearn.utils.parallel.Parallel` to make it possible to "
-            r"propagate the scikit-learn configuration of the current thread "
-            r"to the joblib workers\.",
-    category=UserWarning,
+    "ignore", 
+    message="sklearn.utils.parallel.delayed should be used with sklearn.utils.parallel.Parallel",
+    category=UserWarning
 )
 
 import re
@@ -70,17 +67,13 @@ python xgb_regression.py \
 
 # Hyperparameter Tuning - add these params with above example usage.
 python xgb_regression.py \
-    --data ../data/Key_indicator_districtwise.csv \
-    --target "Infant_Mortality_Rate_Imr_Total_Person" \
-    --id-cols "State_Name" "State_District_Name" \
-    --correlation 70 \
-    --test-size 0.15 \
-    --random-state 42 \
-    --n-estimators 3000 \
-    --learning-rate 0.02 \
-    --max-depth 8 \
-    --reg-alpha 0.5 \
-    --outdir artifacts/xgb
+--data ../data/Key_indicator_districtwise.csv \
+--target "Infant_Mortality_Rate_Imr_Total_Person" \
+--id-cols "State_Name" "State_District_Name" \
+--correlation 35 --test-size 0.20 --random-state 42 \
+--eta 0.15 --n-estimators 3000 --early-stopping-rounds 100 --max-depth 4 \
+--colsample-bytree 0.7 --subsample 0.7 --reg-lambda 2 --reg-alpha 1 \
+--min-child-weight 25 --top-n-plot 10 --chunk-size 50000 --outdir artifacts/xgb
 """
 sns.set_palette('husl')
 plt.style.use('default')
@@ -157,7 +150,7 @@ def print_dataset_stats(df, target_col):
     print("\n🔧 Data Types:")
     for dtype, count in dtype_counts.items():
         dtype_str = str(dtype)[:14]
-        print(f"  {dtype_str:10s} | {count:3d} columns")
+        print(f"ℹ️ {dtype_str:10s} | {count:3d} columns")
     print('='*80)
 
 def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
@@ -280,7 +273,7 @@ def drop_feature_correlations(X_train, X_test, y_train, feature_names, drop_pct)
     )
     return X_train_new, X_test_new, feature_names_new
 
-def plot_true_vs_pred(y_true, y_pred, outdir, subset_label, metrics):
+def plot_true_vs_pred(y_true, y_pred, out_dir, subset_label, metrics):
     plt.figure(figsize=(10, 6))
     plt.scatter(range(len(y_true)), y_true, color='steelblue', label='True', s=35, alpha=0.7)
     plt.plot(range(len(y_pred)), y_pred, color='coral', label='Predicted', linewidth=2, alpha=0.7)
@@ -295,11 +288,11 @@ def plot_true_vs_pred(y_true, y_pred, outdir, subset_label, metrics):
                    verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
     
     plt.tight_layout()
-    plt.savefig(Path(outdir)/f'{subset_label.lower()}_scatter.png', dpi=300, bbox_inches='tight')
+    plt.savefig(Path(out_dir)/f'{subset_label.lower()}_scatter.png', dpi=300, bbox_inches='tight')
     plt.close()
     print(f"✓ {subset_label.lower()}_scatter.png")
 
-def plot_residuals(y_true, y_pred, outdir, split_name):
+def plot_residuals(y_true, y_pred, out_dir, split_name):
     residuals = y_true - y_pred
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     
@@ -330,24 +323,26 @@ def plot_residuals(y_true, y_pred, outdir, split_name):
     
     plt.suptitle(f'{split_name} Residuals Analysis', fontsize=14)
     plt.tight_layout()
-    plt.savefig(Path(outdir)/f'{split_name.lower()}_residuals.png', dpi=300, bbox_inches='tight')
+    plt.savefig(Path(out_dir)/f'{split_name.lower()}_residuals.png', dpi=300, bbox_inches='tight')
     plt.close()
     print(f"✓ {split_name.lower()}_residuals.png")
 
-def plot_feature_importance(importances, feature_names, selector_support, outdir, top_n=25):
+def plot_feature_importance(importances, feature_names, selector_support, out_dir, top_n=25):
     top_n = min(top_n, len(importances))
     idx = np.argsort(importances)[-top_n:][::-1]
     colors = ['steelblue' if selector_support[i] else 'coral' for i in idx]
     
-    plt.figure(figsize=(12, 10))
+    plt.figure(figsize=(12, max(8, top_n*0.4)))  # Dynamic height
     bars = plt.barh(range(top_n), importances[idx], color=colors, alpha=0.7)
-    plt.yticks(range(top_n), [feature_names[i][:35] + '...' if len(feature_names[i]) > 35 else feature_names[i] for i in idx])
+    plt.yticks(range(top_n), 
+               [feature_names[i][:35] + '...' if len(feature_names[i]) > 35 else feature_names[i] 
+                for i in idx])
     plt.xlabel('Feature Importance')
     plt.title('Random Forest RFECV Feature Importance (Inputs to XGBoost Model)')
     plt.gca().invert_yaxis()
     plt.grid(axis='x', alpha=0.5)
     plt.tight_layout()
-    plt.savefig(Path(outdir)/'feature_importance.png', dpi=300, bbox_inches='tight')
+    plt.savefig(Path(out_dir)/'feature_importance.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ feature_importance.png")
 
@@ -382,7 +377,7 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
         std_x = Xm.std(axis=0, ddof=0)
         denom = std_x * y_std * n_samples
         with np.errstate(divide="ignore", invalid="ignore"):
-            corr_chunk = np.where(denom != 0, num / denom, 0.0)
+            corr_chunk = np.where(denom != 0, num/denom, 0.0)
 
         abs_corr_chunk = np.abs(corr_chunk)
         for local_i, (ac, c) in enumerate(zip(abs_corr_chunk, corr_chunk)):
@@ -459,8 +454,129 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
     plt.savefig(Path(out_dir)/"feature_target_correlations.png", dpi=300, bbox_inches="tight")
     plt.close()
     print("✓ feature_target_correlations.png")
-    
-def plot_statewise_histogram(df, valuecol, statecol, outdir):
+
+def plot_selected_feature_corrs(X_selected, y_train, selected_feature_names, out_dir, top_n=25, chunk_size=5000):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    X = np.asarray(X_selected)
+    y = np.asarray(y_train).ravel()
+    n_samples, n_features = X.shape
+
+    if n_features == 0:
+        print("No selected features; skipping model-input correlation plot.")
+        return
+
+    if len(selected_feature_names) != n_features:
+        selected_feature_names = selected_feature_names[:n_features]
+
+    top_n = min(top_n, n_features)
+    y_mean = y.mean()
+    y_std = y.std()
+    if y_std == 0:
+        print("Target has zero variance; skipping model-input correlation plot.")
+        return
+
+    best = []
+    for start in range(0, n_features, chunk_size):
+        end = min(start + chunk_size, n_features)
+        X_chunk = X[:, start:end]
+
+        Xm = X_chunk - X_chunk.mean(axis=0, keepdims=True)
+        ym = y - y_mean
+
+        num = (Xm * ym[:, None]).sum(axis=0)
+        std_x = Xm.std(axis=0, ddof=0)
+        denom = std_x * y_std * n_samples
+        with np.errstate(divide="ignore", invalid="ignore"):
+            corr_chunk = np.where(denom != 0, num/denom, 0.0)
+
+        abs_corr_chunk = np.abs(corr_chunk)
+        for local_i, (ac, c) in enumerate(zip(abs_corr_chunk, corr_chunk)):
+            g_i = start + local_i
+            if len(best) < top_n:
+                best.append((ac, c, g_i))
+                if len(best) == top_n:
+                    best.sort(key=lambda x: x[0])
+            else:
+                if ac > best[0][0]:
+                    best[0] = (ac, c, g_i)
+                    best.sort(key=lambda x: x[0])
+
+    if not best:
+        print("No correlations computed; skipping model-input correlation plot.")
+        return
+
+    best.sort(key=lambda x: x[0], reverse=True)
+    top_corrs = np.array([b[1] for b in best])
+    top_idx = np.array([b[2] for b in best], dtype=int)
+    top_features = [selected_feature_names[i] for i in top_idx]
+
+    is_selected = [True] * len(top_corrs)
+    colors = ["steelblue" if sel else ("coral" if corr > 0 else "darkgreen")
+              for corr, sel in zip(top_corrs, is_selected)]
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 12), height_ratios=[3, 1])
+
+    bars1 = ax1.barh(range(len(top_corrs)), top_corrs, color=colors, alpha=0.7, height=0.7)
+    ax1.set_yticks(range(len(top_corrs)))
+    ax1.set_yticklabels(
+        [f[:35] + "..." if len(f) > 35 else f for f in top_features],
+        fontsize=10
+    )
+    ax1.set_xlabel("Correlation with Target", fontsize=12, weight="bold")
+    ax1.set_title(
+        f"Top XGBoost Model-Input Feature-Target Correlations (Selected {n_features})",
+        fontsize=14,
+        weight="bold",
+    )
+    ax1.grid(axis="x", alpha=0.5)
+    ax1.axvline(0, color="black", linestyle="-", alpha=0.5)
+
+    for bar, corr in zip(bars1, top_corrs):
+        width = bar.get_width()
+        ax1.text(
+            width + (0.01 if width >= 0 else -0.03),
+            bar.get_y() + bar.get_height() / 2,
+            f"{corr:.3f}",
+            ha="left" if width >= 0 else "right",
+            va="center",
+            fontsize=9,
+            fontweight="bold",
+        )
+
+    selected_count = len(top_corrs)
+    ax1.text(
+        0.02,
+        0.98,
+        f"XGBoost Model Input (RFECV): {selected_count}/{n_features}",
+        transform=ax1.transAxes,
+        bbox=dict(boxstyle="round,pad=0.3", facecolor="lightgreen", alpha=0.8),
+        fontsize=11,
+    )
+
+    selected_corrs = list(top_corrs)
+    ax2.hist(
+        [selected_corrs],
+        bins=10,
+        alpha=0.7,
+        label=["Selected (Model Inputs)"],
+        color=["steelblue"],
+        density=True,
+    )
+    ax2.set_xlabel("Correlation Coefficient")
+    ax2.set_ylabel("Density")
+    ax2.set_title("Model-Input Correlation Distribution")
+    ax2.legend()
+    ax2.grid(True, alpha=0.5)
+
+    plt.tight_layout()
+    plt.savefig(Path(out_dir)/"model_input_feature_target_correlations.png",
+                dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ model_input_feature_target_correlations.png")
+
+def plot_statewise_histogram(df, valuecol, statecol, out_dir):
     plt.figure(figsize=(14, 8))
     state_means = df.groupby(statecol)[valuecol].mean().sort_values()
     states_order = state_means.index.tolist()
@@ -476,7 +592,7 @@ def plot_statewise_histogram(df, valuecol, statecol, outdir):
         stat="count",
         common_norm=False,
         palette=palette,
-        alpha=0.4,
+        alpha=0.5,
         multiple="layer", 
     )
 
@@ -485,7 +601,7 @@ def plot_statewise_histogram(df, valuecol, statecol, outdir):
     plt.ylabel("Count")
     plt.tight_layout()
     plt.grid(True, alpha=0.5)
-    plt.savefig(Path(outdir)/"statewise_histogram.png", dpi=300, bbox_inches="tight")
+    plt.savefig(Path(out_dir)/"statewise_histogram.png", dpi=300, bbox_inches="tight")
     plt.close()
     print("✓ statewise_histogram.png")
     
@@ -548,8 +664,8 @@ def plot_learning_curve(estimator, X_df, y, out_dir, cv=5):
     print(f"✓ Final CV R²: {np.mean(val_scores[-1]):.4f} ± {np.std(val_scores[-1]):.4f}")
     print(f"✓ Final Train R²: {np.mean(train_scores[-1]):.4f} ± {np.std(train_scores[-1]):.4f}")
 
-def plot_loss_curve(xgb_model, outdir, metric='rmse'):
-    outdir = Path(outdir)
+def plot_loss_curve(xgb_model, out_dir, metric='rmse'):
+    outdir = Path(out_dir)
     outdir.mkdir(parents=True, exist_ok=True)
 
     results = xgb_model.evals_result()
@@ -589,10 +705,10 @@ def plot_loss_curve(xgb_model, outdir, metric='rmse'):
     plt.ylabel(metric.upper())
     plt.title(f'XGBoost + RFECV Regression Model {metric.upper()} Loss Curve')
     plt.legend()
-    plt.grid(alpha=0.4)
+    plt.grid(alpha=0.5)
     plt.tight_layout()
 
-    fname = outdir/f'{metric.lower()}_loss_curve.png'
+    fname = out_dir/f'{metric.lower()}_loss_curve.png'
     plt.savefig(fname, dpi=300, bbox_inches='tight')
     plt.close()
     print(f"✓ {fname.name}")
@@ -618,7 +734,7 @@ def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None,
     
     worst_idx = np.argsort(abs_residuals)[-5:][::-1]
     print(f"\n🚨 Top 5 KNN Regression Model Inference Worst Predictions (Residuals Errors):")
-    print(f"{'#':3s} | {'State':15s} | {'District':20s} | {'True':6s} | {'Pred':6s} | {'Error':6s}")
+    print(f" {'#':3s} | {'State':15s} | {'District':20s} | {'True':6s} | {'Pred':6s} | {'Error':6s}")
     print("-" * 80)
     
     for i, rel_idx in enumerate(worst_idx):
@@ -667,11 +783,13 @@ def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None,
     outliers_df.to_csv(Path(out_dir)/f'{split_name.lower()}_outliers_summary.csv', index=False)
     print(f"💾 Saved: {split_name.lower()}_outliers_summary.csv")
 
-def save_metrics(train_metrics, test_metrics, outdir):
-    results = pd.DataFrame({'train': train_metrics, 'test': test_metrics}, index=['Train', 'Test'])
+def save_metrics(train_metrics, test_metrics, out_dir):
+    results = pd.DataFrame([train_metrics, test_metrics], index=['Train', 'Test'])
     results.index.name = 'Split'
-    results.to_csv(Path(outdir)/'metrics.csv', float_format='%.4f')
+    results.to_csv(Path(out_dir)/'metrics.csv', float_format='%.4f')
     print("✓ metrics.csv")
+    print("-" * 60)
+    print(results.round(4)) 
 
 def main(args):
     print(f"{TITLE}")
@@ -715,14 +833,14 @@ def main(args):
     train_indices = X_train.index.values
     test_indices = X_test.index.values
 
-    outdir = Path(args.outdir)
-    outdir.mkdir(exist_ok=True, parents=True)
+    out_dir = Path(args.outdir)
+    out_dir.mkdir(exist_ok=True, parents=True)
 
     state_col = find_state_column(df_deduped, id_cols_fixed)
     print(f"🗺️ State Column: {state_col or 'None'}")
     if state_col and state_col in df_deduped.columns:
-        plot_statewise_histogram(df_deduped, args.target, state_col, outdir)
-        plot_statewise_facets(df_deduped, args.target, state_col, outdir)
+        plot_statewise_histogram(df_deduped, args.target, state_col, out_dir)
+        plot_statewise_facets(df_deduped, args.target, state_col, out_dir)
  
     print("\n🔧 Building preprocessor...")
     preprocessor = build_preprocessor(X_train)
@@ -741,7 +859,7 @@ def main(args):
 
     print("🔍 RFECV Feature Selector")
     print("🔍 Running a pass on the data..")
-    cv = KFold(n_splits=5, shuffle=True, random_state=args.random_state)
+    cv = KFold(n_splits=args.cv_folds, shuffle=True, random_state=args.random_state)
     rf = RandomForestRegressor(
         n_estimators=100,
         random_state=42,
@@ -773,7 +891,7 @@ def main(args):
     print("\n📊 Training XGBoost Model...")
     xgb_model = XGBRegressor(
         n_estimators=args.n_estimators,
-        learning_rate=args.learning_rate,
+        learning_rate=args.eta,
         max_depth=args.max_depth,
         subsample=args.subsample,
         colsample_bytree=args.colsample_bytree,
@@ -796,7 +914,7 @@ def main(args):
         eval_set=[(X_train_selected, y_train), (X_test_selected, y_test)],
         verbose=False
     )
-    print(f"✓ RFECV selected {selector.n_features_} features (pre-cap)")
+    print(f"✓ RFECV selected {selector.n_features_} features")
     print(f"✓ RFECV rank 1 indices: {np.where(selector.ranking_ == 1)[0][:10]}") 
     
     y_train_pred = xgb_model.predict(X_train_selected)
@@ -818,37 +936,38 @@ def main(args):
     train_metrics = {'R2': train_r2, 'AdjR2': train_adj_r2, 'RMSE': train_rmse, 'MAE': train_mae}
     test_metrics = {'R2': test_r2, 'AdjR2': test_adj_r2, 'RMSE': test_rmse, 'MAE': test_mae}
 
-    joblib.dump(xgb_model, outdir/'xgb_model.joblib')
-    joblib.dump(preprocessor, outdir/'preprocessor.joblib')
-    joblib.dump(selector, outdir/'rfecv_selector.joblib')
-    save_metrics(train_metrics, test_metrics, outdir)
+    joblib.dump(xgb_model, out_dir/'xgb_model.joblib')
+    joblib.dump(preprocessor, out_dir/'preprocessor.joblib')
+    joblib.dump(selector, out_dir/'rfecv_selector.joblib')
+    save_metrics(train_metrics, test_metrics, out_dir)
 
     print("\n📊 Generating model inference plots...")
-    plot_residuals(y_train, y_train_pred, outdir, 'Train')
-    plot_residuals(y_test, y_test_pred, outdir, 'Test')
-    plot_feature_importance(selector.estimator_.feature_importances_, feature_names, support_mask, outdir)
-    plot_feature_target_correlations(X_train_processed, y_train, feature_names, selector.support_, outdir)
-    plot_true_vs_pred(y_train, y_train_pred, outdir, 'Train', train_metrics)
-    plot_true_vs_pred(y_test, y_test_pred, outdir, 'Test', test_metrics)
+    plot_residuals(y_train, y_train_pred, out_dir, 'Train')
+    plot_residuals(y_test, y_test_pred, out_dir, 'Test')
+    plot_true_vs_pred(y_train, y_train_pred, out_dir, 'Train', train_metrics)
+    plot_true_vs_pred(y_test, y_test_pred, out_dir, 'Test', test_metrics)
+    plot_feature_importance(selector.estimator_.feature_importances_, feature_names, selector.support_, out_dir, top_n=args.top_n_plot)
+    plot_feature_target_correlations(X_train_processed, y_train, feature_names, selector.support_, out_dir, top_n=args.top_n_plot, chunk_size=args.chunk_size)
+    plot_selected_feature_corrs(X_train_selected, y_train, selected_feature_names, out_dir, top_n=args.top_n_plot, chunk_size=args.chunk_size)
 
     print("\n📊 Generating model assessment plots...")
-    plot_loss_curve(xgb_model, outdir, metric='mae')
-    plot_loss_curve(xgb_model, outdir, metric='rmse')
-    plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), outdir, cv=5)
+    plot_loss_curve(xgb_model, out_dir, metric='mae')
+    plot_loss_curve(xgb_model, out_dir, metric='rmse')
     cv_model = clone(xgb_model)
     cv_model.set_params(early_stopping_rounds=None)
     cv_scores = cross_val_score(cv_model, X_train_selected, y_train, cv=5, scoring='r2')
-    print(f"✓ Check 5‑fold CV R²: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
-    print_outlier_analysis(y_train, y_train_pred, "Train", outdir, df_deduped=df_deduped, orig_indices=train_indices, 
+    print(f"✓ Check {args.cv_folds}‑fold CV R²: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
+    plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), out_dir, cv=5)
+    print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, 
                            state_col='State_Name', district_col='State_District_Name')
-    print_outlier_analysis(y_test, y_test_pred, "Test", outdir, df_deduped=df_deduped, orig_indices=test_indices, 
+    print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, orig_indices=test_indices, 
                            state_col='State_Name', district_col='State_District_Name')
     print("\n" + "="*70)
     print("✅ XGBoost Model Results")
     print('=' * 70)
     print(f"🎯 Test: R²={test_r2:.4f} | Adj R²={test_adj_r2:.4f} | RMSE={test_rmse:.4f} | MAE={test_mae:.4f}")
-    print(f"📊 Features: {n_selected}/{len(feature_names)}")
-    print(f"📁 Outputs: {outdir}")
+    print(f"📊 Features: {n_selected}/{len(feature_names)} ← Pre/post RFECV")
+    print(f"📁 Outputs: {out_dir}")
     print('=' * 70)
 
 
@@ -857,20 +976,22 @@ if __name__ == '__main__':
     parser.add_argument('--data', required=True, help='Path to dataset')
     parser.add_argument('--target', required=True, help='Target column name')
     parser.add_argument('--id-cols', nargs='+', default=[], help='ID columns to exclude')
-    parser.add_argument('--correlation', type=float, default=60.0,
-                        help='Drop features by correlation with target before RFECV (%)')
+    parser.add_argument('--cv-folds', type=int, default=5, help='KFold/RFECV cross-validation folds')
+    parser.add_argument('--correlation', type=float, default=70.0, help='Drop features by correlation with target before RFECV (%)')
+    parser.add_argument('--top-n-plot', type=int, default=25, help='Top N features for correlation/importance plots')
+    parser.add_argument('--chunk-size', type=int, default=5000, help='Chunk size for correlation computation (memory)')
     parser.add_argument('--test-size', type=float, default=0.25)
     parser.add_argument('--random-state', type=int, default=42)
     parser.add_argument('--outdir', default='artifacts/xgb_optimized')
     parser.add_argument('--n-estimators', type=int, default=2000)
-    parser.add_argument('--learning-rate', type=float, default=0.03)
     parser.add_argument('--max-depth', type=int, default=6)
     parser.add_argument('--subsample', type=float, default=0.8)
     parser.add_argument('--colsample-bytree', type=float, default=0.8)
     parser.add_argument('--reg-alpha', type=float, default=0.1)
     parser.add_argument('--reg-lambda', type=float, default=1.0)
     parser.add_argument('--min-child-weight', type=float, default=5.0)
-    parser.add_argument('--early-stopping-rounds', type=int, default=100)
+    parser.add_argument('--eta', type=float, default=0.1, help='XGBoost learning rate')
+    parser.add_argument('--early-stopping-rounds', type=int, default=50, help='Early stopping rounds')
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()
     main(args)
