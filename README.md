@@ -1,15 +1,15 @@
 <div align="center">
 
 <h2 style="font-size: clamp(20px, 4.5vw, 28px) !important; color: #6a737d; margin: 0 0 20px 0 !important; font-weight: 600 !important;">
-  Capstone Project 1 | Division of Data Science | University of Texas at Arlington
+  Capstone Project | Division of Data Science | University of Texas at Arlington
 </h2>
 
-<table style="width: 90%; margin: 40px auto 30px auto; border-collapse: collapse;">
+<table style="width: 80%; margin: 40px auto 30px auto; border-collapse: collapse;">
   <tr>
     <td style="padding: 20px 0; text-align: center; border-top: 3px solid #1f6feb; border-bottom: 3px solid #1f6feb;">
       <img src="assets/UTA Celebrating 130 Years logo white circle.png" 
            alt="UTA Logo" 
-           style="width: 90%; height: auto; max-width: 200px; border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,0.15);" />
+           style="width: 80%; height: auto; max-width: 200px; border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,0.15);" />
     </td>
   </tr>
 </table>
@@ -27,7 +27,7 @@ Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
 
 ---
 
-# Capstone Project 1 Structure
+# Capstone Project Structure
 ```bash
 .
 ├── assets
