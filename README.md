@@ -9,7 +9,7 @@
     <td style="padding: 20px 0; text-align: center; border-top: 3px solid #1f6feb; border-bottom: 3px solid #1f6feb;">
       <img src="assets/UTA Celebrating 130 Years logo white circle.png" 
            alt="UTA Logo" 
-           style="width: 80%; height: auto; max-width: 200px; border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,0.15);" />
+           style="width: 90%; height: auto; max-width: 200px; border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,0.15);" />
     </td>
   </tr>
 </table>
