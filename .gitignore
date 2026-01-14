@@ -75,6 +75,7 @@ ENV/
 *.yml~
 *.py~
 *.json
+data/
 docs/
 out/
 prototype/
