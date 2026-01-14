@@ -14,7 +14,6 @@ bleach==6.3.0
 blinker==1.9.0
 boolean.py==5.0
 build==1.4.0
-CacheControl==0.14.4
 certifi==2026.1.4
 cffi==2.0.0
 cfgv==3.5.0
