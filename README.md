@@ -74,7 +74,7 @@ bandit -r . # scan current build environment
 bandit -r models/ # scan Python models
 bandit -r models/ -f json -o security-report.json # secure report summary
 pip-audit --local # audit current build environment
-pip-audit -r requirements.txt # audit build requirements environment
+pip-audit -r requirements.txt # audit build requirements 
 pip check # check for broken Python dependencies
 pytest --cov=models/ --cov-report=term-missing
 pip list --outdated # check for outdated Python packages
