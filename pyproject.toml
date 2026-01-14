@@ -2,10 +2,22 @@
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[project.urls]
+Homepage = "https://github.com/rcghpge/capstone"
+Repository = "https://github.com/rcghpge/capstone"
+
 [project]
-name = "capstone-project"
-version = "0.3.0"
-description = "Capstone Project: KNN + XGB regression models + Jupyter EDA/model tests. ML for IMR prediction."
+name = "capstone"
+version = "0.4.0"
+authors = [
+  { name = "Robert Cocker"},
+  { name = "Landon Nguyen"},
+  { name = "Alex Nguyen"},
+  { email = "rcocker87@gmail.com"}
+]
+description = "KNN + XGB regression models + Jupyter EDA/model tests. ML for IMR prediction. University of Texas at Arlington. Capstone Project."
+license = "MIT"
+readme = "README.md"
 dependencies = [
     "jupyterlab>=4.0",
     "ipykernel>=6.0",
@@ -20,7 +32,9 @@ dependencies = [
     "plotly>=5.17",
     "jupyterlab-widgets",
     "fonttools>=4.61.0", 
-    "urllib3>=2.6.0"
+    "urllib3>=2.6.0",
+    "flask>=3.1.2",
+    "keras>=3.13.0"
 ]
 
 [project.optional-dependencies]
