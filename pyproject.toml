@@ -8,14 +8,14 @@ Repository = "https://github.com/rcghpge/capstone"
 
 [project]
 name = "capstone"
-version = "0.4.0"
+version = "0.5.0"
 authors = [
   { name = "Robert Cocker"},
   { name = "Landon Nguyen"},
   { name = "Alex Nguyen"},
   { email = "rcocker87@gmail.com"}
 ]
-description = "KNN + XGB regression models + Jupyter EDA/model tests. ML for IMR prediction. University of Texas at Arlington. Capstone Project."
+description = "Machine learning utilizing key health indicators for infant mortality rate prediction. University of Texas at Arlington."
 license = "MIT"
 readme = "README.md"
 dependencies = [
@@ -33,7 +33,9 @@ dependencies = [
     "jupyterlab-widgets",
     "fonttools>=4.61.0", 
     "urllib3>=2.6.0",
-    "flask>=3.1.2",
+    "streamlit>=1.53.0",
+    "plotly>=6.5.1",
+    "kaggle>=1.8.3",
     "keras>=3.13.0"
 ]
 

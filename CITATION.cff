@@ -1,8 +1,5 @@
-# This CITATION.cff file was generated with cffinit.
-# Visit https://bit.ly/cffinit to generate yours today!
-
 cff-version: 1.2.0
-title: Capstone Project 1
+title: Capstone Project
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
@@ -20,11 +17,10 @@ authors:
     family-names: Cocker
     email: robert.cocker@mavs.uta.edu
     affiliation: The University of Texas at Arlington
-repository-code: 'https://github.com/rcghpge.com/capstoneproject'
+repository-code: 'https://github.com/rcghpge.com/capstone'
 url: 'https://uta.edu'
 abstract: >-
-  Machine Learning repository for Infant Mortality Rate
-  prediction.
+  Machine learning utilizing key health indicators for infant mortality rate prediction. 
 keywords:
   - machine learning
   - data science
@@ -36,5 +32,5 @@ keywords:
   - uta
   - ut arlington
 license: MIT
-version: 0.1.0
+version: 0.5.0
 date-released: '2025-11-25'
