@@ -21,7 +21,7 @@
 <div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
 <strong>References</strong><br>
 Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
-<a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey" target="_blank">Health Analytics</a> - The Kaggle Health Analytics dataset contains longitudinal data on 26 vital and health indicators for 284 districts in India's high-focus states, based on the Government of India's Annual Health Survey from 2010 to 2013.
+<a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey</a>
 </div>
 </div>
 
