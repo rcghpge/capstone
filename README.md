@@ -21,7 +21,7 @@
 <div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
 <strong>References</strong><br>
 Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
-<a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey" target="_blank">https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey</a>
+<a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey" target="_blank"> https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey </a>
 </div>
 </div>
 
