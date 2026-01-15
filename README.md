@@ -14,7 +14,7 @@
   </tr>
 </table>
 
-<p style="font-size: clamp(16px, 3.5vw, 20px); line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto 20px auto;">
+<p style="font-size: clamp(25px, 7vw, 33px); line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto 20px auto;">
  <strong>Machine learning utilizing key health indicators for infant mortality rate prediction.</strong><br>
 </p>
 </div>
