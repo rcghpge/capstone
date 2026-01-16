@@ -1,3 +1,5 @@
+[![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
+
 <div align="center">
 
 <h2 style="font-size: clamp(20px, 4.5vw, 28px) !important; color: #6a737d; margin: 0 0 20px 0 !important; font-weight: 600 !important;">
@@ -40,6 +42,7 @@ Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
 ├── LICENSE
 ├── README.md
 ├── __init__.py
+├── pixi.lock
 ├── pylock.toml
 ├── pyproject.toml
 ├── requirements.in
