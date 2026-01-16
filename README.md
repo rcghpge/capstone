@@ -45,7 +45,6 @@ Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
 ├── pixi.lock
 ├── pylock.toml
 ├── pyproject.toml
-├── requirements.in
 └── requirements.txt
 
 4 directories, 10 files
@@ -91,6 +90,10 @@ jupyter lab notebooks/ # launch Jupyter Notebook in a web browser environment
 jupyter lab notebooks/ --no-browser # intiliaze Jupyter server with no web browser
 jupyter lab/models/ 
 jupyter lab/models/ --no-browser
+
+# Builds with Pixi
+pixi shell
+pixi info
 ```
 
 Note: This project is distinct from the Capstone disassembler project.
