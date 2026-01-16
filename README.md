@@ -29,7 +29,7 @@ Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
 
 ---
 
-# Capstone Project Structure
+# Project Structure
 ```bash
 .
 ├── assets
