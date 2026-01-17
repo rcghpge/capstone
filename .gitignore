@@ -41,6 +41,9 @@ __pycache__/
 *.joblib
 *.so
 
+# Keras
+*.kearas
+
 # SQLite journaling files
 *-journal
 *-shm
@@ -59,8 +62,6 @@ jupyter_nbconvert_*/
 .ipynb_export/
 
 # Virtual environments
-.capstone/
-capstone/
 venv/
 .env/
 .venv/

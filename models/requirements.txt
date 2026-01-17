@@ -16,7 +16,7 @@ blinker==1.9.0
 boolean.py==5.0
 build==1.4.0
 CacheControl==0.14.4
-cached-property==2.0.1
+cached-property @ file:///home/conda/feedstock_root/build_artifacts/cached_property_1615209429212/work
 cachetools==6.2.4
 -e git+ssh://git@github.com/rcghpge/capstone.git@10bdaa2fbd494bc4ecd7a466ef8ffd7af8da09e8#egg=capstone
 certifi==2026.1.4
@@ -47,7 +47,7 @@ httpcore==1.0.9
 httpx==0.28.1
 identify==2.6.16
 idna==3.11
-importlib_metadata==8.7.1
+importlib_metadata @ file:///home/conda/feedstock_root/build_artifacts/bld/rattler-build_importlib-metadata_1747934053/work
 iniconfig==2.3.0
 ipykernel==7.1.0
 ipython==9.9.0
