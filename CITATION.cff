@@ -26,11 +26,13 @@ keywords:
   - data science
   - infant mortality rate
   - mortality rate
+  - keras
+  - jax
   - scikit-learn
   - knn
   - xgboost
   - uta
   - ut arlington
 license: MIT
-version: 0.5.0
+version: 0.7.0
 date-released: '2025-11-25'
