@@ -20,6 +20,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import os
+import warnings
+os.environ["KERAS_BACKEND"] = "jax"  # add "tensorflow" to build if no dep conflicts
+warnings.filterwarnings("ignore", message="sklearn.utils.parallel.delayed.*")
+warnings.filterwarnings("ignore", category=UserWarning, module="sklearn.utils.parallel")
+
 import re
 import sys
 import time
@@ -27,7 +33,6 @@ import json
 import joblib
 import logging
 import argparse
-import warnings
 import numpy as np
 import pandas as pd
 import seaborn as sns
@@ -46,8 +51,7 @@ from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split, KFold, learning_curve, validation_curve
 
-import os
-os.environ["KERAS_BACKEND"] = "jax"  # add "tensorflow" to build if no dep conflicts
+# Keras Build
 import keras
 from keras import layers, callbacks
 from keras.models import Sequential
@@ -56,8 +60,8 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 """
 Example Usage:
 python keras_regression.py --data ../data/Key_indicator_districtwise.csv \
---target Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
---correlation 70 --test-size 0.25 --random-state 42 --outdir keras
+--id-cols State_Name State_District_Name --target Infant_Mortality_Rate_Imr_Total_Person \
+--correlation 72 --test-size 0.24 --outdir tests-dir/keras
 """
 sns.set_palette("husl")
 plt.style.use('default')
@@ -190,7 +194,7 @@ def plot_feature_importance(importances, feature_names, selector_support, out_di
     bars = plt.barh(range(top_n), importances[idx], color=colors, alpha=0.7)
     plt.yticks(range(top_n), [feature_names[i][:35] + '...' if len(feature_names[i]) > 35 else feature_names[i] for i in idx])
     plt.xlabel('Feature Importance')
-    plt.title('RFECV Feature Importances (Keras NN Inputs)')
+    plt.title('RFECV Feature Importances (Keras Model Inputs)')
     plt.gca().invert_yaxis()
     plt.grid(axis='x', alpha=0.5)
     plt.tight_layout()
@@ -205,7 +209,6 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
         y = np.asarray(y_train).ravel()
         n_features = min(top_n, X.shape[1])
         
-        # Quick correlation approximation
         corrs = np.corrcoef(X.T, y)[ :n_features, -1]
         abs_corrs = np.abs(corrs)
         top_idx = np.argsort(abs_corrs)[-top_n:][::-1]
@@ -214,7 +217,6 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
         top_corrs = corrs[top_idx]
         is_selected = [bool(selector_support[i]) for i in top_idx]
         
-        # Plot
         fig, ax = plt.subplots(figsize=(12, 8))
         colors = ['steelblue' if sel else 'coral' for sel in is_selected]
         bars = ax.barh(range(len(top_corrs)), top_corrs, color=colors, alpha=0.7)
@@ -236,7 +238,7 @@ def plot_true_vs_pred(y_true, y_pred, out_dir, subset_label, metrics):
     plt.figure(figsize=(10, 6))
     plt.scatter(y_true, y_pred, color='steelblue', alpha=0.7, s=35, label='Pred vs True')
     min_val, max_val = min(y_true.min(), y_pred.min()), max(y_true.max(), y_pred.max())
-    plt.plot([min_val, max_val], [min_val, max_val], 'r--', lw=2, label='Perfect Prediction')
+    plt.plot([min_val, max_val], [min_val, max_val], 'r--', lw=2, label='Prediction')
     plt.xlabel('True Values')
     plt.ylabel('Predicted Values')
     plt.title(f'{subset_label} True vs Predicted')
@@ -300,7 +302,7 @@ def plot_statewise_facets(df, value_col, state_col, out_dir):
         top_states = df[state_col].value_counts().head(6).index
         plot_data = df[df[state_col].isin(top_states)]
         g = sns.FacetGrid(plot_data, col=state_col, col_wrap=3, height=3, aspect=1.3)
-        g.map(sns.histplot, value_col, bins=10, color="steelblue", alpha=0.7)
+        g.map(sns.histplot, value_col, bins=7, color="steelblue", alpha=0.7)
         g.set_titles("{col_name}")
         g.set_axis_labels(value_col, "Count")
         plt.savefig(Path(out_dir)/"statewise_facets.png", dpi=300, bbox_inches='tight')
@@ -351,10 +353,8 @@ def plot_residuals_granularity(y_true, y_pred, outdir, split_name, jitter_level=
 def plot_prediction_distribution(y_true, y_pred, out_dir, split_name):
     plt.figure(figsize=(12, 5))
     plt.subplot(1, 2, 1)
-    plt.hist(y_true, bins=15, histtype="step", linewidth=3, color="steelblue", 
-             density=True, label="True", alpha=0.9)
-    plt.hist(y_pred, bins=15, histtype="step", linewidth=3, color="coral", 
-             density=True, label="Predicted", alpha=0.9)
+    plt.hist(y_true, bins=15, histtype="step", linewidth=3, color="steelblue", density=True, label="True", alpha=0.9)
+    plt.hist(y_pred, bins=15, histtype="step", linewidth=3, color="coral", density=True, label="Predicted", alpha=0.9)
     plt.xlabel("Value")
     plt.ylabel("Density")
     plt.title(f"{split_name} Distribution")
@@ -374,29 +374,6 @@ def plot_prediction_distribution(y_true, y_pred, out_dir, split_name):
     plt.close()
     print(f"✓ {split_name.lower()}_distribution.png")
 
-def plot_model_comparison(train_metrics, test_metrics, out_dir):
-    metrics_df = pd.DataFrame([train_metrics, test_metrics], index=['Train', 'Test'])
-    x = np.arange(len(metrics_df))
-    width = 0.35
-    
-    fig, ax = plt.subplots(figsize=(12, 6))
-    metrics_keys = ['R2', 'Adj_R2']
-    for i, key in enumerate(metrics_keys):
-        ax.bar(x + i*width - width/2, metrics_df[key], width, 
-               label=key, alpha=0.7, color=['steelblue', 'coral'][i])
-    
-    ax.set_xlabel('Split')
-    ax.set_ylabel('Score')
-    ax.set_title('Keras NN: Train vs Test Performance')
-    ax.set_xticks(x)
-    ax.set_xticklabels(metrics_df.index)
-    ax.legend()
-    ax.grid(True, alpha=0.5)
-    plt.tight_layout()
-    plt.savefig(Path(out_dir)/'keras_model_comparison.png', dpi=300, bbox_inches='tight')
-    plt.close()
-    print("✓ keras_model_comparison.png")
-
 def build_keras_model(input_dim, learning_rate=0.001, dropout_rate=0.2):
     model = Sequential([
         layers.BatchNormalization(input_shape=(input_dim,)),
@@ -414,11 +391,7 @@ def build_keras_model(input_dim, learning_rate=0.001, dropout_rate=0.2):
         layers.Dense(1, activation='linear')
     ])
     
-    model.compile(
-        optimizer=Adam(learning_rate=learning_rate),
-        loss='mse',
-        metrics=['mae']
-    )
+    model.compile(optimizer=Adam(learning_rate=learning_rate), loss='mse', metrics=['mae'])
     return model
 
 def train_keras_model(model, X_train, y_train, X_val, y_val, out_dir, epochs=500, batch_size=32):
@@ -426,62 +399,81 @@ def train_keras_model(model, X_train, y_train, X_val, y_val, out_dir, epochs=500
     out_dir.mkdir(parents=True, exist_ok=True)
     
     callbacks_list = [
-        EarlyStopping(
-            monitor='val_loss', patience=50, restore_best_weights=True,
-            verbose=0, mode='min'
-        ),
-        ReduceLROnPlateau(
-            monitor='val_loss', factor=0.5, patience=25, min_lr=1e-7,
-            verbose=0, mode='min'
-        ),
-        keras.callbacks.ModelCheckpoint(
-            str(out_dir / 'best_keras_model.keras'),
-            monitor='val_loss', save_best_only=True, verbose=0
-        )
+        EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True, verbose=0, mode='min'),
+        ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=25, min_lr=1e-7, verbose=0, mode='min'),
+        keras.callbacks.ModelCheckpoint(str(out_dir/'best_keras_model.keras'), monitor='val_loss', save_best_only=True, verbose=0)
     ]
     
-    history = model.fit(
-        X_train, y_train,
-        validation_data=(X_val, y_val),
-        epochs=epochs,
-        batch_size=batch_size,
-        callbacks=callbacks_list,
-        verbose=0
-    )
-    
+    history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=epochs, batch_size=batch_size, callbacks=callbacks_list, verbose=0)
     history_df = pd.DataFrame(history.history)
     history_df.to_csv(out_dir/'training_history.csv', index=False)
-    
     return model, history
+
+def plot_model_comparison(train_metrics, test_metrics, out_dir):
+    metrics_df = pd.DataFrame([train_metrics, test_metrics], index=['Train', 'Test'])
+    x = np.arange(len(metrics_df))
+    width = 0.35
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    metrics_keys = ['R2', 'Adj_R2']
+    colors = ['steelblue', 'coral']
+    
+    for i, key in enumerate(metrics_keys):
+        bars = ax.bar(x + i*width - width/2, metrics_df[key], width, label=key, alpha=0.8, color=colors[i], edgecolor='black')
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + 0.01, f'{height:.3f}', ha='center', va='bottom', fontsize=12, weight='normal')
+    
+    ax.set_xlabel('Split')
+    ax.set_ylabel('Score')
+    ax.set_title('Keras Regression Neural Network: Train vs Test R² Scores')
+    ax.set_xticks(x)
+    ax.set_xticklabels(metrics_df.index)
+    ax.legend()
+    ax.grid(True, alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(Path(out_dir)/'keras_model_comparison.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("✓ keras_model_comparison.png (R² + Adj R²)")
 
 def plot_training_history(history, out_dir):
     out_dir = Path(out_dir)
+    history_df = pd.DataFrame(history.history)
+    history_df.to_csv(out_dir/'training_history.csv', index=False)
+    print(f"📊 Saved {len(history_df)} epochs")
+    
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    
-    axes[0,0].plot(history.history['loss'], label='Train MSE', color='steelblue', linewidth=2)
-    axes[0,0].plot(history.history['val_loss'], label='Val MSE', color='coral', linewidth=2)
-    axes[0,0].set_title('Model Loss')
-    axes[0,0].set_xlabel('Epoch')
-    axes[0,0].set_ylabel('MSE')
-    axes[0,0].legend()
-    axes[0,0].grid(True, alpha=0.5)
-    
-    axes[0,1].plot(history.history['mae'], label='Train MAE', color='steelblue', linewidth=2)
-    axes[0,1].plot(history.history['val_mae'], label='Val MAE', color='coral', linewidth=2)
+
+    axes[0,0].plot(history.history['loss'], label='Train MSE', color='steelblue', lw=2)
+    axes[0,0].plot(history.history['val_loss'], label='Val MSE', color='coral', lw=2)
+    axes[0,0].set_title('Model Loss\n(MSE=2.21 → RMSE=√MSE=1.49)')
+    axes[0,0].set_xlabel('Epoch'); axes[0,0].legend(); axes[0,0].grid(True, alpha=0.3)
+    axes[0,1].plot(history.history['mae'], label='Train MAE', color='steelblue', lw=2)
+    axes[0,1].plot(history.history['val_mae'], label='Val MAE', color='coral', lw=2)
     axes[0,1].set_title('Model MAE')
-    axes[0,1].set_xlabel('Epoch')
-    axes[0,1].set_ylabel('MAE')
-    axes[0,1].legend()
-    axes[0,1].grid(True, alpha=0.5)
+    axes[0,1].set_xlabel('Epoch'); axes[0,1].legend(); axes[0,1].grid(True, alpha=0.3)
     
     if 'lr' in history.history:
-        axes[1,0].plot(history.history['lr'], color='darkgreen', linewidth=2)
-        axes[1,0].set_title('Learning Rate Schedule')
-        axes[1,0].set_xlabel('Epoch')
-        axes[1,0].set_ylabel('Learning Rate')
-        axes[1,0].set_yscale('log')
-        axes[1,0].grid(True, alpha=0.5)
+        axes[1,0].semilogy(history.history['lr'], color='darkgreen', lw=2)
+        axes[1,0].set_title('Learning Rate'); axes[1,0].grid(True, alpha=0.3)
+    else:
+        best_epoch = np.argmin(history.history['val_loss'])
+        axes[1,0].text(0.1, 0.6, f'EarlyStopping Active\nBest Epoch: {best_epoch}\nVal Loss: {history.history["val_loss"][best_epoch]:.3f}', 
+                       transform=axes[1,0].transAxes, fontsize=12, bbox=dict(boxstyle="round", facecolor="lightgreen", alpha=0.8))
+        axes[1,0].set_title('Training Dynamics')
+        axes[1,0].axis('off')
     
+    axes[1,1].axis('off')
+    col_labels = ['Metric', 'Train', 'Val']
+    row_labels = ['Final MSE', 'Final MAE']
+    cell_text = [[f"{history.history['loss'][-1]:.3f}", f"{history.history['val_loss'][-1]:.3f}"],
+                 [f"{history.history['mae'][-1]:.3f}", f"{history.history['val_mae'][-1]:.3f}"]]
+    
+    table = axes[1,1].table(cellText=cell_text, colLabels=col_labels, rowLabels=row_labels, cellLoc='center', loc='center')
+    table.auto_set_font_size(False); table.set_fontsize(11); table.scale(1.3, 1.8)
+    axes[1,1].set_title('Final Metrics', weight='bold')
+    
+    plt.suptitle('Keras Regression Neural Network Training Summary', fontsize=16, y=0.98)
     plt.tight_layout()
     plt.savefig(out_dir/'keras_training_history.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -541,7 +533,7 @@ def main(args):
     X_train_selected = selector.transform(X_train_processed)
     X_test_selected = selector.transform(X_test_processed)
     
-    print(f"✅ Keras Input: {X_train_selected.shape[1]} RFECV-selected features")
+    print(f"✅ Keras Model Input: {X_train_selected.shape[1]} RFECV-selected features")
     
     state_col = find_state_columns(df_deduped, id_cols_fixed)
     if state_col and state_col in df_deduped.columns:
@@ -576,7 +568,7 @@ def main(args):
     train_metrics = {'R2': train_r2, 'Adj_R2': train_adj_r2, 'RMSE': train_rmse, 'MAE': train_mae}
     test_metrics = {'R2': test_r2, 'Adj_R2': test_adj_r2, 'RMSE': test_rmse, 'MAE': test_mae}
     
-    keras_model.save(out_dir / 'keras_model_full.keras')
+    keras_model.save(out_dir/'keras_model_full.keras')
     joblib.dump(preprocessor, out_dir/'preprocessor.joblib')
     joblib.dump(selector, out_dir/'rfecv_selector.joblib')
     save_metrics(train_metrics, test_metrics, out_dir)
