@@ -42,7 +42,7 @@ __pycache__/
 *.so
 
 # Keras
-*.kearas
+*.keras
 
 # SQLite journaling files
 *-journal
