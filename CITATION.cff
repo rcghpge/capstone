@@ -47,4 +47,4 @@ references:
     year: 2017
     url: "https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey"
     repository: "Kaggle"
-    notes: "Kaggle Health Analytics Dataset utilized as primary data source for this capstone project."
+    notes: "Kaggle Health Analytics dataset utilized as primary data source for this capstone project."
