@@ -23,6 +23,7 @@ abstract: >-
   Machine learning utilizing key health indicators for infant mortality rate prediction. 
 keywords:
   - machine learning
+  - deep learning
   - data science
   - infant mortality rate
   - mortality rate
@@ -36,3 +37,14 @@ keywords:
 license: MIT
 version: 0.7.0
 date-released: '2025-11-25'
+
+references:
+  - type: dataset
+    title: "Health Analytics"
+    authors:
+      - given-names: "Rajanand"
+        family-names: "Ilangovan"
+    year: 2017
+    url: "https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey"
+    repository: "Kaggle"
+    notes: "Kaggle Health Analytics Dataset utilized as primary data source for this capstone project."
