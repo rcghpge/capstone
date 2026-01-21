@@ -8,7 +8,7 @@ Repository = "https://github.com/rcghpge/capstone"
 
 [project]
 name = "capstone"
-version = "0.7.0"
+version = "0.8.0"
 authors = [
   { name = "Robert Cocker"},
   { name = "Landon Nguyen"},

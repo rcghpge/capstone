@@ -35,9 +35,8 @@ keywords:
   - uta
   - ut arlington
 license: MIT
-version: 0.7.0
+version: 0.8.0
 date-released: '2025-11-25'
-
 references:
   - type: dataset
     title: "Health Analytics"
