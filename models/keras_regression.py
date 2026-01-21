@@ -375,8 +375,9 @@ def plot_prediction_distribution(y_true, y_pred, out_dir, split_name):
     print(f"✓ {split_name.lower()}_distribution.png")
 
 def build_keras_model(input_dim, learning_rate=0.001, dropout_rate=0.2):
-    model = Sequential([
-        layers.BatchNormalization(input_shape=(input_dim,)),
+    model = keras.Sequential([
+        keras.Input(shape=(input_dim,)),
+        layers.BatchNormalization(),
         layers.Dense(512, activation='relu', kernel_regularizer=keras.regularizers.l2(0.01)),
         layers.Dropout(dropout_rate),
         layers.BatchNormalization(),
@@ -390,8 +391,7 @@ def build_keras_model(input_dim, learning_rate=0.001, dropout_rate=0.2):
         layers.Dropout(dropout_rate/2),
         layers.Dense(1, activation='linear')
     ])
-    
-    model.compile(optimizer=Adam(learning_rate=learning_rate), loss='mse', metrics=['mae'])
+    model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate), loss='mse', metrics=['mae'])
     return model
 
 def train_keras_model(model, X_train, y_train, X_val, y_val, out_dir, epochs=500, batch_size=32):
@@ -434,7 +434,7 @@ def plot_model_comparison(train_metrics, test_metrics, out_dir):
     plt.tight_layout()
     plt.savefig(Path(out_dir)/'keras_model_comparison.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print("✓ keras_model_comparison.png (R² + Adj R²)")
+    print("✓ keras_model_comparison.png")
 
 def plot_training_history(history, out_dir):
     out_dir = Path(out_dir)

@@ -199,8 +199,8 @@ def calculate_adjusted_r2(r2_score, n_samples, n_features):
 def build_preprocessor(X):
     num_cols = X.select_dtypes(include=np.number).columns.tolist()
     cat_cols = [c for c in X.columns if c not in num_cols]
-    num_pipeline = Pipeline([('imputer', SimpleImputer(strategy='median')), ('scaler', RobustScaler())])
-    cat_pipeline = Pipeline([('imputer', SimpleImputer(strategy='most_frequent')), ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))])
+    num_pipeline = Pipeline([('imputer', SimpleImputer(strategy='median', add_indicator=True)), ('scaler', RobustScaler())])
+    cat_pipeline = Pipeline([('imputer', SimpleImputer(strategy='most_frequent', add_indicator=True)), ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))])
     return ColumnTransformer([('num', num_pipeline, num_cols), ('cat', cat_pipeline, cat_cols)])
 
 def get_feature_names(preprocessor):
