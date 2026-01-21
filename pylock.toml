@@ -80,14 +80,14 @@ sha256 = "15a3ebc0f43c2d0a50eeafea25e19046c68398e487b9f1f5b517f7c0f40f976a"
 
 [[packages]]
 name = "async-lru"
-version = "2.0.5"
+version = "2.1.0"
 
 [[packages.wheels]]
-name = "async_lru-2.0.5-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/03/49/d10027df9fce941cb8184e78a02857af36360d33e1721df81c5ed2179a1a/async_lru-2.0.5-py3-none-any.whl"
+name = "async_lru-2.1.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/2e/e9/eb6a5db5ac505d5d45715388e92bced7a5bb556facc4d0865d192823f2d2/async_lru-2.1.0-py3-none-any.whl"
 
 [packages.wheels.hashes]
-sha256 = "ab95404d8d2605310d345932697371a5f40def0487c03d6d0ad9138de52c9943"
+sha256 = "fa12dcf99a42ac1280bc16c634bbaf06883809790f6304d85cdab3f666f33a7e"
 
 [[packages]]
 name = "attrs"
@@ -113,14 +113,14 @@ sha256 = "4d0b53093fdfb4b21c92b5213dba5a1b23885afa8383709427046b21c366e5f2"
 
 [[packages]]
 name = "bandit"
-version = "1.9.2"
+version = "1.9.3"
 
 [[packages.wheels]]
-name = "bandit-1.9.2-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/55/1a/5b0320642cca53a473e79c7d273071b5a9a8578f9e370b74da5daa2768d7/bandit-1.9.2-py3-none-any.whl"
+name = "bandit-1.9.3-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/e0/0b/8bdc52111c83e2dc2f97403dc87c0830b8989d9ae45732b34b686326fb2c/bandit-1.9.3-py3-none-any.whl"
 
 [packages.wheels.hashes]
-sha256 = "bda8d68610fc33a6e10b7a8f1d61d92c8f6c004051d5e946406be1fb1b16a868"
+sha256 = "4745917c88d2246def79748bde5e08b9d5e9b92f877863d43fab70cd8814ce6a"
 
 [[packages]]
 name = "beautifulsoup4"
@@ -135,14 +135,14 @@ sha256 = "0918bfe44902e6ad8d57732ba310582e98da931428d231a5ecb9e7c703a735bb"
 
 [[packages]]
 name = "black"
-version = "25.12.0"
+version = "26.1.0"
 
 [[packages.wheels]]
-name = "black-25.12.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
-url = "https://files.pythonhosted.org/packages/ac/76/03608a9d8f0faad47a3af3a3c8c53af3367f6c0dd2d23a84710456c7ac56/black-25.12.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+name = "black-26.1.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+url = "https://files.pythonhosted.org/packages/1b/87/670dd888c537acb53a863bc15abbd85b22b429237d9de1b77c0ed6b79c42/black-26.1.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
 
 [packages.wheels.hashes]
-sha256 = "9678bd991cc793e81d19aeeae57966ee02909877cb65838ccffef24c3ebac08f"
+sha256 = "53c62883b3f999f14e5d30b5a79bd437236658ad45b2f853906c7cbe79de00af"
 
 [[packages]]
 name = "bleach"
@@ -1374,14 +1374,14 @@ sha256 = "b56d5d686b5a03ba4f4db5e769dc32336e142fc3bd4d68a8c25579ebb0a67304"
 
 [[packages]]
 name = "pyarrow"
-version = "22.0.0"
+version = "23.0.0"
 
 [[packages.wheels]]
-name = "pyarrow-22.0.0-cp314-cp314-manylinux_2_28_x86_64.whl"
-url = "https://files.pythonhosted.org/packages/55/fc/4945896cc8638536ee787a3bd6ce7cec8ec9acf452d78ec39ab328efa0a1/pyarrow-22.0.0-cp314-cp314-manylinux_2_28_x86_64.whl"
+name = "pyarrow-23.0.0-cp314-cp314-manylinux_2_28_x86_64.whl"
+url = "https://files.pythonhosted.org/packages/9c/86/95c61ad82236495f3c31987e85135926ba3ec7f3819296b70a68d8066b49/pyarrow-23.0.0-cp314-cp314-manylinux_2_28_x86_64.whl"
 
 [packages.wheels.hashes]
-sha256 = "6dda1ddac033d27421c20d7a7943eec60be44e0db4e079f33cc5af3b8280ccde"
+sha256 = "a244279f240c81f135631be91146d7fa0e9e840e1dfed2aba8483eba25cd98e6"
 
 [[packages]]
 name = "pycodestyle"
@@ -1517,14 +1517,14 @@ sha256 = "276540b79961052b66b7d116620b36518847f52d5fd9e3a70164fc8c50faa6b8"
 
 [[packages]]
 name = "pytokens"
-version = "0.3.0"
+version = "0.4.0"
 
 [[packages.wheels]]
-name = "pytokens-0.3.0-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/84/25/d9db8be44e205a124f6c98bc0324b2bb149b7431c53877fc6d1038dddaf5/pytokens-0.3.0-py3-none-any.whl"
+name = "pytokens-0.4.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
+url = "https://files.pythonhosted.org/packages/bd/8d/9e4e2fdb5bcaba679e54afcc304e9f13f488eb4d626e6b613f9553e03dbd/pytokens-0.4.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl"
 
 [packages.wheels.hashes]
-sha256 = "95b2b5eaf832e469d141a378872480ede3f251a5a5041b8ec6e581d3ac71bbf3"
+sha256 = "9c6986576b7b07fe9791854caa5347923005a80b079d45b63b0be70d50cce5f1"
 
 [[packages]]
 name = "pytz"
@@ -1726,14 +1726,14 @@ sha256 = "a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0"
 
 [[packages]]
 name = "soupsieve"
-version = "2.8.1"
+version = "2.8.3"
 
 [[packages.wheels]]
-name = "soupsieve-2.8.1-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/48/f3/b67d6ea49ca9154453b6d70b34ea22f3996b9fa55da105a79d8732227adc/soupsieve-2.8.1-py3-none-any.whl"
+name = "soupsieve-2.8.3-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/46/2c/1462b1d0a634697ae9e55b3cecdcb64788e8b7d63f54d923fcd0bb140aed/soupsieve-2.8.3-py3-none-any.whl"
 
 [packages.wheels.hashes]
-sha256 = "a11fe2a6f3d76ab3cf2de04eb339c1be5b506a8a47f2ceb6d139803177f85434"
+sha256 = "ed64f2ba4eebeab06cc4962affce381647455978ffc1e36bb79a545b91f45a95"
 
 [[packages]]
 name = "stack-data"

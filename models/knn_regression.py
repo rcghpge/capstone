@@ -40,11 +40,11 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.feature_selection import RFECV
 from sklearn.compose import ColumnTransformer
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.neighbors import NearestNeighbors, KNeighborsRegressor
 from sklearn.model_selection import train_test_split, KFold, learning_curve, validation_curve
+from sklearn.metrics import mean_absolute_error, mean_squared_error, root_mean_squared_error, r2_score
 """
 Example Usage: See Jupyter Notebooks for more information
 
@@ -53,7 +53,6 @@ python knn_regression.py --data ../data/Key_indicator_districtwise.csv \
 --correlation 60 --test-size 0.25 --random-state 42 --outdir knn
 
 """
-
 warnings.filterwarnings("ignore")
 
 sns.set_palette("husl")
@@ -528,19 +527,30 @@ def plot_prediction_distribution(y_true, y_pred, out_dir, split_name):
 
 def plot_model_comparison(train_metrics, test_metrics, out_dir):
     metrics_df = pd.DataFrame([train_metrics, test_metrics], index=['Train', 'Test'])
-    x = np.arange(len(metrics_df))
-    width = 0.25
+    x = np.arange(len(metrics_df)) 
+    width = 0.35
     
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.bar(x - width/2, metrics_df['R2'], width, label='R²', color='steelblue', alpha=0.7)
-    ax.bar(x + width/2, metrics_df['Adj_R2'], width, label='Adj R²', color='coral', alpha=0.7)
-    ax.set_xlabel('Split')
+    fig, ax = plt.subplots(figsize=(10, 6))
+    
+    bars1 = ax.bar(x - width/2, metrics_df['R2'], width, label='R²', 
+                   color='steelblue', alpha=0.8, edgecolor='black')
+    
+    bars2 = ax.bar(x + width/2, metrics_df['Adj_R2'], width, label='Adj R²', 
+                   color='coral', alpha=0.8, edgecolor='black')
+    
+    for bars in [bars1, bars2]:
+        for bar in bars:
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width()/2., height + 0.005,
+                   f'{height:.3f}', ha='center', va='bottom', fontsize=11, weight='normal')
+    
+    ax.set_xlabel('Dataset Split')
     ax.set_ylabel('Score')
-    ax.set_title('Model Performance: Train vs Test')
+    ax.set_title('KNN Regression Model Performance: Train vs Test')
     ax.set_xticks(x)
     ax.set_xticklabels(metrics_df.index)
     ax.legend()
-    ax.grid(True, alpha=0.5)
+    ax.grid(True, alpha=0.3)
     plt.tight_layout()
     plt.savefig(Path(out_dir)/'model_comparison.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -616,6 +626,93 @@ def plot_validation_curve(estimator, X, y, param_name, param_range, out_dir, cv=
     best_idx = np.argmax(np.mean(val_scores, axis=1))
     print(f"✓ validation_curve.png | Best CV R²: {np.mean(val_scores[best_idx]):.4f} ±{np.std(val_scores[best_idx]):.4f} (n_neighbors={param_range[best_idx]})")
 
+def get_neighbors_for_sample(model, X_train_selected, y_train, X_sample_selected, k=None):
+    if k is None:
+        k = model.n_neighbors
+
+    nn = NearestNeighbors(
+        n_neighbors=k,
+        metric=model.metric,
+        p=getattr(model, "p", 2)
+    )
+    nn.fit(X_train_selected)
+
+    distances, indices = nn.kneighbors(X_sample_selected, n_neighbors=k, return_distance=True)
+    neighbor_targets = y_train.iloc[indices[0]].values if hasattr(y_train, "iloc") else y_train[indices[0]]
+    return distances[0], indices[0], neighbor_targets
+
+def plot_neighbor_contributions(distances, neighbor_targets, pred_value, out_dir, sample_label="sample0"):
+    k = len(neighbor_targets)
+    xs = np.arange(k)
+    w = 1/(distances + 1e-8)
+    w = w/w.sum()
+    
+    plt.figure(figsize=(10, 6))
+    plt.bar(xs, neighbor_targets, color="steelblue", alpha=0.7, label="Neighbor Targets", width=0.6)
+    plt.plot(xs, [pred_value]*k, color="coral", linestyle="--", label="Model Prediction", linewidth=3)
+    
+    for i, (yt, wi) in enumerate(zip(neighbor_targets, w)):
+        plt.text(i, yt + 0.2, f"w={wi:.2f}", ha="center", va="bottom", fontsize=10, fontweight="normal")
+    
+    plt.xlabel("Neighbor Rank (1st closest → kth closest)")
+    plt.ylabel("Infant Mortality Rate (IMR)")
+    plt.title("KNN k-Nearest Neighbor Targets & Weighted Prediction")
+    plt.legend(fontsize=11)
+    plt.grid(True, alpha=0.3)
+    
+    plt.text(0.70, 0.98, f"Prediction = Σ(w_i × target_i) = {pred_value:.2f}", 
+         transform=plt.gca().transAxes, fontsize=12,
+         bbox=dict(boxstyle="round,pad=0.4", facecolor="wheat", alpha=0.7),
+         verticalalignment="top",
+         horizontalalignment="left")  
+    
+    plt.xticks(xs, [f"k={i+1}" for i in range(k)], fontsize=10)
+    plt.tight_layout()
+    out_path = Path(out_dir)/f"{sample_label}_neighbor_contributions.png"
+    plt.savefig(out_path, dpi=300, bbox_inches="tight")
+    plt.close()
+    print(f"✓ {out_path.name}")
+
+def evaluate_knn_metrics(X_train_sel, X_test_sel, y_train, y_test, out_dir):
+    configs = [
+        ("euclidean", {"metric": "euclidean"}),
+        ("manhattan", {"metric": "manhattan"}),
+        ("chebyshev", {"metric": "chebyshev"}),
+        ("minkowski_p3", {"metric": "minkowski", "p": 3}),
+    ]
+    results = []
+    for label, params in configs:
+        knn = KNeighborsRegressor(
+            n_neighbors=5,
+            weights='distance',
+            **params
+        )
+        knn.fit(X_train_sel, y_train)
+        y_pred = knn.predict(X_test_sel)
+        r2 = r2_score(y_test, y_pred)
+        rmse = root_mean_squared_error(y_test, y_pred) 
+        mae = mean_absolute_error(y_test, y_pred)
+        results.append((label, r2, rmse, mae))
+        print(f"✓ {label}: R2={r2:.3f}, RMSE={rmse:.3f}, MAE={mae:.3f}")
+    labels = [r[0] for r in results]
+    r2_vals = [r[1] for r in results]
+    rmse_vals = [r[2] for r in results]
+
+    x = np.arange(len(labels))
+    width = 0.35
+    plt.figure(figsize=(10, 5))
+    plt.bar(x - width/2, r2_vals, width, label="R²", color="steelblue", alpha=0.7)
+    plt.bar(x + width/2, rmse_vals, width, label="RMSE", color="coral", alpha=0.7)
+    plt.xticks(x, labels, rotation=20)
+    plt.ylabel("Score")
+    plt.title("KNN Regression Model Performance vs Distance Metric")
+    plt.legend()
+    plt.grid(True, alpha=0.5)
+    plt.tight_layout()
+    plt.savefig(Path(out_dir)/"distance_metric_performance.png", dpi=300, bbox_inches="tight")
+    plt.close()
+    print("✓ distance_metric_performance.png")
+    return results
 
 def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None, orig_indices=None, state_col='State_Name', district_col='State_District_Name'):
     print(f"\n🔍 {split_name} Outlier Analysis")
@@ -791,6 +888,17 @@ def main(args):
     train_metrics = {'R2': train_r2, 'Adj_R2': train_adj_r2, 'RMSE': train_rmse, 'MAE': train_mae}
     test_metrics = {'R2': test_r2, 'Adj_R2': test_adj_r2, 'RMSE': test_rmse, 'MAE': test_mae}
 
+    sample_idx = 0
+    X_sample_selected = X_test_selected[sample_idx:sample_idx+1]
+    y_true_sample = y_test.iloc[sample_idx] if hasattr(y_test, "iloc") else y_test[sample_idx]
+    y_pred_sample = model.predict(X_sample_selected)[0]
+
+    distances, idxs, neigh_targets = get_neighbors_for_sample(
+        model, X_train_selected, y_train, X_sample_selected
+    )
+    #plot_neighbor_contributions(distances, neigh_targets, y_pred_sample, out_dir, sample_label=f"test_{sample_idx}")
+    #print(f"True={y_true_sample:.3f}, Pred={y_pred_sample:.3f}")
+
     joblib.dump(model, out_dir/'knn_model.joblib')
     joblib.dump(preprocessor, out_dir/'preprocessor.joblib')
     joblib.dump(selector, out_dir/'rfecv_selector.joblib')
@@ -813,10 +921,14 @@ def main(args):
     print("\n📊 Generating model assessment plots...")
     plot_validation_curve(model, X_train_selected, y_train.values.ravel(), 'n_neighbors', range(1,51,2), out_dir)
     plot_learning_curve(model, X_train_selected, y_train.values.ravel(), out_dir, cv=5)
+    print(f"✓ Neighbor Analysis Test: True={y_true_sample:.3f}, Pred={y_pred_sample:.3f}")
+    plot_neighbor_contributions(distances, neigh_targets, y_pred_sample, out_dir, sample_label=f"test_{sample_idx}")
     print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, 
                            state_col='State_Name', district_col='State_District_Name')
     print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, orig_indices=test_indices, 
                            state_col='State_Name', district_col='State_District_Name')
+    print(f"\n📊 Distance Metric Test:")
+    evaluate_knn_metrics(X_train_selected, X_test_selected, y_train, y_test, out_dir)
     print("\n" + "="*70)
     print("✅ KNN Model Results:")
     print("="*70)
@@ -830,7 +942,7 @@ if __name__ == '__main__':
     parser.add_argument('--data', required=True)
     parser.add_argument('--target', required=True)
     parser.add_argument('--id-cols', nargs='+', default=[])
-    parser.add_argument("--correlation", type=float, default=0.0, help="Drop features by correlation % before feature selection")
+    parser.add_argument("--correlation", type=float, default=0.0, help="Drop features by correlation by pct. before feature selection")
     parser.add_argument('--test-size', type=float, default=0.25)
     parser.add_argument('--random-state', type=int, default=42)
     parser.add_argument('--outdir', default='artifacts')
