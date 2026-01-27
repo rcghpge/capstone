@@ -17,7 +17,6 @@ boolean.py==5.0
 build==1.4.0
 CacheControl==0.14.4
 cachetools==6.2.5
--e git+ssh://git@github.com/rcghpge/capstone.git@e719e4795fab2ec2840fa9e8aa652c516e78543b#egg=capstone
 certifi==2026.1.4
 cffi==2.0.0
 cfgv==3.5.0
