@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'models'))
 
 from knn_base import generate_and_train, generate_prediction_df, drop_highly_correlated
 
-st.set_page_config(page_title="Streamlit", layout="wide")
+st.set_page_config(page_title="Dashboard", layout="wide")
 st.title("🩺 Health Analytics Dashboard")
 
 st.sidebar.header("📊 Generate Dataset")
@@ -106,7 +106,7 @@ with col2:
             minv, maxv = df[feat].min(), df[feat].max()
             input_data[feat] = st.slider(f"{feat[:25]}...", minv, maxv, (minv+maxv)/2)
         
-        if st.button("⚕️  Predict IMR", type="secondary"):
+        if st.buttion("⚕ Predict IMR", type="secondary"):
             input_df = generate_prediction_df(input_data, df.columns[:-2].tolist(), ['State_Name', 'District_Name'], n_features)
             input_proc = selector.transform(preprocessor.transform(input_df))
             pred = knn.predict(input_proc)[0]
