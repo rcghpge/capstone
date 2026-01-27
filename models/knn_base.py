@@ -763,7 +763,10 @@ def generate_and_train(
 
     cv = KFold(n_splits=5, shuffle=True, random_state=args.random_state)
     rf = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=-1)
-    min_features = max(5, X_train_proc.shape[1]//10)
+
+    n_features = X_train_proc.shape[1]
+    min_features = max(1, min(5, n_features // 10, n_features))  # Safe: 1 <= min_features <= n_features
+
     selector = RFECV(
         rf, step=0.1, cv=cv, scoring='neg_root_mean_squared_error',
         min_features_to_select=min_features, n_jobs=-1
