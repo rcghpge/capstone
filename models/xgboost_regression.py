@@ -22,12 +22,6 @@
 # SOFTWARE.
 import warnings
 warnings.filterwarnings("ignore")
-warnings.filterwarnings(
-    "ignore", 
-    message="sklearn.utils.parallel.delayed should be used with sklearn.utils.parallel.Parallel",
-    category=UserWarning
-)
-
 import re
 import sys
 import time
@@ -37,9 +31,11 @@ import logging
 import argparse
 import numpy as np
 import pandas as pd
+from PyALE import ale
 import seaborn as sns
 from scipy import stats
 from pathlib import Path
+from rulefit import RuleFit
 from sklearn.base import clone
 import matplotlib.pyplot as plt
 from xgboost import XGBRegressor
@@ -47,6 +43,7 @@ from contextlib import contextmanager
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.feature_selection import RFECV
+from sklearn.utils.parallel import Parallel, delayed
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
@@ -55,25 +52,25 @@ from sklearn.model_selection import train_test_split, KFold, learning_curve, cro
 """
 Example usage: See Jupyter Notebooks for more information.
 
-# Base model run
-python xgb_regression.py \
-    --data ../data/Key_indicator_districtwise.csv \
-    --target "Infant_Mortality_Rate_Imr_Total_Person" \
-    --id-cols "State_Name" "State_District_Name" \
-    --correlation 70 \
-    --test-size 0.15 \
-    --random-state 42 \
-    --outdir artifacts/xgb
+# Basic model run
+python xgboost_regression.py \
+--data ../data/Key_indicator_districtwise.csv \
+--target "Infant_Mortality_Rate_Imr_Total_Person" \
+--id-cols "State_Name" "State_District_Name" \
+--correlation 70 \
+--test-size 0.15 \
+--random-state 42 \
+--outdir artifacts/xgboost
 
-# Hyperparameter Tuning - add these params with above example usage.
-python xgb_regression.py \
+# Hyperparameter Tuning
+python xgboost_regression.py \
 --data ../data/Key_indicator_districtwise.csv \
 --target "Infant_Mortality_Rate_Imr_Total_Person" \
 --id-cols "State_Name" "State_District_Name" \
 --correlation 35 --test-size 0.20 --random-state 42 \
 --eta 0.15 --n-estimators 3000 --early-stopping-rounds 100 --max-depth 4 \
 --colsample-bytree 0.7 --subsample 0.7 --reg-lambda 2 --reg-alpha 1 \
---min-child-weight 25 --top-n-plot 10 --chunk-size 50000 --outdir artifacts/xgb
+--min-child-weight 25 --top-n-plot 10 --chunk-size 50000 --outdir artifacts/xgboost
 """
 sns.set_palette('husl')
 plt.style.use('default')
@@ -82,14 +79,13 @@ logging.basicConfig(
     level=logging.DEBUG if '--debug' in sys.argv else logging.INFO,
     format='%(asctime)s | %(levelname)s | %(message)s',
     handlers=[
-        logging.FileHandler('xgb_regression.log'),
+        logging.FileHandler('xgboost_regression.log'),
         logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
 
 TITLE = "XGBoost Regression Model"
-
 @contextmanager
 def spinner_progress(total_steps=64, spinners='|/-\r'):
     start = time.time()
@@ -224,19 +220,14 @@ def build_preprocessor(X):
     cat_cols = [c for c in X.columns if c not in num_cols]
     
     num_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='median')),
+        ('imputer', SimpleImputer(strategy='median', add_indicator=True)),
         ('scaler', RobustScaler())
     ])
-    
     cat_pipeline = Pipeline([
-        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('imputer', SimpleImputer(strategy='most_frequent', add_indicator=True)),
         ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
     ])
-    
-    return ColumnTransformer([
-        ('num', num_pipeline, num_cols),
-        ('cat', cat_pipeline, cat_cols)
-    ])
+    return ColumnTransformer([('num', num_pipeline, num_cols), ('cat', cat_pipeline, cat_cols)])
 
 def get_feature_names(preprocessor):
     feature_names = list(preprocessor.get_feature_names_out())
@@ -713,6 +704,79 @@ def plot_loss_curve(xgb_model, out_dir, metric='rmse'):
     plt.close()
     print(f"✓ {fname.name}")
 
+def plot_ale_all_features(model, X_train_selected, selected_feature_names, out_dir, grid_size=30, max_features=None):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    X_df = pd.DataFrame(X_train_selected, columns=selected_feature_names)
+    n_features = X_df.shape[1]
+    if max_features is not None:
+        n_features = min(n_features, max_features)
+    
+    logging.getLogger('PyALE._ALE_generic').setLevel(logging.WARNING)
+    
+    success_count = 0
+    for i in range(n_features):
+        feat_name = selected_feature_names[i]
+        try:
+            plt.figure(figsize=(8, 6))
+            exp = ale(X=X_df, model=model, feature=[feat_name], grid_size=grid_size) 
+            plt.title(f'ALE {feat_name}')
+            plt.xlabel(feat_name)
+            plt.ylabel('ALE')
+            plt.grid(True, alpha=0.5)
+            fname = out_dir/f'ale_{feat_name.replace(" ", "_").replace("/", "_").replace(",", "_")}.png'
+            plt.savefig(fname, dpi=300, bbox_inches='tight')
+            plt.close()
+            success_count += 1
+        except Exception as e:
+            print(f"Failed to plot ALE for {feat_name}: {e}")
+    
+    print(f"✓ Generated {success_count}/{n_features} ALE plots successfully.")
+
+def plot_rulefit(X_train_selected, y_train, selected_feature_names, out_dir, n_top_rules=30, min_importance=0.01):
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    X_np = np.asarray(X_train_selected) 
+    y_np = np.asarray(y_train).ravel()
+    
+    rf = RuleFit(max_rules=n_top_rules, random_state=42)
+    rf.fit(X_np, y_np)
+
+    rules = rf.get_rules()
+    rules_df = rules[rules['importance'] > min_importance].copy()
+    rules_df = rules_df.sort_values('importance', ascending=False).head(n_top_rules)
+    
+    def enrich_rules(rules_df, feature_names):
+        enriched = []
+        for _, row in rules_df.iterrows():
+            rule_str = row['rule']
+            for i, fname in enumerate(feature_names):
+                rule_str = rule_str.replace(f'x[{i}]', fname)
+            enriched.append({**row.to_dict(), 'rule_enriched': rule_str})
+        return pd.DataFrame(enriched)
+    
+    rules_enriched = enrich_rules(rules_df, selected_feature_names)
+    rules_csv = out_dir/"rulefit_rules.csv"
+    rules_enriched[['rule_enriched', 'type', 'coef', 'support', 'importance']].to_csv(rules_csv, index=False)
+    print(f"✓ {rules_csv.name}")
+
+    if len(rules_df) > 0:
+        plt.figure(figsize=(12, max(8, 0.4 * min(15, len(rules_df)))))
+        top_rules = rules_df.head(15)
+        colors = ['steelblue' if t == 'linear' else 'coral' for t in top_rules['type']]
+        plt.barh(range(len(top_rules)), top_rules['importance'], color=colors)
+        plt.yticks(range(len(top_rules)), [r[:40] + '...' if len(r)>40 else r for r in top_rules['rule']])
+        plt.gca().invert_yaxis()
+        plt.xlabel('Importance')
+        plt.title('Top RuleFit Rules (XGBoost Trees → Interpretable Rules)')
+        plt.tight_layout()
+        rules_png = out_dir/"rulefit_importance.png"
+        plt.savefig(rules_png, dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"✓ {rules_png.name}")
+    else:
+        print("No rules above importance threshold.")
 
 def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None, orig_indices=None, state_col='State_Name', district_col='State_District_Name'):
     print(f"\n🔍 {split_name} Outlier Analysis")
@@ -802,14 +866,12 @@ def main(args):
 
     print(f"📊 Dataset: {df.shape}")
     print(f"🎯 Target: {original_target} -> {args.target}")
-
     id_cols_fixed = [re.sub(r'[A-Z]{2,}', lambda m: m.group(0).lower(), col) for col in args.id_cols]
 
     len_df = len(df)
     mask = ~df.duplicated()
     df_deduped = df[mask].copy()
     print(f"🧹 Deduplicating: {len_df:,} -> {len(df_deduped):,} samples")
-
     print_dataset_stats(df_deduped, args.target)
 
     if df_deduped[args.target].isnull().any():
@@ -847,6 +909,13 @@ def main(args):
     X_train_processed = preprocessor.fit_transform(X_train)
     X_test_processed = preprocessor.transform(X_test)
     feature_names = get_feature_names(preprocessor)
+    feature_mapping = pd.DataFrame({
+        'pre_rfecv_index': range(len(feature_names)),
+        'pre_rfecv_name': feature_names,
+        'original_approx': [name.split('__')[-1].replace('_imputer', '').replace('_scaler', '') if '__' in name else name for name in feature_names]
+    })
+    feature_mapping.to_csv(out_dir/'feature_mapping_pre_rfecv.csv', index=False)
+    print(f"✓ Saved pre-RFECV mapping: {len(feature_names)} features")
 
     X_train_processed, X_test_processed, feature_names = drop_feature_correlations(
         X_train_processed, X_test_processed, y_train, feature_names, args.correlation
@@ -867,6 +936,13 @@ def main(args):
     )
 
     total_features = X_train_processed.shape[1]
+
+    def quiet_worker():
+        import warnings
+        from joblib import Parallel, delayed
+        warnings.filterwarnings("ignore", category=UserWarning, module="sklearn.utils.parallel")
+    quiet_worker()
+    
     with spinner_progress(min(64, max(1, total_features//10))):
         selector = RFECV(estimator=rf, step=10, cv=cv, scoring='neg_mean_absolute_error', min_features_to_select=5, verbose=0, n_jobs=-1)
         print("🔍 X_train Shape:", X_train.shape)
@@ -874,6 +950,7 @@ def main(args):
         print("🔍 First 5 Original Features:", list(X_train.columns[:5]))
         print(f"✅ RFECV Input: {X_train_processed.shape[1]} features")
         print(f"✅ Original Numeric Columns: {len(X_train.select_dtypes(include=np.number).columns)} features")
+        
         selector.fit(X_train_processed, y_train)
         print(f"✅ RFECV: {X_train_processed.shape[1]} → {selector.n_features_} features selected")
     
@@ -958,10 +1035,10 @@ def main(args):
     cv_scores = cross_val_score(cv_model, X_train_selected, y_train, cv=5, scoring='r2')
     print(f"✓ Check {args.cv_folds}‑fold CV R²: {cv_scores.mean():.4f} ± {cv_scores.std():.4f}")
     plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), out_dir, cv=5)
-    print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, 
-                           state_col='State_Name', district_col='State_District_Name')
-    print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, orig_indices=test_indices, 
-                           state_col='State_Name', district_col='State_District_Name')
+    plot_ale_all_features(xgb_model, X_train_selected, selected_feature_names, out_dir, grid_size=30, max_features=20)
+    plot_rulefit(X_train_selected, y_train, selected_feature_names, out_dir, n_top_rules=30, min_importance=0.01)
+    print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, state_col='State_Name', district_col='State_District_Name')
+    print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, orig_indices=test_indices, state_col='State_Name', district_col='State_District_Name')
     print("\n" + "="*70)
     print("✅ XGBoost Model Results")
     print('=' * 70)
@@ -970,19 +1047,18 @@ def main(args):
     print(f"📁 Outputs: {out_dir}")
     print('=' * 70)
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=f'{TITLE} - Machine learning for infant mortality rate prediction')
     parser.add_argument('--data', required=True, help='Path to dataset')
     parser.add_argument('--target', required=True, help='Target column name')
     parser.add_argument('--id-cols', nargs='+', default=[], help='ID columns to exclude')
     parser.add_argument('--cv-folds', type=int, default=5, help='KFold/RFECV cross-validation folds')
-    parser.add_argument('--correlation', type=float, default=70.0, help='Drop features by correlation with target before RFECV (%)')
+    parser.add_argument('--correlation', type=float, default=70.0, help='Drop features by pct correlation with target')
     parser.add_argument('--top-n-plot', type=int, default=25, help='Top N features for correlation/importance plots')
     parser.add_argument('--chunk-size', type=int, default=5000, help='Chunk size for correlation computation (memory)')
     parser.add_argument('--test-size', type=float, default=0.25)
     parser.add_argument('--random-state', type=int, default=42)
-    parser.add_argument('--outdir', default='artifacts/xgb_optimized')
+    parser.add_argument('--outdir', default='artifacts/xgb')
     parser.add_argument('--n-estimators', type=int, default=2000)
     parser.add_argument('--max-depth', type=int, default=6)
     parser.add_argument('--subsample', type=float, default=0.8)

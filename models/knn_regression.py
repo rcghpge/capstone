@@ -866,7 +866,7 @@ def main(args):
     X_train_selected = selector.transform(X_train_processed)
     X_test_selected = selector.transform(X_test_processed)
     
-    model = KNeighborsRegressor(n_neighbors=5, weights='distance', metric='manhattan')
+    model = KNeighborsRegressor(n_neighbors=5, weights='uniform', metric='manhattan')
     model.fit(X_train_selected, y_train)
     
     y_train_pred = model.predict(X_train_selected)

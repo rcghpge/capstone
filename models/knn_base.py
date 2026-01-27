@@ -20,6 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import io
 import re
 import json
 import joblib
@@ -29,19 +30,21 @@ import warnings
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
+from scipy import stats
 from pathlib import Path
+import matplotlib.pyplot as plt
+from sklearn.base import clone
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.feature_selection import RFECV
+from sklearn.datasets import make_regression
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestRegressor
 from sklearn.neighbors import KNeighborsRegressor
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from scipy import stats
-
+from sklearn.model_selection import train_test_split, KFold, learning_curve, validation_curve
 """
 Example Usage: See Jupyter Notebooks for more information.
 
@@ -52,7 +55,6 @@ Example Usage: See Jupyter Notebooks for more information.
 --test-size 0.25 --random-state 42 --outdir knn
 
 """
-
 warnings.filterwarnings("ignore")
 sns.set_palette("husl")
 plt.style.use('default')
@@ -121,7 +123,7 @@ def plot_true_vs_pred(y_true, y_pred, outdir, subset_label, metrics):
     plt.grid(True, alpha=0.5)
     
     text_str = (f'R²: {metrics["R2"]:.3f}\n'
-                f'R_adj: {metrics["Adj R2"]:.3f}\n'
+                f'Adj R²: {metrics["Adj R2"]:.3f}\n'
                 f'RMSE: {metrics["RMSE"]:.3f}\n'
                 f'MAE: {metrics["MAE"]:.3f}')
     plt.gca().text(0.02, 0.98, text_str, transform=plt.gca().transAxes, fontsize=11,
@@ -201,9 +203,76 @@ def plot_feature_importance(importances, feature_names, selector_support, outdir
     plt.close()
     print("Saved: feature_importance.png")
 
+def plot_learning_curve(estimator, X_df, y, outdir, cv=5, train_sizes=np.linspace(0.1, 1.0, 10)):
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    
+    est = clone(estimator)    
+    train_sizes, train_scores, val_scores = learning_curve(
+        est, X_df, y,  
+        train_sizes=train_sizes, cv=cv, scoring='r2',
+        n_jobs=-1, shuffle=True, random_state=42,
+        error_score='raise'  
+    )
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_sizes, np.mean(train_scores, axis=1), 'o-', color='steelblue', label='Training R²', lw=2)
+    plt.plot(train_sizes, np.mean(val_scores, axis=1), 'o-', color='coral', label='CV R²', lw=2)
+    plt.fill_between(train_sizes, 
+                     np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), 
+                     alpha=0.2, color='steelblue')
+    plt.fill_between(train_sizes, 
+                     np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), 
+                     alpha=0.2, color='coral')
+    plt.xlabel('Training Set Size')
+    plt.ylabel('R² Score')
+    plt.title('KNN + RFECV Regression Model Learning Curve')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(outdir/'learning_curve.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    print("Saved: learning_curve.png")
+    print(f"✓ Final CV R²: {np.mean(val_scores[-1]):.4f} ± {np.std(val_scores[-1]):.4f}")
+    print(f"✓ Final Train R²: {np.mean(train_scores[-1]):.4f} ± {np.std(train_scores[-1]):.4f}")
+
+def plot_validation_curve(estimator, X, y, param_name, param_range, outdir, cv=5, **kwargs):
+    outdir = Path(outdir); outdir.mkdir(parents=True, exist_ok=True)
+    
+    est = clone(estimator)    
+    train_scores, val_scores = validation_curve(
+        est, X, y, 
+        param_name=param_name, 
+        param_range=param_range,
+        cv=cv, 
+        scoring='r2', 
+        n_jobs=-1
+    )
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(param_range, np.mean(train_scores, axis=1), 'o-', color='steelblue', label='Training R²', lw=2)
+    plt.plot(param_range, np.mean(val_scores, axis=1), 'o-', color='coral', label='CV R²', lw=2)
+    plt.fill_between(param_range, 
+                     np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), 
+                     alpha=0.2, color='steelblue')
+    plt.fill_between(param_range, 
+                     np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), 
+                     alpha=0.2, color='coral')
+    plt.xlabel(param_name.replace('_', ' ').title())
+    plt.ylabel('R² Score')
+    plt.title('KNN + RFECV Regression Model Validation Curve')
+    plt.legend(); plt.grid(True, alpha=0.3); plt.tight_layout()
+    plt.savefig(outdir/'validation_curve.png', dpi=300, bbox_inches='tight'); plt.close()
+    
+    best_idx = np.argmax(np.mean(val_scores, axis=1))
+    print(f"Saved: validation_curve.png | Best CV R²: {np.mean(val_scores[best_idx]):.4f} ±{np.std(val_scores[best_idx]):.4f} (n_neighbors={param_range[best_idx]})")
+
 def plot_prediction_distribution(y_true, y_pred, outdir, split_name):
     plt.figure(figsize=(12, 5))
-    
     plt.subplot(1, 2, 1)
     plt.hist(y_true, bins=7, alpha=0.6, label='True', color='steelblue', density=True)
     plt.hist(y_pred, bins=7, alpha=0.6, label='Predicted', color='coral', density=True)
@@ -212,7 +281,6 @@ def plot_prediction_distribution(y_true, y_pred, outdir, split_name):
     plt.title(f'{split_name} Distribution')
     plt.legend()
     plt.grid(True, alpha=0.5)
-    
     plt.subplot(1, 2, 2)
     plt.scatter(y_true, y_pred, alpha=0.6, s=40, color='steelblue')
     min_val, max_val = min(y_true.min(), y_pred.min()), max(y_true.max(), y_pred.max())
@@ -254,7 +322,6 @@ def plot_jitter_true_vs_pred(y_true, y_pred, outdir, split_name, jitter_level=1e
     y_jittered = y_pred + y_jitter
     
     plt.figure(figsize=(12, 10))
-    
     scatter = plt.scatter(x_jittered, y_jittered, alpha=0.7, s=80, c=y_pred-y_true, 
                          cmap='RdYlBu_r', edgecolors='black', linewidth=0.8)
     
@@ -283,6 +350,185 @@ def plot_jitter_true_vs_pred(y_true, y_pred, outdir, split_name, jitter_level=1e
     plt.savefig(Path(outdir)/f'{split_name.lower()}_jitter_true_vs_pred.png', dpi=300, bbox_inches='tight')
     plt.close()
     print(f"Saved: {split_name.lower()}_jitter_true_vs_pred.png")
+
+# Streamlit
+def generate_streamlit_plots(fig):
+    buf = io.BytesIO()
+    canvas = FigureCanvas(fig)
+    canvas.print_png(buf)
+    buf.seek(0)
+    plt.close(fig)
+    return buf.getvalue()
+
+def plot_true_vs_pred_bytes(y_true, y_pred, metrics, split_label):
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.scatter(range(len(y_true)), y_true, color="steelblue", label="True", s=40, alpha=0.7)
+    ax.plot(range(len(y_pred)), y_pred, color="coral", label="Predicted", linewidth=2, alpha=0.8)
+    ax.set_xlabel("Sample Index")
+    ax.set_ylabel("Target_IMR")
+    ax.set_title(f"{split_label} Predictions")
+    
+    textstr = f"R²: {metrics['R2']:.3f}\nAdj R²: {metrics['Adj R2']:.3f}\nRMSE: {metrics['RMSE']:.3f}\nMAE: {metrics['MAE']:.3f}"
+    ax.text(0.02, 0.98, textstr, transform=ax.transAxes, fontsize=10, verticalalignment="top",
+            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.7))
+    ax.legend()
+    ax.grid(True, alpha=0.5)
+    plt.tight_layout()
+    return generate_streamlit_plots(fig)
+
+def plot_residuals_bytes(y_true, y_pred, split_label):
+    residuals = y_true - y_pred
+    fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+    
+    axes[0, 0].scatter(y_pred, residuals, alpha=0.7, s=40, color="steelblue")
+    axes[0, 0].axhline(0, color="coral", linestyle="--", linewidth=2)
+    axes[0, 0].set_xlabel("Predicted")
+    axes[0, 0].set_ylabel("Residuals")
+    axes[0, 0].set_title("Residuals vs Predicted")
+    axes[0, 0].grid(True, alpha=0.5)
+    
+    axes[0, 1].hist(residuals, bins=10, color="steelblue", alpha=0.7, edgecolor="coral")
+    axes[0, 1].set_xlabel("Residuals")
+    axes[0, 1].set_ylabel("Frequency")
+    axes[0, 1].set_title("Residuals Distribution")
+    axes[0, 1].grid(True, alpha=0.5)
+    
+    stats.probplot(residuals, dist="norm", plot=axes[1, 0])
+    axes[1, 0].get_lines()[0].set_markerfacecolor("steelblue")
+    axes[1, 0].get_lines()[0].set_markeredgecolor("coral")
+    axes[1, 0].set_title("Q-Q Plot (Normality)")
+    
+    axes[1, 1].scatter(range(len(residuals)), residuals, alpha=0.6, s=20, color="steelblue")
+    axes[1, 1].axhline(0, color="coral", linestyle="--", linewidth=2)
+    axes[1, 1].set_xlabel("Index")
+    axes[1, 1].set_ylabel("Residuals")
+    axes[1, 1].set_title("Residuals vs Index")
+    axes[1, 1].grid(True, alpha=0.5)
+    
+    plt.suptitle(f"{split_label} Residuals Analysis", fontsize=14)
+    plt.tight_layout()
+    return generate_streamlit_plots(fig)
+
+def plot_prediction_distribution_bytes(y_true, y_pred, split_label):
+    fig = plt.figure(figsize=(12, 5))
+    
+    ax1 = plt.subplot(1, 2, 1)
+    ax1.hist(y_true, bins=7, alpha=0.7, label="True", color="steelblue", edgecolor="steelblue", linewidth=1, density=True)
+    ax1.hist(y_pred, bins=7, alpha=0.7, label="Predicted", color="coral", edgecolor="steelblue", linewidth=1, density=True)
+    ax1.set_xlabel("Value")
+    ax1.set_ylabel("Density")
+    ax1.set_title(f"{split_label} Distribution")
+    ax1.legend()
+    ax1.grid(True, alpha=0.5)
+    
+    ax2 = plt.subplot(1, 2, 2)
+    ax2.scatter(y_true, y_pred, alpha=0.6, s=40, color="steelblue")
+    minval, maxval = min(y_true.min(), y_pred.min()), max(y_true.max(), y_pred.max())
+    ax2.plot([minval, maxval], [minval, maxval], "coral", lw=2)
+    ax2.set_xlabel("True Values")
+    ax2.set_ylabel("Predicted Values")
+    ax2.set_title("Predicted vs True")
+    ax2.grid(True, alpha=0.5)
+    
+    plt.tight_layout()
+    return generate_streamlit_plots(fig)
+
+def plot_feature_importance_bytes(importances, feature_names, selector_support, top_n=20):
+    def clean_name(name):
+        name = str(name).replace("_", " ")
+        for prefix in ["num__", "cat__"]:
+            if name.startswith(prefix):
+                name = name[len(prefix):]
+        if name.startswith("AA"):
+            name = name[2:]
+        return name
+    
+    clean_feature_names = [clean_name(n) for n in feature_names]
+    
+    top_n = min(top_n, len(importances))
+    idx = np.argsort(importances)[-top_n:][::-1]  
+    colors = ["steelblue" if selector_support[i] else "coral" for i in idx]
+    
+    fig, ax = plt.subplots(figsize=(12, 10))
+    ax.barh(range(top_n), importances[idx], color=colors, alpha=0.7)
+    
+    labels = []
+    for i in idx:
+        n = clean_feature_names[i]
+        labels.append(n[:35] + "..." if len(n) > 35 else n)
+    
+    ax.set_yticks(range(top_n))
+    ax.set_yticklabels(labels)
+    ax.set_xlabel("Feature Importance")
+    ax.set_title("KNN Regresion Model Feature Importance")
+    ax.invert_yaxis()  
+    ax.grid(axis="x", alpha=0.5)
+    plt.tight_layout()
+    
+    return generate_streamlit_plots(fig)
+
+def plot_learning_curve_bytes(estimator, X_train, y_train, cv=5):
+    est = clone(estimator)
+    train_sizes = np.linspace(0.1, 1.0, 10)
+    train_sizes_abs, train_scores, val_scores = learning_curve(
+        est, X_train, y_train, train_sizes=train_sizes, cv=cv, 
+        scoring="r2", n_jobs=-1, shuffle=True, random_state=42, error_score="raise"
+    )
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(train_sizes_abs, np.mean(train_scores, axis=1), "o-", color="steelblue", label="Training R²", lw=2)
+    ax.plot(train_sizes_abs, np.mean(val_scores, axis=1), "o-", color="coral", label="CV R²", lw=2)
+    ax.fill_between(
+        train_sizes_abs,
+        np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+        np.mean(train_scores, axis=1) + np.std(train_scores, axis=1),
+        alpha=0.5, color="steelblue"
+    )
+    ax.fill_between(
+        train_sizes_abs,
+        np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+        np.mean(val_scores, axis=1) + np.std(val_scores, axis=1),
+        alpha=0.5, color="coral"
+    )
+    ax.set_xlabel("Training Set Size")
+    ax.set_ylabel("R² Score")
+    ax.set_title("KNN Regression Model Learning Curve")
+    ax.legend()
+    ax.grid(True, alpha=0.5)
+    plt.tight_layout()
+    return generate_streamlit_plots(fig)
+
+def plot_validation_curve_bytes(estimator, X_train, y_train, param_name, param_range, cv=5):
+    from sklearn.model_selection import validation_curve
+    
+    est = clone(estimator)
+    train_scores, val_scores = validation_curve(
+        est, X_train, y_train, param_name=param_name, param_range=param_range,
+        cv=cv, scoring="r2", n_jobs=-1
+    )
+    
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(param_range, np.mean(train_scores, axis=1), "o-", color="steelblue", label="Training R²", lw=2)
+    ax.plot(param_range, np.mean(val_scores, axis=1), "o-", color="coral", label="CV R²", lw=2)
+    ax.fill_between(
+        param_range,
+        np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+        np.mean(train_scores, axis=1) + np.std(train_scores, axis=1),
+        alpha=0.5, color="steelblue"
+    )
+    ax.fill_between(
+        param_range,
+        np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+        np.mean(val_scores, axis=1) + np.std(val_scores, axis=1),
+        alpha=0.5, color="coral"
+    )
+    ax.set_xlabel(param_name.replace("_", " ").title())
+    ax.set_ylabel("R² Score")
+    ax.set_title("KNN Regression Model Validation Curve")
+    ax.legend()
+    ax.grid(True, alpha=0.5)
+    plt.tight_layout()
+    return generate_streamlit_plots(fig)
 
 def print_selected_features_raw(selector, raw_feature_names, top_n=20):
     print("\n" + "="*80)
@@ -399,14 +645,190 @@ def main(args):
     pd.Series(selected_features).to_csv(outdir/'selected_features_raw.csv', index=False)
     
     print("\n" + "="*70)
-    print("✅ Generated Results:")
+    print("✅ KNN Base Model Results:")
     print("="*70)
-    print(f"📁 All files saved to: {outdir}")
+    print(f"🎯 Test: R²={test_r2:.4f} | Adj R²={test_adj_r2:.4f} | RMSE={test_rmse:.4f} | MAE={test_mae:.4f}")
+    print(f"📊 Features: {selector.n_features_}/{len(raw_feature_names)}")
+    print(f"📁 Outputs: {outdir}")
+    print("="*70)
+
+def generate_prediction_df(input_dict, feature_names, id_cols, n_features):
+    input_data = dict(input_dict)  
+
+    for i in range(n_features):
+        col = f'Health_Indicator_{i}'
+        if col not in input_data:
+            input_data[col] = 0 
+    for col in id_cols:
+        if col not in input_data:
+            input_data[col] = 'Dummy'
+    return pd.DataFrame([input_data])
+
+def drop_highly_correlated(X, threshold=0.70):
+    corr_matrix = X.corr().abs()
+    upper_tri = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
+    to_drop = [column for column in upper_tri.columns if any(upper_tri[column] > threshold)]
+    
+    print(f"✅ Dropped {len(to_drop)} correlated features (thresh={threshold}):")
+    for col in to_drop[:8]:
+        print(f"  - {col}")
+    if len(to_drop) > 8:
+        print(f"  ... +{len(to_drop)-8} more")
+    
+    X_filtered = X.drop(columns=to_drop)
+    print(f"✅ Features: {X.shape[1]} → {X_filtered.shape[1]}")
+    return X_filtered, to_drop
+
+def generate_and_train(
+    n_samples=250, n_features=64, test_size=0.25, random_state=42,
+    n_neighbors=5, weights='distance', metric='manhattan', corr_threshold=0.85
+):
+    print(f"Generating {n_samples} samples with {n_features} features...")
+
+    np.random.seed(random_state)
+
+    n_base = 8
+    base_health = np.random.uniform(20, 80, n_samples)
+    factors = {
+        'income': base_health * 0.7 + np.random.normal(0, 8, n_samples),
+        'education': base_health * 0.75 + np.random.normal(0, 6, n_samples),
+        'sanitation': base_health * 0.8 + np.random.normal(0, 7, n_samples),
+        'hospitals': base_health * 0.65 + np.random.normal(0, 9, n_samples),
+        'vaccines': base_health * 0.85 + np.random.normal(0, 5, n_samples),
+        'nutrition': base_health * 0.9 + np.random.normal(0, 4, n_samples),
+        'water': base_health * 0.82 + np.random.normal(0, 6, n_samples),
+        'roads': base_health * 0.6 + np.random.normal(0, 10, n_samples),
+    }
+
+    base_df = pd.DataFrame({k: v for k, v in factors.items()})
+    corr_matrix = base_df.corr().abs()
+    print(f"✅ Base factors corr max: {corr_matrix.values.max():.3f}")
+
+    n_blocks = (n_features + n_base - 1) // n_base
+    X_raw = np.tile(base_df.values, (1, n_blocks))[:, :n_features]
+    noise_scale = np.linspace(1.0, 0.2, n_features)
+    X_raw += np.random.normal(0, noise_scale * 4, X_raw.shape)
+
+    imr_base = 120 - base_df.mean(axis=1) * 1.5
+    y_raw = np.clip(imr_base + np.random.normal(0, 4, n_samples), 15, 110)
+
+    feature_names = [f'Health_Indicator_{i}' for i in range(n_features)]
+    df = pd.DataFrame(X_raw, columns=feature_names)
+    df['Target_IMR'] = y_raw 
+    df['State_Name'] = np.random.choice(['State_A', 'State_B', 'State_C'], n_samples)
+    df['District_Name'] = [f'Dist_{i}' for i in range(n_samples)]
+
+    id_cols = ['State_Name', 'District_Name']
+    feature_cols = feature_names
+    df = df[id_cols + feature_cols + ['Target_IMR']]
+
+    print(f"Generated df: {df.shape} | Target range {df['Target_IMR'].min():.1f}-{df['Target_IMR'].max():.1f}")
+
+    class Args:
+        data_path = None
+        target = 'Target_IMR'
+        id_cols = ['State_Name', 'District_Name']
+
+    args = Args()
+    args.test_size = test_size
+    args.random_state = random_state
+
+    verify_columns(df, args.target, args.id_cols)
+    id_cols_found = [col for col in args.id_cols if col in df.columns]
+    X = df.drop(columns=[args.target] + id_cols_found)
+    y = df[args.target]
+    print(f"✅ Features: {X.shape[1]} | Target range: {y.min():.1f}-{y.max():.1f}")
+
+    mask = ~df.duplicated(subset=X.columns.tolist())
+    df_deduped = df[mask]
+    X = df_deduped.drop(columns=[args.target] + id_cols_found)
+    y = df_deduped[args.target]
+    print(f"✅ Deduplicated: {len(X):,} samples")
+
+    print("\n🧹 Removing multicollinear features...")
+    corr_dropped = []
+    if corr_threshold < 0.99:
+        X, corr_dropped = drop_highly_correlated(X, threshold=corr_threshold)
+    print("-" * 50)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=args.test_size, random_state=args.random_state, shuffle=True
+    )
+
+    preprocessor = build_preprocessor(X_train)
+    X_train_proc = preprocessor.fit_transform(X_train)
+    X_test_proc = preprocessor.transform(X_test)
+    raw_feature_names = get_raw_feature_names(preprocessor, X_train.columns.tolist())
+    print(f"✅ Processed: {X_train_proc.shape}")
+
+    cv = KFold(n_splits=5, shuffle=True, random_state=args.random_state)
+    rf = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=-1)
+    min_features = max(5, X_train_proc.shape[1]//10)
+    selector = RFECV(
+        rf, step=0.1, cv=cv, scoring='neg_root_mean_squared_error',
+        min_features_to_select=min_features, n_jobs=-1
+    )
+    selector.fit(X_train_proc, y_train)
+    print(f"✅ Selected: {selector.n_features_} features")
+    print_selected_features_raw(selector, raw_feature_names)
+
+    X_train_sel = selector.transform(X_train_proc)
+    X_test_sel = selector.transform(X_test_proc)
+
+    knn = KNeighborsRegressor(n_neighbors=n_neighbors, weights=weights, metric=metric)
+    knn.fit(X_train_sel, y_train)
+    y_train_pred = knn.predict(X_train_sel)
+    y_test_pred = knn.predict(X_test_sel)
+
+    n_train, p = len(y_train), X_train_sel.shape[1]
+    n_test = len(y_test)
+    train_r2 = r2_score(y_train, y_train_pred)
+    train_adj_r2 = calculate_adjusted_r2(train_r2, n_train, p)
+    train_rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
+    train_mae = mean_absolute_error(y_train, y_train_pred)
+
+    test_r2 = r2_score(y_test, y_test_pred)
+    test_adj_r2 = calculate_adjusted_r2(test_r2, n_test, p)
+    test_rmse = np.sqrt(mean_squared_error(y_test, y_test_pred))
+    test_mae = mean_absolute_error(y_test, y_test_pred)
+
+    train_metrics = {'R2': train_r2, 'Adj R2': train_adj_r2, 'RMSE': train_rmse, 'MAE': train_mae}
+    test_metrics = {'R2': test_r2, 'Adj R2': test_adj_r2, 'RMSE': test_rmse, 'MAE': test_mae}
+
+    print(f"\n📊 KNN Regression Model Inference Metrics:")
+    print(f"Train R²: {train_r2:.4f} | Test R²: {test_r2:.4f}")
+    print(f"Train RMSE: {train_rmse:.3f} | Test RMSE: {test_rmse:.3f}")
+
+    print("\n📈 Generating model plots...")
+    rf.fit(X_train_proc, y_train)
+    importances = rf.feature_importances_
+    selected_features = [raw_feature_names[i] for i, sel in enumerate(selector.support_) if sel]
+
+    return {
+        "df": df,
+        "corr_dropped": corr_dropped,
+        "corr_threshold": corr_threshold,
+        "knn": knn,
+        "preprocessor": preprocessor,
+        "selector": selector,
+        "selected_features": selected_features,
+        "train_metrics": train_metrics,
+        "test_metrics": test_metrics,
+        "train_scatter_bytes": plot_true_vs_pred_bytes(y_train, y_train_pred, train_metrics, "Train"),
+        "test_scatter_bytes": plot_true_vs_pred_bytes(y_test, y_test_pred, test_metrics, "Test"),
+        "train_residuals_bytes": plot_residuals_bytes(y_train, y_train_pred, "Train"),
+        "test_residuals_bytes": plot_residuals_bytes(y_test, y_test_pred, "Test"),
+        "train_distribution_bytes": plot_prediction_distribution_bytes(y_train, y_train_pred, "Train"),
+        "test_distribution_bytes": plot_prediction_distribution_bytes(y_test, y_test_pred, "Test"),
+        "feature_importance_bytes": plot_feature_importance_bytes(importances, raw_feature_names, selector.support_),
+        "learning_curve_bytes": plot_learning_curve_bytes(knn, X_train_sel, y_train, cv=5),
+        "validation_curve_bytes": plot_validation_curve_bytes(knn, X_train_sel, y_train, "n_neighbors", range(1, 51, 2), cv=5),
+    }
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="KNN regression model with RFECV feature selection for IMR assessment")
-    parser.add_argument("--data", required=True, help="CSV file")
-    parser.add_argument("--target", required=True, help="Exact target column name")
+    parser = argparse.ArgumentParser(description="KNN regression base model. Machine learning utilizing key health indicators for infant mortality rate  prediction.")
+    parser.add_argument("--data", required=True, help="CSV dataset file")
+    parser.add_argument("--target", required=True, help="Target column name")
     parser.add_argument("--id-cols", nargs="*", default=[], help="ID columns")
     parser.add_argument("--test-size", type=float, default=0.20)
     parser.add_argument("--random-state", type=int, default=42)

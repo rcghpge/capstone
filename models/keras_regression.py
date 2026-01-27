@@ -21,11 +21,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import os
+import jax
 import warnings
 os.environ["KERAS_BACKEND"] = "jax"  # add "tensorflow" to build if no dep conflicts
+jax.config.update('jax_platform_name', 'cpu')
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="numpy.lib.function_base")
 warnings.filterwarnings("ignore", message="sklearn.utils.parallel.delayed.*")
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn.utils.parallel")
-
 import re
 import sys
 import time
@@ -61,7 +63,7 @@ from keras.callbacks import EarlyStopping, ReduceLROnPlateau
 Example Usage:
 python keras_regression.py --data ../data/Key_indicator_districtwise.csv \
 --id-cols State_Name State_District_Name --target Infant_Mortality_Rate_Imr_Total_Person \
---correlation 72 --test-size 0.24 --outdir tests-dir/keras
+--correlation 72 --test-size 0.24 --outdir artifacts/keras
 """
 sns.set_palette("husl")
 plt.style.use('default')
@@ -108,8 +110,8 @@ def load_data(data_path):
 def build_preprocessor(X):
     num_cols = X.select_dtypes(include=np.number).columns.tolist()
     cat_cols = [c for c in X.columns if c not in num_cols]
-    num_pipeline = Pipeline([('imputer', SimpleImputer(strategy='median')), ('scaler', RobustScaler())])
-    cat_pipeline = Pipeline([('imputer', SimpleImputer(strategy='most_frequent')), ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))])
+    num_pipeline = Pipeline([('imputer', SimpleImputer(strategy='median', add_indicator=True)), ('scaler', RobustScaler())])
+    cat_pipeline = Pipeline([('imputer', SimpleImputer(strategy='most_frequent', add_indicator=True)), ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))])
     return ColumnTransformer([('num', num_pipeline, num_cols), ('cat', cat_pipeline, cat_cols)])
 
 def get_feature_names(preprocessor):
@@ -180,9 +182,9 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
     print(f"🔍 Post-Preprocessing Missing: {total_missing:,}")
     
     if total_missing == 0:
-        print("✅ No missing values!")
+        print("✅ No missing null/nan values!")
     
-    print(f"✅ RFECV Ready: {n_features} → will select best")
+    print(f"✅ RFECV Ready: {n_features} → will look to select best features")
     print("="*80)
 
 def plot_feature_importance(importances, feature_names, selector_support, out_dir, top_n=25):
@@ -196,7 +198,7 @@ def plot_feature_importance(importances, feature_names, selector_support, out_di
     plt.xlabel('Feature Importance')
     plt.title('RFECV Feature Importances (Keras Model Inputs)')
     plt.gca().invert_yaxis()
-    plt.grid(axis='x', alpha=0.5)
+    plt.grid(axis='x', alpha=0.7)
     plt.tight_layout()
     plt.savefig(Path(out_dir)/'feature_importance.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -207,28 +209,38 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
         out_dir = Path(out_dir)
         X = np.asarray(X_processed)
         y = np.asarray(y_train).ravel()
-        n_features = min(top_n, X.shape[1])
+
+        valid_mask = (np.std(X, axis=0) > 1e-8) & (~np.isnan(X).all(axis=0))
+        X_valid = X[:, valid_mask]
+        feature_names_valid = [feature_names[i] for i, mask in enumerate(valid_mask) if mask]
+        selector_support_valid = [selector_support[i] for i, mask in enumerate(valid_mask) if mask]
         
-        corrs = np.corrcoef(X.T, y)[ :n_features, -1]
+        if X_valid.shape[1] == 0:
+            print("⚠️ No valid features for correlation")
+            return
+            
+        corrs = np.corrcoef(X_valid.T, y)[:X_valid.shape[1], -1]
         abs_corrs = np.abs(corrs)
-        top_idx = np.argsort(abs_corrs)[-top_n:][::-1]
         
+        top_idx = np.argsort(abs_corrs)[-top_n:][::-1]
+
         top_features = [feature_names[i] for i in top_idx]
         top_corrs = corrs[top_idx]
         is_selected = [bool(selector_support[i]) for i in top_idx]
-        
+
         fig, ax = plt.subplots(figsize=(12, 8))
         colors = ['steelblue' if sel else 'coral' for sel in is_selected]
-        bars = ax.barh(range(len(top_corrs)), top_corrs, color=colors, alpha=0.7)
+        ax.barh(range(len(top_corrs)), top_corrs, color=colors, alpha=0.7)
+
         ax.set_yticks(range(len(top_corrs)))
         ax.set_yticklabels([f[:30] for f in top_features], fontsize=10)
         ax.set_xlabel('Correlation with Target')
-        ax.set_title('Top Feature-Target Correlations (RFECV Selected)')
-        ax.grid(axis='x', alpha=0.3)
-        ax.axvline(0, color='black', alpha=0.5)
-        
+        ax.set_title('Top Keras Feature-Target Correlations (RFECV Selected)')
+        ax.grid(axis='x', alpha=0.7)
+        ax.axvline(0, color='black', alpha=0.7)
+
         plt.tight_layout()
-        plt.savefig(out_dir/"feature_target_correlations.png", dpi=300, bbox_inches='tight')
+        plt.savefig(out_dir/"feature_target_correlations.png", dpi=300, bbox_inches="tight")
         plt.close()
         print("✓ feature_target_correlations.png")
     except Exception as e:
@@ -243,11 +255,11 @@ def plot_true_vs_pred(y_true, y_pred, out_dir, subset_label, metrics):
     plt.ylabel('Predicted Values')
     plt.title(f'{subset_label} True vs Predicted')
     plt.legend()
-    plt.grid(True, alpha=0.5)
+    plt.grid(True, alpha=0.7)
     
     textstr = f'R²: {metrics["R2"]:.3f}\nAdj R²: {metrics["Adj_R2"]:.3f}\nRMSE: {metrics["RMSE"]:.3f}\nMAE: {metrics["MAE"]:.3f}'
     plt.gca().text(0.02, 0.98, textstr, transform=plt.gca().transAxes, fontsize=11,
-                   verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+                   verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
     
     plt.tight_layout()
     plt.savefig(Path(out_dir)/f'{subset_label.lower()}_true_vs_pred.png', dpi=300, bbox_inches='tight')
@@ -284,12 +296,13 @@ def plot_statewise_histogram(df, valuecol, statecol, outdir):
     try:
         plt.figure(figsize=(14, 8))
         state_means = df.groupby(statecol)[valuecol].mean().sort_values()
-        states_order = state_means.index.tolist()[:10]  # Top 10 states
+        states_order = state_means.index.tolist()[:10]  
         plot_data = df[df[statecol].isin(states_order)]
         palette = sns.color_palette("husl", n_colors=len(states_order))
         sns.histplot(data=plot_data, x=valuecol, hue=statecol, hue_order=states_order, 
-                    bins=15, alpha=0.6, palette=palette, stat="density")
+                    bins=15, alpha=0.7, palette=palette, stat="density")
         plt.title(f"{valuecol} by {statecol}")
+        plt.grid(axis='y', alpha=0.7)
         plt.tight_layout()
         plt.savefig(Path(outdir)/"statewise_histogram.png", dpi=300, bbox_inches='tight')
         plt.close()
@@ -305,6 +318,9 @@ def plot_statewise_facets(df, value_col, state_col, out_dir):
         g.map(sns.histplot, value_col, bins=7, color="steelblue", alpha=0.7)
         g.set_titles("{col_name}")
         g.set_axis_labels(value_col, "Count")
+        for ax in g.axes.flat:
+            ax.set_axisbelow(True)
+            ax.grid(axis='y', alpha=0.7, linestyle='-', color='gray')
         plt.savefig(Path(out_dir)/"statewise_facets.png", dpi=300, bbox_inches='tight')
         plt.close()
         print("✓ statewise_facets.png")
@@ -320,12 +336,12 @@ def plot_residuals(y_true, y_pred, out_dir, split_name):
     axes[0].set_xlabel('Predicted')
     axes[0].set_ylabel('Residuals')
     axes[0].set_title(f'{split_name} Residuals vs Predicted')
-    axes[0].grid(True, alpha=0.5)
+    axes[0].grid(True, alpha=0.7)
     axes[1].hist(residuals, bins=15, color='steelblue', alpha=0.7, edgecolor='coral')
     axes[1].set_xlabel('Residuals')
     axes[1].set_ylabel('Frequency')
     axes[1].set_title(f'{split_name} Residuals Distribution')
-    axes[1].grid(True, alpha=0.5)
+    axes[1].grid(True, alpha=0.7)
     
     plt.tight_layout()
     plt.savefig(Path(out_dir)/f'{split_name.lower()}_residuals.png', dpi=300, bbox_inches='tight')
@@ -344,7 +360,7 @@ def plot_residuals_granularity(y_true, y_pred, outdir, split_name, jitter_level=
     plt.xlabel("Fitted Values")
     plt.ylabel("Residuals")
     plt.title(f"{split_name} Residuals Plot (Granularity)")
-    plt.grid(True, alpha=0.5)
+    plt.grid(True, alpha=0.7)
     plt.tight_layout()
     plt.savefig(Path(outdir)/f"{split_name.lower()}_residuals_granularity.png", dpi=300, bbox_inches="tight")
     plt.close()
@@ -359,7 +375,7 @@ def plot_prediction_distribution(y_true, y_pred, out_dir, split_name):
     plt.ylabel("Density")
     plt.title(f"{split_name} Distribution")
     plt.legend()
-    plt.grid(True, alpha=0.5)
+    plt.grid(True, alpha=0.7)
     plt.subplot(1, 2, 2)
     plt.scatter(y_true, y_pred, alpha=0.7, s=40, color="steelblue")
     min_val = min(y_true.min(), y_pred.min())
@@ -368,23 +384,23 @@ def plot_prediction_distribution(y_true, y_pred, out_dir, split_name):
     plt.xlabel("True Values")
     plt.ylabel("Predicted Values")
     plt.title("Pred vs True")
-    plt.grid(True, alpha=0.5)
+    plt.grid(True, alpha=0.7)
     plt.tight_layout()
     plt.savefig(Path(out_dir)/f"{split_name.lower()}_distribution.png", dpi=300, bbox_inches='tight')
     plt.close()
     print(f"✓ {split_name.lower()}_distribution.png")
 
-def build_keras_model(input_dim, learning_rate=0.001, dropout_rate=0.2):
+def build_keras_model(input_dim, learning_rate=0.001, dropout_rate=0.2, l2_reg=0.2):
     model = keras.Sequential([
         keras.Input(shape=(input_dim,)),
         layers.BatchNormalization(),
-        layers.Dense(512, activation='relu', kernel_regularizer=keras.regularizers.l2(0.01)),
+        layers.Dense(512, activation='relu', kernel_regularizer=keras.regularizers.l2(l2_reg)),
         layers.Dropout(dropout_rate),
         layers.BatchNormalization(),
-        layers.Dense(256, activation='relu', kernel_regularizer=keras.regularizers.l2(0.01)),
+        layers.Dense(256, activation='relu', kernel_regularizer=keras.regularizers.l2(l2_reg)),
         layers.Dropout(dropout_rate),
         layers.BatchNormalization(),
-        layers.Dense(128, activation='relu', kernel_regularizer=keras.regularizers.l2(0.01)),
+        layers.Dense(128, activation='relu', kernel_regularizer=keras.regularizers.l2(l2_reg)),
         layers.Dropout(dropout_rate),
         layers.BatchNormalization(),
         layers.Dense(64, activation='relu'),
@@ -394,17 +410,17 @@ def build_keras_model(input_dim, learning_rate=0.001, dropout_rate=0.2):
     model.compile(optimizer=keras.optimizers.Adam(learning_rate=learning_rate), loss='mse', metrics=['mae'])
     return model
 
-def train_keras_model(model, X_train, y_train, X_val, y_val, out_dir, epochs=500, batch_size=32):
+def train_keras_model(model, X_train, y_train, X_val, y_val, out_dir, epochs=500, batch_size=32, patience=50):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     
     callbacks_list = [
-        EarlyStopping(monitor='val_loss', patience=50, restore_best_weights=True, verbose=0, mode='min'),
+        EarlyStopping(monitor='val_loss', patience=patience, restore_best_weights=True, verbose=0, mode='min'),
         ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=25, min_lr=1e-7, verbose=0, mode='min'),
         keras.callbacks.ModelCheckpoint(str(out_dir/'best_keras_model.keras'), monitor='val_loss', save_best_only=True, verbose=0)
     ]
     
-    history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=epochs, batch_size=batch_size, callbacks=callbacks_list, verbose=0)
+    history = model.fit(X_train, y_train, validation_data=(X_val, y_val), epochs=args.epochs, batch_size=args.batch_size, callbacks=callbacks_list, verbose=0)
     history_df = pd.DataFrame(history.history)
     history_df.to_csv(out_dir/'training_history.csv', index=False)
     return model, history
@@ -430,7 +446,7 @@ def plot_model_comparison(train_metrics, test_metrics, out_dir):
     ax.set_xticks(x)
     ax.set_xticklabels(metrics_df.index)
     ax.legend()
-    ax.grid(True, alpha=0.5)
+    ax.grid(True, alpha=0.7)
     plt.tight_layout()
     plt.savefig(Path(out_dir)/'keras_model_comparison.png', dpi=300, bbox_inches='tight')
     plt.close()
@@ -451,11 +467,11 @@ def plot_training_history(history, out_dir):
     axes[0,1].plot(history.history['mae'], label='Train MAE', color='steelblue', lw=2)
     axes[0,1].plot(history.history['val_mae'], label='Val MAE', color='coral', lw=2)
     axes[0,1].set_title('Model MAE')
-    axes[0,1].set_xlabel('Epoch'); axes[0,1].legend(); axes[0,1].grid(True, alpha=0.3)
+    axes[0,1].set_xlabel('Epoch'); axes[0,1].legend(); axes[0,1].grid(True, alpha=0.5)
     
     if 'lr' in history.history:
         axes[1,0].semilogy(history.history['lr'], color='darkgreen', lw=2)
-        axes[1,0].set_title('Learning Rate'); axes[1,0].grid(True, alpha=0.3)
+        axes[1,0].set_title('Learning Rate'); axes[1,0].grid(True, alpha=0.5)
     else:
         best_epoch = np.argmin(history.history['val_loss'])
         axes[1,0].text(0.1, 0.6, f'EarlyStopping Active\nBest Epoch: {best_epoch}\nVal Loss: {history.history["val_loss"][best_epoch]:.3f}', 
@@ -478,6 +494,56 @@ def plot_training_history(history, out_dir):
     plt.savefig(out_dir/'keras_training_history.png', dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ keras_training_history.png")
+
+def plot_learning_curves(history, out_dir):
+    out_dir = Path(out_dir)
+    history_df = pd.DataFrame(history.history)
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
+    
+    ax1.plot(history_df['mae'], label='Train MAE', color='steelblue', lw=2)
+    ax1.plot(history_df['val_mae'], label='Val MAE', color='coral', lw=2)
+    ax1.set_title('MAE Learning Curve')
+    ax1.set_xlabel('Epoch')
+    ax1.set_ylabel('MAE')
+    ax1.legend()
+    ax1.grid(True, alpha=0.5)
+    
+    ax2.plot(np.sqrt(history_df['loss']), label='Train RMSE', color='steelblue', lw=2)
+    ax2.plot(np.sqrt(history_df['val_loss']), label='Val RMSE', color='coral', lw=2)
+    ax2.set_title('RMSE Learning Curve')
+    ax2.set_xlabel('Epoch')
+    ax2.set_ylabel('RMSE')
+    ax2.legend()
+    ax2.grid(True, alpha=0.5)
+    
+    plt.tight_layout()
+    plt.savefig(out_dir/"learning_curves.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print("✓ learning_curves.png")
+
+def plot_validation_curves(history, out_dir, param_name="Learning Rate"):
+    out_dir = Path(out_dir)
+    history_df = pd.DataFrame(history.history)
+    
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    ax.plot(history_df['val_mae'], label='Val MAE', color='coral', lw=2)
+    ax2 = ax.twinx()
+    ax2.plot(np.sqrt(history_df['val_loss']), label='Val RMSE', color='orange', lw=2)
+    
+    ax.set_xlabel('Epoch')
+    ax.set_ylabel('Val MAE', color='coral')
+    ax2.set_ylabel('Val RMSE', color='orange')
+    ax.set_title(f'Validation Curves ({param_name})')
+    ax.legend(loc='upper left')
+    ax2.legend(loc='upper right')
+    ax.grid(True, alpha=0.5)
+    
+    plt.tight_layout()
+    plt.savefig(out_dir/"validation_curves.png", dpi=300, bbox_inches='tight')
+    plt.close()
+    print("✓ validation_curves.png")
 
 def save_metrics(train_metrics, test_metrics, out_dir):
     results = pd.DataFrame([train_metrics, test_metrics], index=['Train', 'Test'])
@@ -540,11 +606,11 @@ def main(args):
         plot_statewise_histogram(df_deduped, args.target, state_col, out_dir)
         plot_statewise_facets(df_deduped, args.target, state_col, out_dir)
     
-    print("\n🧠 Building & Training Keras Neural Network...")
-    model = build_keras_model(X_train_selected.shape[1])
-    
+    print("\n🔧 Building & Training Keras Neural Network...")
+    model = build_keras_model(X_train_selected.shape[1], learning_rate=args.lr, dropout_rate=args.dropout, l2_reg=args.l2_reg)
+
     X_train_final, X_val, y_train_final, y_val = train_test_split(
-        X_train_selected, y_train, test_size=0.2, random_state=args.random_state)
+        X_train_selected, y_train, test_size=args.val_size, random_state=args.random_state)
     
     keras_model, history = train_keras_model(
         model, X_train_final, y_train_final, X_val, y_val, out_dir)
@@ -575,6 +641,8 @@ def main(args):
     
     print("\n📊 Generating neural network inference plots...")
     plot_training_history(history, out_dir)
+    plot_learning_curves(history, out_dir)
+    plot_validation_curves(history, out_dir)
     plot_residuals(y_train, y_train_pred, out_dir, "Train")
     plot_residuals(y_test, y_test_pred, out_dir, "Test")
     plot_residuals_granularity(y_train, y_train_pred, out_dir, "Training")
@@ -596,19 +664,26 @@ def main(args):
     print("="*80)
     print(f"🎯 Test: R²={test_r2:.4f} | Adj R²={test_adj_r2:.4f} | RMSE={test_rmse:.4f} | MAE={test_mae:.4f}")
     print(f"📊 Features: {selector.n_features_}/{len(feature_names)} (RFECV Selected)")
-    print(f"🧠 Architecture: 512-256-128-64-1 Deep Network")
-    print(f"📁 Outputs: {out_dir}")
+    print(f"💾 Architecture: 512-256-128-64-1 Deep Network")
     print(f"💾 Models: keras_model_full.keras | best_keras_model.keras")
+    print(f"📁 Outputs: {out_dir}")
     print("="*80)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Keras Regression Deep Learning Neural Network')
+    parser = argparse.ArgumentParser(description='Keras Regression Deep Learning Neural Network - Machine learning for infant mortality rate prediction.')
     parser.add_argument('--data', required=True)
     parser.add_argument('--target', required=True)
     parser.add_argument('--id-cols', nargs='+', default=[])
-    parser.add_argument("--correlation", type=float, default=0.0, help="Drop features by correlation")
+    parser.add_argument("--correlation", type=float, default=0.0, help="Drop features by pct correlation")
     parser.add_argument('--test-size', type=float, default=0.25)
+    parser.add_argument('--val-size', type=float, default=0.15, help='Train/val split size')
+    parser.add_argument('--batch-size', type=int, default=32, help='Batch size')
     parser.add_argument('--random-state', type=int, default=42)
+    parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
+    parser.add_argument('--dropout', type=float, default=0.2, help='Dropout rate')
+    parser.add_argument('--l2-reg', type=float, default=0.01, help='L2 regularization')
+    parser.add_argument('--epochs', type=int, default=500, help='Max epochs')
+    parser.add_argument('--patience', type=int, default=50, help='Early stopping patience')
     parser.add_argument('--outdir', default='keras_artifacts')
     parser.add_argument('--debug', action='store_true')
     args = parser.parse_args()

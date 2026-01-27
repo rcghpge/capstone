@@ -36,12 +36,10 @@ from sklearn.preprocessing import OneHotEncoder, RobustScaler
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, explained_variance_score
 """
-The XGBoost model was not completed due to time constraints.
-
 Example Usage:
-python -m models.xgb_regression --data data/Key_indicator_districtwise.csv \
+python -m models.xgboost_base --data data/Key_indicator_districtwise.csv \
 --target YY_Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
---outdir ./xgb
+--outdir ./xgboost
 """
 
 def plot_and_save(y_true, y_pred, outdir):
@@ -205,7 +203,7 @@ def main():
         cv=cv,
         scoring='neg_mean_squared_error',
         n_jobs=-1,
-        verbose=2
+        verbose=1 
     )
     selector.fit(X_train_processed, y_train)
 

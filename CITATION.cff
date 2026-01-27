@@ -22,20 +22,25 @@ url: 'https://uta.edu'
 abstract: >-
   Machine learning utilizing key health indicators for infant mortality rate prediction. 
 keywords:
+  - data science
   - machine learning
   - deep learning
-  - data science
+  - regression
   - infant mortality rate
   - mortality rate
+  - python
+  - kaggle
   - keras
   - jax
   - scikit-learn
   - knn
+  - catboost
   - xgboost
+  - streamlit
   - uta
   - ut arlington
 license: MIT
-version: 0.8.0
+version: 0.9.0
 date-released: '2025-11-25'
 references:
   - type: dataset
