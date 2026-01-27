@@ -80,7 +80,7 @@ data/
 docs/
 out/
 prototype/
-test/
+!test/
 tools/
 
 # Testing
@@ -112,6 +112,7 @@ Thumbs.db
 # Security/Reports (optional)
 # security-report.json  # Uncomment if you want to exclude
 # bandit-report.json
+
 # pixi environments
 .pixi/*
 !.pixi/config.toml

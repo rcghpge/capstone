@@ -35,19 +35,19 @@ Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
 ├── assets
 ├── models
 ├── notebooks
-├── submissions
 ├── .gitattributes
 ├── .gitignore
 ├── CITATION.cff
 ├── LICENSE
 ├── README.md
 ├── __init__.py
+├── app.py
 ├── pixi.lock
 ├── pylock.toml
 ├── pyproject.toml
 └── requirements.txt
 
-4 directories, 10 files
+3 directories, 11 files
 ```
 
 ---
