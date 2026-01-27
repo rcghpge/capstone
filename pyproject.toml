@@ -20,7 +20,7 @@ license = "MIT"
 readme = "README.md"
 dependencies = [
 "jupyterlab>=4.5.3,<5", "ipykernel>=7.1.0,<8", "pandas", "numpy", "scikit-learn", "rulefit>=0.3.1,<0.4", 
-"xgboost", "scipy", "joblib", "seaborn>=0.13.2,<0.14", "matplotlib", "pyale>=1.2.0,<2", "plotly", 
+"xgboost", "scipy", "joblib", "seaborn>=0.13.2,<0.14", "matplotlib", "pyale>=1.2.0,<2", "plotly", "pip", 
 "jupyterlab-widgets>=3.0.16,<4", "fonttools", "urllib3", "streamlit", "plotly>=6.5.1", "kaggle>=1.8.3,<2", "keras", 
 "pytest>=9.0.2,<10", "pytest-cov>=7.0.0,<8", "nbval>=0.11.0,<0.12", "black>=26.1.0,<27", "flake8>=7.3.0,<8", 
 "pre-commit>=4.5.1,<5", "jupyterlab-lsp>=5.2.0,<6", "pip-tools>=7.5.2,<8", "bandit>=1.9.3,<2", "pip-audit>=2.10.0,<3"]
@@ -62,3 +62,4 @@ xgboost = ">=3.1.3,<4"
 jax = ">=0.7.2,<0.8"
 jaxlib = ">=0.7.2,<0.8"
 scikit-learn = ">=1.8.0,<2"
+pip = ">=25.3,<26"

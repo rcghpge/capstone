@@ -19,7 +19,7 @@ build==1.4.0
 CacheControl==0.14.4
 cached-property @ file:///home/conda/feedstock_root/build_artifacts/cached_property_1615209429212/work
 cachetools @ file:///home/conda/feedstock_root/build_artifacts/cachetools_1769442536586/work
--e git+ssh://git@github.com/rcghpge/capstone.git@cb7cabf2df158f2cd83b308404debdf0cf4595b5#egg=capstone
+-e git+ssh://git@github.com/rcghpge/capstone.git@2b8480ab9d440b70e50b7460d119c9a216c80653#egg=capstone
 catboost @ file:///home/conda/feedstock_root/build_artifacts/catboost_1762173746985/work/catboost/python-package/dist/catboost-1.2.8-cp314-cp314-linux_x86_64.whl#sha256=a5710224d901757900a57e26992e0a2cb871b9ab9e072a69c8cb76e0a0f20630
 certifi @ file:///home/conda/feedstock_root/build_artifacts/certifi_1767500808759/work/certifi
 cffi==2.0.0
