@@ -106,7 +106,7 @@ with col2:
             minv, maxv = df[feat].min(), df[feat].max()
             input_data[feat] = st.slider(f"{feat[:25]}...", minv, maxv, (minv+maxv)/2)
         
-        if st.buttion("⚕ Predict IMR", type="secondary"):
+        if st.button("⚕ Predict IMR", type="secondary"):
             input_df = generate_prediction_df(input_data, df.columns[:-2].tolist(), ['State_Name', 'District_Name'], n_features)
             input_proc = selector.transform(preprocessor.transform(input_df))
             pred = knn.predict(input_proc)[0]
