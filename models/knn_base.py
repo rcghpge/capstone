@@ -772,7 +772,13 @@ def generate_and_train(
         rf, step=0.1, cv=cv, scoring='neg_root_mean_squared_error',
         min_features_to_select=min_features, n_jobs=-1
     )
-    
+
+    n_splits = cv.n_splits if hasattr(cv, 'n_splits') else 5
+    samples_per_fold = len(X_train_proc)/n_splits
+    if samples_per_fold < 3: 
+        st.error(f"Too few samples for RFECV CV (samples/fold ~{samples_per_fold:.1f} < 3). Reduce n_splits or add data.")
+        st.stop()
+        
     selector.fit(X_train_proc, y_train)
     print(f"✅ Selected: {selector.n_features_} features")
     print_selected_features_raw(selector, raw_feature_names)
