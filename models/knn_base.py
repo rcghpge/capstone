@@ -352,7 +352,6 @@ def plot_jitter_true_vs_pred(y_true, y_pred, outdir, split_name, jitter_level=1e
     plt.close()
     print(f"Saved: {split_name.lower()}_jitter_true_vs_pred.png")
 
-# Streamlit
 def generate_streamlit_plots(fig):
     buf = io.BytesIO()
     canvas = FigureCanvas(fig)
@@ -362,55 +361,86 @@ def generate_streamlit_plots(fig):
     return buf.getvalue()
 
 def plot_true_vs_pred_bytes(y_true, y_pred, metrics, split_label):
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.scatter(range(len(y_true)), y_true, color="steelblue", label="True", s=40, alpha=0.7)
-    ax.plot(range(len(y_pred)), y_pred, color="coral", label="Predicted", linewidth=2, alpha=0.8)
+    if len(y_true) == 0 or len(y_pred) == 0:
+        st.warning(f"No data for model {split_label} true vs pred plot.")
+        return None
+    
+    n_points = len(y_true)
+    
+    fig, ax = plt.subplots(figsize=(12, 6))  
+    
+    ax.scatter(range(n_points), y_true, color="steelblue", label="True", s=40, alpha=0.7, edgecolors="navy")
+    ax.plot(range(n_points), y_pred, color="coral", label="Predicted", linewidth=2, alpha=0.8)
+    
     ax.set_xlabel("Sample Index")
     ax.set_ylabel("Target_IMR")
-    ax.set_title(f"{split_label} Predictions")
+    ax.set_title(f"Model {split_label} Predictions")
     
-    textstr = f"R²: {metrics['R2']:.3f}\nAdj R²: {metrics['Adj R2']:.3f}\nRMSE: {metrics['RMSE']:.3f}\nMAE: {metrics['MAE']:.3f}"
+    textstr = ""
+    if metrics:
+        keys = ['R2', 'Adj R2', 'RMSE', 'MAE']
+        for key in keys:
+            if key in metrics:
+                textstr += f"{key}: {metrics[key]:.3f}\n"
+    else:
+        textstr = "Metrics unavailable"
+    
     ax.text(0.02, 0.98, textstr, transform=ax.transAxes, fontsize=10, verticalalignment="top",
-            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.7))
+            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.8))
+    
     ax.legend()
     ax.grid(True, alpha=0.5)
     plt.tight_layout()
     return generate_streamlit_plots(fig)
 
 def plot_residuals_bytes(y_true, y_pred, split_label):
+    if len(y_true) == 0 or len(y_pred) == 0:
+        st.warning(f"No data for model {split_label} residuals plot.")
+        return None
+    
     residuals = y_true - y_pred
+    n_points = len(residuals)
+    
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     
     axes[0, 0].scatter(y_pred, residuals, alpha=0.7, s=40, color="steelblue")
     axes[0, 0].axhline(0, color="coral", linestyle="--", linewidth=2)
-    axes[0, 0].set_xlabel("Predicted")
+    axes[0, 0].set_xlabel("Predicted Values")
     axes[0, 0].set_ylabel("Residuals")
-    axes[0, 0].set_title("Residuals vs Predicted")
+    axes[0, 0].set_title("Model Residuals vs Predicted")
     axes[0, 0].grid(True, alpha=0.5)
     
     axes[0, 1].hist(residuals, bins=10, color="steelblue", alpha=0.7, edgecolor="coral")
     axes[0, 1].set_xlabel("Residuals")
     axes[0, 1].set_ylabel("Frequency")
-    axes[0, 1].set_title("Residuals Distribution")
+    axes[0, 1].set_title(f"Model Residuals Distribution")
     axes[0, 1].grid(True, alpha=0.5)
     
     stats.probplot(residuals, dist="norm", plot=axes[1, 0])
     axes[1, 0].get_lines()[0].set_markerfacecolor("steelblue")
     axes[1, 0].get_lines()[0].set_markeredgecolor("coral")
-    axes[1, 0].set_title("Q-Q Plot (Normality)")
+    axes[1, 0].get_lines()[1].set_color("coral")  
+    axes[1, 0].set_title("Model Q-Q Plot (Normality)")
+    axes[1, 0].grid(True, alpha=0.5)
     
-    axes[1, 1].scatter(range(len(residuals)), residuals, alpha=0.6, s=20, color="steelblue")
+    axes[1, 1].scatter(range(n_points), residuals, alpha=0.6, s=20, color="steelblue")
     axes[1, 1].axhline(0, color="coral", linestyle="--", linewidth=2)
-    axes[1, 1].set_xlabel("Index")
+    axes[1, 1].set_xlabel("Data Index")
     axes[1, 1].set_ylabel("Residuals")
     axes[1, 1].set_title("Residuals vs Index")
     axes[1, 1].grid(True, alpha=0.5)
     
-    plt.suptitle(f"{split_label} Residuals Analysis", fontsize=14)
+    plt.suptitle(f"Model {split_label} Residuals Analysis", fontsize=14)
     plt.tight_layout()
     return generate_streamlit_plots(fig)
 
 def plot_prediction_distribution_bytes(y_true, y_pred, split_label):
+    if len(y_true) == 0 or len(y_pred) == 0:
+        st.warning(f"No data for model {split_label} prediction plot.")
+        return None
+    
+    n_points = len(y_true)
+    
     fig = plt.figure(figsize=(12, 5))
     
     ax1 = plt.subplot(1, 2, 1)
@@ -418,19 +448,19 @@ def plot_prediction_distribution_bytes(y_true, y_pred, split_label):
     ax1.hist(y_pred, bins=7, alpha=0.7, label="Predicted", color="coral", edgecolor="steelblue", linewidth=1, density=True)
     ax1.set_xlabel("Value")
     ax1.set_ylabel("Density")
-    ax1.set_title(f"{split_label} Distribution")
+    ax1.set_title(f"Model {split_label} Distribution")
     ax1.legend()
     ax1.grid(True, alpha=0.5)
     
     ax2 = plt.subplot(1, 2, 2)
-    ax2.scatter(y_true, y_pred, alpha=0.6, s=40, color="steelblue")
+    ax2.scatter(y_true, y_pred, alpha=0.7, s=40, color="steelblue")
     minval, maxval = min(y_true.min(), y_pred.min()), max(y_true.max(), y_pred.max())
     ax2.plot([minval, maxval], [minval, maxval], "coral", lw=2)
     ax2.set_xlabel("True Values")
     ax2.set_ylabel("Predicted Values")
-    ax2.set_title("Predicted vs True")
+    ax2.set_title(f"Model Predicted vs True")
+    ax2.legend()
     ax2.grid(True, alpha=0.5)
-    
     plt.tight_layout()
     return generate_streamlit_plots(fig)
 
@@ -443,7 +473,6 @@ def plot_feature_importance_bytes(importances, feature_names, selector_support, 
         if name.startswith("AA"):
             name = name[2:]
         return name
-    
     clean_feature_names = [clean_name(n) for n in feature_names]
     
     top_n = min(top_n, len(importances))
@@ -465,86 +494,103 @@ def plot_feature_importance_bytes(importances, feature_names, selector_support, 
     ax.invert_yaxis()  
     ax.grid(axis="x", alpha=0.5)
     plt.tight_layout()
-    
     return generate_streamlit_plots(fig)
 
-def plot_learning_curve_bytes(estimator, X_train, y_train, cv=5):
-    est = clone(estimator)
-    train_sizes = np.linspace(0.1, 1.0, 10)
-    train_sizes_abs, train_scores, val_scores = learning_curve(
-        est, X_train, y_train, train_sizes=train_sizes, cv=cv, 
-        scoring="r2", n_jobs=-1, shuffle=True, random_state=42, error_score="raise"
-    )
+def plot_learning_curve_bytes(estimator, X_train, y_train, cv=5, n_samples=None, n_neighbors=5, test_size_pct=0.2):
+    n_samples_total = len(X_train) if X_train is not None else 0
     
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(train_sizes_abs, np.mean(train_scores, axis=1), "o-", color="steelblue", label="Training R²", lw=2)
-    ax.plot(train_sizes_abs, np.mean(val_scores, axis=1), "o-", color="coral", label="CV R²", lw=2)
-    ax.fill_between(
-        train_sizes_abs,
-        np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
-        np.mean(train_scores, axis=1) + np.std(train_scores, axis=1),
-        alpha=0.5, color="steelblue"
-    )
-    ax.fill_between(
-        train_sizes_abs,
-        np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
-        np.mean(val_scores, axis=1) + np.std(val_scores, axis=1),
-        alpha=0.5, color="coral"
-    )
-    ax.set_xlabel("Training Set Size")
-    ax.set_ylabel("R² Score")
-    ax.set_title("Model Learning Curve")
-    ax.legend()
-    ax.grid(True, alpha=0.5)
-    plt.tight_layout()
-    return generate_streamlit_plots(fig)
+    safe_cv_splits = min(5, max(2, n_samples_total//4))
+    safe_n_jobs = 1 if n_samples_total < 20 else -1
+    min_train_size = max(2, int(0.2 * n_samples_total * (1 - test_size_pct))) 
+    safe_n_points = min(10, max(3, min_train_size//5))
+    train_sizes = np.linspace(max(0.2, 2/n_samples_total), 1.0, safe_n_points)
+    
+    if n_samples_total < 4 or min_train_size < 1:
+        st.warning("Model learning curve skipped: dataset too small (<4 train samples).")
+        return None 
+    
+    try:
+        est = clone(estimator)
+        orig_neighbors = getattr(est, 'n_neighbors', n_neighbors)
+        safe_neighbors = min(orig_neighbors, max(1, min_train_size//2))
+        if hasattr(est, 'n_neighbors'):
+            est.n_neighbors = safe_neighbors
+        
+        cv_lc = KFold(n_splits=safe_cv_splits, shuffle=True, random_state=42)
+        train_sizes_abs, train_scores, val_scores = learning_curve(
+            est, X_train, y_train,
+            train_sizes=train_sizes, cv=cv_lc,
+            scoring="r2", n_jobs=safe_n_jobs,
+            shuffle=True, random_state=42,
+            error_score=np.nan  
+        )
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.plot(train_sizes_abs, np.mean(train_scores, axis=1), "o-", color="steelblue", label="Training R²", lw=2)
+        ax.plot(train_sizes_abs, np.mean(val_scores, axis=1), "o-", color="coral", label="CV R²", lw=2)
+        ax.fill_between(train_sizes_abs, np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+                        np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), alpha=0.5, color="steelblue")
+        ax.fill_between(train_sizes_abs, np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+                        np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), alpha=0.5, color="coral")
+        ax.set_xlabel("Training Set Size")
+        ax.set_ylabel("R² Score")
+        ax.set_title(f"Model Learning Curve")
+        ax.legend()
+        ax.grid(True, alpha=0.5)
+        plt.tight_layout()
+        return generate_streamlit_plots(fig)
+    
+    except Exception as e:
+        st.error(f"Model learning curve failed: {str(e)[:100]}... Skipping.")
+        return None
 
-def plot_validation_curve_bytes(estimator, X_train, y_train, param_name, param_range, cv=5):
-    from sklearn.model_selection import validation_curve
-    
-    est = clone(estimator)
-    train_scores, val_scores = validation_curve(
-        est, X_train, y_train, param_name=param_name, param_range=param_range,
-        cv=cv, scoring="r2", n_jobs=-1
-    )
-    
-    fig, ax = plt.subplots(figsize=(10, 6))
-    ax.plot(param_range, np.mean(train_scores, axis=1), "o-", color="steelblue", label="Training R²", lw=2)
-    ax.plot(param_range, np.mean(val_scores, axis=1), "o-", color="coral", label="CV R²", lw=2)
-    ax.fill_between(
-        param_range,
-        np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
-        np.mean(train_scores, axis=1) + np.std(train_scores, axis=1),
-        alpha=0.5, color="steelblue"
-    )
-    ax.fill_between(
-        param_range,
-        np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
-        np.mean(val_scores, axis=1) + np.std(val_scores, axis=1),
-        alpha=0.5, color="coral"
-    )
-    ax.set_xlabel(param_name.replace("_", " ").title())
-    ax.set_ylabel("R² Score")
-    ax.set_title("Model Validation Curve")
-    ax.legend()
-    ax.grid(True, alpha=0.5)
-    plt.tight_layout()
-    return generate_streamlit_plots(fig)
+def plot_validation_curve_bytes(estimator, X_train, y_train, param_name, param_range, cv=5, n_samples=None, test_size_pct=0.2):
+    n_samples_total = len(X_train) if X_train is not None else 0
 
-def print_selected_features_raw(selector, raw_feature_names, top_n=20):
-    print("\n" + "="*80)
-    print("🎯 RFECV Top Selected Features - Raw Feature Names (RF Regressor):")
-    print("="*80)
+    safe_cv_splits = min(5, max(2, n_samples_total//4))
+    safe_n_jobs = 1 if n_samples_total < 20 else -1
+    min_fold_size = n_samples_total/safe_cv_splits
+    safe_range_len = min(8, max(3, n_samples_total//10))
     
-    selected_mask = selector.support_
-    selected_raw = [raw_feature_names[i] for i, selected in enumerate(selected_mask) if selected]
+    orig_range = np.array(param_range)
+    safe_max_param = max(1, int(min_fold_size//2))
+    safe_param_range = np.clip(orig_range, 1, safe_max_param)
+    if len(safe_param_range) > safe_range_len or len(np.unique(safe_param_range)) < 3:
+        safe_param_range = np.linspace(1, min(safe_max_param, orig_range.max()), safe_range_len).astype(int)
     
-    for i, feat in enumerate(selected_raw[:top_n]):
-        print(f"  {i+1:2d}. '{feat}'")
+    if n_samples_total < 4 or len(safe_param_range) < 2:
+        st.warning(f"Model validation curve skipped: too small (n={n_samples_total}, safe_range={safe_param_range}).")
+        return None
     
-    total = len(selected_raw)
-    print(f"\n📊 Selected: {total}/{len(raw_feature_names)} ({100*total/len(raw_feature_names):.1f}%)")
-    print("="*80)
+    try:
+        est = clone(estimator)
+        cv_vc = KFold(n_splits=safe_cv_splits, shuffle=True, random_state=42)
+        
+        train_scores, val_scores = validation_curve(
+            est, X_train, y_train,
+            param_name=param_name, param_range=safe_param_range.tolist(),
+            cv=cv_vc, scoring="r2", n_jobs=safe_n_jobs,
+            error_score=np.nan  
+        )
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.plot(safe_param_range, np.mean(train_scores, axis=1), "o-", color="steelblue", label="Training R²", lw=2)
+        ax.plot(safe_param_range, np.mean(val_scores, axis=1), "o-", color="coral", label="CV R²", lw=2)
+        ax.fill_between(safe_param_range, np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+                        np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), alpha=0.5, color="steelblue")
+        ax.fill_between(safe_param_range, np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+                        np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), alpha=0.5, color="coral")
+        ax.set_xlabel(param_name.replace("_", " ").title())
+        ax.set_ylabel("R² Score")
+        ax.set_title(f"Model Validation Curve")
+        ax.legend()
+        ax.grid(True, alpha=0.5)
+        plt.tight_layout()
+        return generate_streamlit_plots(fig)
+    
+    except Exception as e:
+        st.error(f"Model validation curve failed ({param_name}): {str(e)[:100]}... Skipping.")
+        return None
 
 def calculate_adjusted_r2(r2_score, n_samples, n_features):
     if n_samples <= n_features + 1:
@@ -665,6 +711,25 @@ def generate_prediction_df(input_dict, feature_names, id_cols, n_features):
             input_data[col] = 'Dummy'
     return pd.DataFrame([input_data])
 
+def print_selected_features_raw(selector_or_support, raw_feature_names, top_n=20):
+    print("\n" + "="*80)
+    print("🎯 Top Selected Features - Raw Names:")
+    print("="*80)
+    
+    if hasattr(selector_or_support, 'support_'):
+        selected_mask = selector_or_support.support_
+    else:  # numpy array/boolean mask
+        selected_mask = selector_or_support
+    
+    selected_raw = [raw_feature_names[i] for i, selected in enumerate(selected_mask) if selected]
+    
+    for i, feat in enumerate(selected_raw[:top_n]):
+        print(f"  {i+1:2d}. '{feat}'")
+    
+    total = len(selected_raw)
+    print(f"\n📊 Selected: {total}/{len(raw_feature_names)} ({100*total/len(raw_feature_names):.1f}%)")
+    print("="*80)
+
 def drop_highly_correlated(X, threshold=0.70):
     corr_matrix = X.corr().abs()
     upper_tri = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(bool))
@@ -685,7 +750,6 @@ def generate_and_train(
     n_neighbors=5, weights='distance', metric='manhattan', corr_threshold=0.85
 ):
     print(f"Generating {n_samples} samples with {n_features} features...")
-
     np.random.seed(random_state)
 
     n_base = 8
@@ -766,29 +830,52 @@ def generate_and_train(
     rf = RandomForestRegressor(n_estimators=50, random_state=42, n_jobs=-1)
 
     n_features = X_train_proc.shape[1]
-    min_features = max(1, min(5, n_features // 10, n_features))  # Safe: 1 <= min_features <= n_features
+    print(f"X_train_proc shape: {X_train_proc.shape}")
 
-    selector = RFECV(
-        rf, step=0.1, cv=cv, scoring='neg_root_mean_squared_error',
-        min_features_to_select=min_features, n_jobs=-1
-    )
+    selector = None
+    selector_support = np.ones(n_features, dtype=bool)  
+    n_selected = n_features
 
-    n_splits = cv.n_splits if hasattr(cv, 'n_splits') else 5
-    samples_per_fold = len(X_train_proc)/n_splits
-    if samples_per_fold < 3: 
-        st.error(f"Too few samples for RFECV CV (samples/fold ~{samples_per_fold:.1f} < 3). Reduce n_splits or add data.")
+    if n_features < 2:
+        st.warning(f"Skipping RFECV: only {n_features} feature(s) after processing (need ≥2). Using all.")
+        X_train_sel = X_train_proc
+        X_test_sel = X_test_proc
+        selector_support = np.ones(n_features, dtype=bool) 
+        n_selected = n_features
+
+    elif n_features == 0:
+        st.error("No features after processing! Check data/corr_threshold.")
         st.stop()
-        
-    selector.fit(X_train_proc, y_train)
-    print(f"✅ Selected: {selector.n_features_} features")
-    print_selected_features_raw(selector, raw_feature_names)
 
-    X_train_sel = selector.transform(X_train_proc)
-    X_test_sel = selector.transform(X_test_proc)
+    else:
+        min_features = max(1, min(5, n_features//10, n_features))  
+        selector = RFECV(
+            rf, step=0.1, cv=cv, scoring='neg_root_mean_squared_error',
+            min_features_to_select=min_features, n_jobs=-1
+        )
+
+        n_splits = cv.n_splits if hasattr(cv, 'n_splits') else 5
+        samples_per_fold = len(X_train_proc)/n_splits
+        if samples_per_fold < 3: 
+            st.error(f"Too few samples for RFECV CV (samples/fold ~{samples_per_fold:.1f} < 3). Reduce n_splits or add data.")
+            print_selected_features_raw(selector_support, raw_feature_names)
+            st.stop()
+        
+        selector.fit(X_train_proc, y_train)
+        X_train_sel = selector.transform(X_train_proc)
+        X_test_sel = selector.transform(X_test_proc)
+
+        selector_support = selector.support_
+        n_selected = selector.n_features_
+        print(f"✅ Selected: {n_selected} features")
+        if selector is not None:
+            print_selected_features_raw(selector, raw_feature_names)
+        else:
+            print_selected_features_raw(selector_support, raw_feature_names)
 
     knn = KNeighborsRegressor(n_neighbors=n_neighbors, weights=weights, metric=metric)
-    if len(X_train) < n_neighbors:
-        st.error(f"Need at least {n_neighbors} samples; got {len(X_train)}")
+    if len(X_train_sel) < n_neighbors:
+        st.error(f"Need at least {n_neighbors} samples; got {len(X_train_sel)}")
         st.stop()
 
     knn.fit(X_train_sel, y_train)
@@ -817,7 +904,8 @@ def generate_and_train(
     print("\n📈 Generating model plots...")
     rf.fit(X_train_proc, y_train)
     importances = rf.feature_importances_
-    selected_features = [raw_feature_names[i] for i, sel in enumerate(selector.support_) if sel]
+    selected_features = [raw_feature_names[i] for i, sel in enumerate(selector_support) if sel]
+    print(f"Selected features: {len(selected_features)}): {selected_features}")
 
     return {
         "df": df,
@@ -835,9 +923,9 @@ def generate_and_train(
         "test_residuals_bytes": plot_residuals_bytes(y_test, y_test_pred, "Test"),
         "train_distribution_bytes": plot_prediction_distribution_bytes(y_train, y_train_pred, "Train"),
         "test_distribution_bytes": plot_prediction_distribution_bytes(y_test, y_test_pred, "Test"),
-        "feature_importance_bytes": plot_feature_importance_bytes(importances, raw_feature_names, selector.support_),
+        "feature_importance_bytes": plot_feature_importance_bytes(importances, raw_feature_names, selector_support),
         "learning_curve_bytes": plot_learning_curve_bytes(knn, X_train_sel, y_train, cv=5),
-        "validation_curve_bytes": plot_validation_curve_bytes(knn, X_train_sel, y_train, "n_neighbors", range(1, 51, 2), cv=5),
+        "validation_curve_bytes": plot_validation_curve_bytes(knn, X_train_sel, y_train, "n_neighbors", list(range(1, min(26, len(X_train_sel)+1), 2))),
     }
 
 if __name__ == "__main__":

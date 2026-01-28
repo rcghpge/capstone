@@ -42,26 +42,43 @@ if "results" in st.session_state:
     res = st.session_state["results"]
 
     with st.expander("Model Plots", expanded=False):
-        if "train_scatter_bytes" in res:
+        if res["train_scatter_bytes"] is not None:
             st.image(res["train_scatter_bytes"], caption="Train Predictions", width='stretch')
-        if "test_scatter_bytes" in res:
+        else:
+            st.warning("Model training scatter plot skipped (dataset too small)")
+        if res["test_scatter_bytes"] is not None:
             st.image(res["test_scatter_bytes"], caption="Test Predictions", width='stretch')
-        if "train_residuals_bytes" in res:
+        else:
+            st.warning("Model testing scatter plot skipped (dataset too small)")
+        if res["train_residuals_bytes"] is not None:
             st.image(res["train_residuals_bytes"], caption="Train Residuals", width='stretch')
-        if "test_residuals_bytes" in res:
+        else:
+            st.warning("Model training residuals skipped (dataset too small)")
+        if res["test_residuals_bytes"] is not None:
             st.image(res["test_residuals_bytes"], caption="Test Residuals", width='stretch')
-        if "train_distribution_bytes" in res:
+        else:
+            st.warning("Model testing residuals skipped (dataset too small)")
+        if res["train_distribution_bytes"] is not None:
             st.image(res["train_distribution_bytes"], caption="Train Distribution", width='stretch')
-        if "test_distribution_bytes" in res:
+        else:
+            st.warning("Model training distribution skipped (dataset too small)")
+        if res["test_distribution_bytes"] is not None:
             st.image(res["test_distribution_bytes"], caption="Test Distribution", width='stretch')
-        if "feature_importance_bytes" in res:
+        else:
+            st.warning("Model testing distribution skipped (dataset too small)")
+        if res["feature_importance_bytes"] is not None:
             st.subheader("Feature Importance")
             st.image(res["feature_importance_bytes"], caption="Feature Importance", width='stretch')
-        if "learning_curve_bytes" in res:
+        else:
+            st.warning("Model feature importance skipped (dataset is too small)")
+        if res["learning_curve_bytes"] is not None:
             st.image(res["learning_curve_bytes"], caption="Learning Curve", width='stretch')
-        if "validation_curve_bytes" in res:
+        else:
+            st.warning("Model learning curve skipped (dataset too small)")
+        if res["validation_curve_bytes"] is not None:
             st.image(res["validation_curve_bytes"], caption="Validation Curve", width='stretch')
         else:
+            st.warning("Model validation curve skipped (dataset too small)")
             st.warning("Train plots not available.")
 else:
     st.info("No generated model plots. Click 'Generate Data & Train Model'.")
