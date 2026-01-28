@@ -30,6 +30,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import streamlit as st
 from scipy import stats
 from pathlib import Path
 import matplotlib.pyplot as plt
@@ -771,6 +772,7 @@ def generate_and_train(
         rf, step=0.1, cv=cv, scoring='neg_root_mean_squared_error',
         min_features_to_select=min_features, n_jobs=-1
     )
+    
     selector.fit(X_train_proc, y_train)
     print(f"✅ Selected: {selector.n_features_} features")
     print_selected_features_raw(selector, raw_feature_names)
@@ -779,6 +781,10 @@ def generate_and_train(
     X_test_sel = selector.transform(X_test_proc)
 
     knn = KNeighborsRegressor(n_neighbors=n_neighbors, weights=weights, metric=metric)
+    if len(X_train) < n_neighbors:
+        st.error(f"Need at least {n_neighbors} samples; got {len(X_train)}")
+        st.stop()
+
     knn.fit(X_train_sel, y_train)
     y_train_pred = knn.predict(X_train_sel)
     y_test_pred = knn.predict(X_test_sel)
