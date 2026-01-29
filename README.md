@@ -1,6 +1,6 @@
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://hub.2i2c.mybinder.org/user/rcghpge-capstone-r7jc7ilz/lab)
-[![Binder](https://2i2c.mybinder.org/badge_logo.svg)](https://2i2c.mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab)
+
 <div align="center">
 
 <h2 style="font-size: clamp(20px, 4.5vw, 28px) !important; color: #6a737d; margin: 0 0 20px 0 !important; font-weight: 600 !important;">
@@ -97,7 +97,11 @@ pixi shell
 pixi info
 ```
 
-Note: This project is distinct from the Capstone disassembler project.
+## Binder
+Binder provides a development environment but takes a bit to launch. Check pre-built Binder environment or link provided below
+[Binder](https://hub.2i2c.mybinder.org/user/rcghpge-capstone-r7jc7ilz/lab) - launch a Jupyter Lab development environment in your web browser
+
+This project is distinct from the Capstone disassembler project.
  
 ---
 
