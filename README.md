@@ -1,5 +1,5 @@
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/https://hub.2i2c.mybinder.org/user/rcghpge-capstone-u7tezzh0/lab/HEAD)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://hub.2i2c.mybinder.org/user/rcghpge-capstone-u7tezzh0/lab)
 
 <div align="center">
 
