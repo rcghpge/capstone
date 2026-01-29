@@ -1593,7 +1593,7 @@ packages:
 - pypi: ./
   name: capstone
   version: 0.9.0
-  sha256: 9c66562f602bf6d8712c4820b726eaf3d596cc92391971d877425ef7f3c0fb70
+  sha256: 97b56dcc8a2e0265255df92e15e9d52e7d343f17a9c62002bc5b8e0cab1c898a
   requires_dist:
   - jupyterlab>=4.5.3,<5
   - ipykernel>=7.1.0,<8
@@ -1636,7 +1636,7 @@ packages:
   - pre-commit ; extra == 'dev'
   - jupyterlab-lsp ; extra == 'dev'
   - pip-tools ; extra == 'dev'
-  requires_python: '>=3.14.2,<3.15'
+  requires_python: '>=3.11,<3.15'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/catboost-1.2.8-cuda120_py314h6f0fa1c_106.conda
   sha256: ce6cd4af839035aa5162ea8a0895991c77bb43b2fc6b2d590feabfb618d7e23f
   md5: bd8d8281374aa88b4a3d58f04fe8f712
