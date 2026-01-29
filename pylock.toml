@@ -3,14 +3,14 @@ created-by = "pip"
 
 [[packages]]
 name = "absl-py"
-version = "2.3.1"
+version = "2.4.0"
 
 [[packages.wheels]]
-name = "absl_py-2.3.1-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/8f/aa/ba0014cc4659328dc818a28827be78e6d97312ab0cb98105a770924dc11e/absl_py-2.3.1-py3-none-any.whl"
+name = "absl_py-2.4.0-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/18/a6/907a406bb7d359e6a63f99c313846d9eec4f7e6f7437809e03aa00fa3074/absl_py-2.4.0-py3-none-any.whl"
 
 [packages.wheels.hashes]
-sha256 = "eeecf07f0c2a93ace0772c92e596ace6d3d3996c042b2128459aaae2a76de11d"
+sha256 = "88476fd881ca8aab94ffa78b7b6c632a782ab3ba1cd19c9bd423abc4fb4cd28d"
 
 [[packages]]
 name = "altair"
@@ -201,14 +201,14 @@ sha256 = "b7ac014ff72ee199b5f8af1de29d60239954f223e948196fa3d84adaffc71d2b"
 
 [[packages]]
 name = "cachetools"
-version = "6.2.5"
+version = "6.2.6"
 
 [[packages.wheels]]
-name = "cachetools-6.2.5-py3-none-any.whl"
-url = "https://files.pythonhosted.org/packages/e3/a6/24169d70ec5264b65ba54ba49b3d10f46d6b1ad97e185c94556539b3dfc8/cachetools-6.2.5-py3-none-any.whl"
+name = "cachetools-6.2.6-py3-none-any.whl"
+url = "https://files.pythonhosted.org/packages/90/45/f458fa2c388e79dd9d8b9b0c99f1d31b568f27388f2fdba7bb66bbc0c6ed/cachetools-6.2.6-py3-none-any.whl"
 
 [packages.wheels.hashes]
-sha256 = "db3ae5465e90befb7c74720dd9308d77a09b7cf13433570e07caa0845c30d5fe"
+sha256 = "8c9717235b3c651603fff0076db52d6acbfd1b338b8ed50256092f7ce9c85bda"
 
 [[packages]]
 name = "capstone"
@@ -1341,14 +1341,14 @@ sha256 = "3df850c2f8db9934de4cf8f9152f8dc2558f49f298f37f90c517e8e5c84c30e9"
 
 [[packages]]
 name = "psutil"
-version = "7.2.1"
+version = "7.2.2"
 
 [[packages.wheels]]
-name = "psutil-7.2.1-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl"
-url = "https://files.pythonhosted.org/packages/29/f8/40e01c350ad9a2b3cb4e6adbcc8a83b17ee50dd5792102b6142385937db5/psutil-7.2.1-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl"
+name = "psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl"
+url = "https://files.pythonhosted.org/packages/b5/70/5d8df3b09e25bce090399cf48e452d25c935ab72dad19406c77f4e828045/psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl"
 
 [packages.wheels.hashes]
-sha256 = "5e38404ca2bb30ed7267a46c02f06ff842e92da3bb8c5bfdadbd35a5722314d8"
+sha256 = "076a2d2f923fd4821644f5ba89f059523da90dc9014e85f8e45a5774ca5bc6f9"
 
 [[packages]]
 name = "ptyprocess"
