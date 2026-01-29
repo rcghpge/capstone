@@ -98,7 +98,8 @@ pixi info
 ```
 
 ## Binder
-Binder provides a development environment but takes a bit to launch. Check pre-built Binder environment or link provided below
+Binder provides a development environment but takes a bit to launch. Check pre-built Binder environment above or link provided below
+
 [Binder](https://hub.2i2c.mybinder.org/user/rcghpge-capstone-r7jc7ilz/lab) - launch a Jupyter Lab development environment in your web browser
 
 This project is distinct from the Capstone disassembler project.
