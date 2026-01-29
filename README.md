@@ -98,7 +98,7 @@ pixi info
 ```
 
 ## Binder
-Binder provides a development environment but takes a bit to launch. Launch a Jupyter environment via Binder above or link provided below
+Binder provides a development environment but takes a bit to launch. Launch a Jupyter environment via Binder above or link provided below. More information about The Binder Project, a project within Project Jupyter [here](https://jupyter.org/binder)
 
 [Binder](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab) - Not fully tested. Still in development for stable workflow environments
 
