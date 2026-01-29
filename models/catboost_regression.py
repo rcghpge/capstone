@@ -616,7 +616,7 @@ def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None,
     print(f"📊 Statistical Outliers (IQR ±1.5): {stat_outliers.sum():3d}/{len(residuals):3d} ({stat_outlier_pct:4.1f}%)")
     
     worst_idx = np.argsort(abs_residuals)[-5:][::-1]
-    print(f"\n🚨 Top 5 KNN Regression Model Inference Worst Predictions (Residuals Errors):")
+    print(f"\n🚨 Top 5 CatBoost Regression Model Inference Worst Predictions (Residuals Errors):")
     print(f" {'#':3s} | {'State':15s} | {'District':20s} | {'True':6s} | {'Pred':6s} | {'Error':6s}")
     print("-" * 80)
     
