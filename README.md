@@ -102,8 +102,6 @@ Binder provides a development environment but takes a bit to launch. Launch a Ju
 
 [Binder](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab) - Not fully tested. Still in development for stable workflow environments
 
-This project is distinct from the Capstone disassembler project.
- 
 ---
 
 License: MIT
