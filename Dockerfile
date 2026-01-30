@@ -9,7 +9,7 @@ ENV PATH="/opt/uv/bin:${PATH}"
 WORKDIR ${HOME}
 
 COPY --chown=${NB_UID}:${NB_UID} pyproject.toml* requirements.txt* ${HOME}/
-RUN uv pip install --system --no-cache -e .[dev] || uv pip install --system --no-cache -r requirements.txt
+RUN uv pip install --system --no-cache -e . || uv pip install --system --no-cache -r requirements.txt
 
 # Kernel + final copy
 RUN python -m ipykernel install --sys-prefix --name python3
