@@ -16,7 +16,7 @@ RUN python -m pip install --upgrade pip
 RUN uv pip install --system --no-cache -e . || uv pip install --system --no-cache -r requirements.txt
 
 RUN python -m ipykernel install --sys-prefix --name python3
-RUN fix-permissions ${HOME} /opt/uv \
+RUN fix-permissions ${HOME} /opt/conda /opt/uv \
     && rm -rf /tmp/*
 
 USER ${NB_USER}
