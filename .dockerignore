@@ -1,36 +1,30 @@
-# Git & build artifacts
+# Git 
 .git
 .gitignore
-README.md
-*.md
-.dockerignore
-Dockerfile*
-.github/
 
-# Python cache/binary
-__pycache__
+# Python 
+__pycache__/
 *.py[cod]
-*$py.class
-*.so
 .pytest_cache/
 .coverage
-htmlcov/
 .cache
 .pip/
-.pytest_cache/
 uv-cache/
 
-# IDE/editor
+# IDE/OS
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# OS/data 
 .DS_Store
 Thumbs.db
-data/
-*.zip
-*.tar.gz
-*.h5
-notebooks/*.ipynb_checkpoints/
+
+# Checkpoints only
+**/*.ipynb_checkpoints/
+
+# Optional large data (if any)
+data/    
+# *.zip       
+
+# Docker
+!pyproject.toml
+!requirements.txt
+!README.md
