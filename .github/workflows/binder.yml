@@ -13,13 +13,9 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     steps:
-    - name: Run Build Checks + Disk Cleanup 
+    - name: Run Disk Cleanup 
       run: |
-        sudo apt-get update -qq
-        sudo apt-get install -yqq ca-certificates curl gnupg lsb-release
-        sudo update-ca-certificates --fresh
-        sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
-        df -h
+        sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h
 
     - name: Checkout  
       uses: actions/checkout@v4
@@ -38,7 +34,7 @@ jobs:
         DOCKER_REGISTRY: "docker.io"
         LATEST_TAG_OFF: true
         BINDER_CACHE: true
-        MYBINDERORG_TAG: true
+        # MYBINDERORG_TAG: false  # ca-cert/ssl conflicts
         IMAGE_NAME: "rcdpge/capstone-binder"
 
     - name: Run Disk Checks
