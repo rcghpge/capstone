@@ -8,14 +8,13 @@ COPY --from=ghcr.io/astral-sh/uv:0.4.18 /uv /opt/uv/bin/
 ENV PATH="/opt/uv/bin:${PATH}"
 WORKDIR ${HOME}
 
-RUN python -m pip install --upgrade pip
+COPY --chown=${NB_UID}:${NB_UID} . ${HOME}
+RUN rm -rf ${HOME}/.git ${HOME}/__pycache__
 
-COPY --chown=${NB_UID}:${NB_UID} pyproject.toml* requirements.txt* ${HOME}/
+RUN python -m pip install --upgrade pip
 RUN uv pip install --system --no-cache -e . || uv pip install --system --no-cache -r requirements.txt
 
-# Kernel + final copy
 RUN python -m ipykernel install --sys-prefix --name python3
-COPY --chown=${NB_UID}:${NB_UID} . ${HOME}
 RUN fix-permissions ${HOME} /opt/uv && rm -rf /tmp/*
 
 USER ${NB_USER}
