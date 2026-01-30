@@ -5,23 +5,26 @@ on:
   pull_request:
     branches: [main]
 
-permissions:
-  packages: write 
-  contents: read
-
 jobs:
-  build:
+  build-and-push:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Build disk space configs
+      run: |
+        sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
+        df -h
 
-    - name: Set SHA encryption
-      id: shortsha
-      run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+    - name: Checkout configs
+      uses: actions/checkout@main
 
-    - uses: jupyterhub/repo2docker-action@master
+    - name: Build and push to DockerHub
+      uses: jupyterhub/repo2docker-action@master
       with:
-        IMAGE_NAME: ghcr.io/rcdpge/capstone-binder:${{ steps.shortsha.outputs.SHORT_SHA }}
-        BINDER_CACHE: true
-        MYBINDERORG_TAG: true
+        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        DOCKER_REGISTRY: "docker.io"
         LATEST_TAG_OFF: true
+        IMAGE_NAME: "rcdpge/capstone-binder"
+
+    - name:  Build disk space checks
+      run: df -h
