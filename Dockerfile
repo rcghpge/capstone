@@ -20,3 +20,7 @@ RUN fix-permissions ${HOME} /opt/conda /opt/uv \
     && rm -rf /tmp/*
 
 USER ${NB_USER}
+#BINDER COMPAT: Inherit base-notebook entrypoint
+ENTRYPOINT ["start-notebook.py"]
+#full CMD:
+#CMD ["start-notebook.py", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--NotebookApp.token=''"]
