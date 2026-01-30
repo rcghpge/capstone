@@ -24,6 +24,7 @@ jobs:
         DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         DOCKER_REGISTRY: "docker.io"
         LATEST_TAG_OFF: true
+        MYBINDERORG_TAG: true
         IMAGE_NAME: "rcdpge/capstone-binder"
 
     - name:  Build disk space checks
