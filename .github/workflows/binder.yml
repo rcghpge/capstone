@@ -18,6 +18,7 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -yqq ca-certificates
         sudo update-ca-certificates --fresh
+        echo 'CURL_CA_BUNDLE=""' >> $GITHUB_ENV  # Docs: custom store
         sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc
         df -h
 
