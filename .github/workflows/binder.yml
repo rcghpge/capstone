@@ -1,0 +1,13 @@
+name: Pre-build Binder Image
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: jupyterhub/repo2docker-action@v2
+      with:
+        docker_registry: docker.io   
+        image_name: rcdpge/capstone-binder
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
