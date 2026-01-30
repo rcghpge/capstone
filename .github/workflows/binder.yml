@@ -28,7 +28,7 @@ jobs:
         DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         DOCKER_REGISTRY: "docker.io"
-        LATEST_TAG_OFF: true
+        LATEST_TAG_OFF: false
         BINDER_CACHE: true
         # MYBINDERORG_TAG: false  # ca-cert/ssl conflicts
         IMAGE_NAME: "rcdpge/capstone-binder"
