@@ -12,15 +12,11 @@ jobs:
     - name: Checkout files
       uses: actions/checkout@v4
 
-    - name: Set DockerHub configs
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
-
-    - name: Build & push Red Hat/Binder container + cache
+    - name: Build & push Binder container + cache
       uses: jupyterhub/repo2docker-action@master
       with:
-        IMAGE_NAME: rcdpge/capstone-binder
+        IMAGE_NAME: docker.io/rcdpge/capstone-binder:${{ github.sha }}
+        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         BINDER_CACHE: true
         MYBINDERORG_TAG: true
