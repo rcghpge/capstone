@@ -10,4 +10,4 @@ jobs:
         docker_registry: docker.io   
         image_name: rcdpge/capstone-binder
         username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
