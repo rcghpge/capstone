@@ -5,6 +5,10 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: write     
+  pull-requests: write
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -25,7 +29,7 @@ jobs:
         DOCKER_REGISTRY: "docker.io"
         LATEST_TAG_OFF: true
         BINDER_CACHE: true
-        MYBINDERORG_TAG: false # wip. ping Jupyter/Binder community
+        MYBINDERORG_TAG: true
         IMAGE_NAME: "rcdpge/capstone-binder"
 
     - name:  Build disk space checks
