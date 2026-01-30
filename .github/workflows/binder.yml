@@ -5,18 +5,23 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  packages: write 
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout files
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-    - name: Build & push Binder container + cache
-      uses: jupyterhub/repo2docker-action@master
+    - name: Set SHA encryption
+      id: shortsha
+      run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - uses: jupyterhub/repo2docker-action@master
       with:
-        IMAGE_NAME: docker.io/rcdpge/capstone-binder:${{ github.sha.short }}
-        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+        IMAGE_NAME: ghcr.io/rcdpge/capstone-binder:${{ steps.shortsha.outputs.SHORT_SHA }}
         BINDER_CACHE: true
         MYBINDERORG_TAG: true
+        LATEST_TAG_OFF: true
