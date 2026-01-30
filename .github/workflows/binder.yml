@@ -17,6 +17,7 @@ jobs:
       with:
         DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        IMAGE_NAME: rcdpge/capstone-binder 
         BINDER_CACHE: true        
-        COMMIT_MSG: "Set Binder development environment (pre-build Binder image)"
+        COMMIT_MSG: "Set Binder development environment (pre-build Binder container image)"
         MYBINDERORG_TAG: true      
