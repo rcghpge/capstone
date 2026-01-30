@@ -6,9 +6,8 @@ ENV USER=${NB_USER} HOME=/home/${NB_USER}
 USER root
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /opt/uv/bin/
 ENV PATH="/opt/uv/bin:${PATH}"
-WORKDIR ${HOME}
-
 RUN uv pip install --system --no-cache jupyterlab jupyterhub
+WORKDIR ${HOME}
 
 COPY --chown=${NB_UID}:${NB_UID} . ${HOME}
 RUN rm -rf ${HOME}/.git ${HOME}/__pycache__
