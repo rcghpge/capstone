@@ -1,5 +1,5 @@
 # Dockerfile build for Binder
-FROM jupyter/base-notebook:python-3.12-slim
+FROM jupyter/base-notebook:python-3.12-lab
 
 USER root
 
