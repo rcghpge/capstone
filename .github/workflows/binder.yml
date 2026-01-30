@@ -1,13 +1,22 @@
 name: Pre-build Binder Image
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    - uses: jupyterhub/repo2docker-action@master
+    - name: Checkout files
+      uses: actions/checkout@v4
+
+    - name: Build Red Hat/Binder container image & push to DockerHub + Binder cache
+      uses: jupyterhub/repo2docker-action@master
       with:
-        docker_registry: docker.io   
-        image_name: rcdpge/capstone-binder
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        BINDER_CACHE: true        
+        COMMIT_MSG: "Set Binder development environment (pre-build Binder image)"
+        MYBINDERORG_TAG: true      
