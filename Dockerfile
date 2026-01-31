@@ -1,12 +1,16 @@
 FROM quay.io/jupyter/base-notebook:python-3.13
-ARG NB_USER=jovyan
-ARG NB_UID=1000
+ARG NB_USER
+ARG NB_UID
 ENV USER=${NB_USER} HOME=/home/${NB_USER}
+RUN adduser --disabled-password \
+    --gecos "rc" \
+    --uid ${NB_UID} \
+    ${NB_USER}
 
-USER root
+# USER root
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /opt/uv/bin/
 ENV PATH="/opt/uv/bin:${PATH}"
-RUN uv pip install --system --no-cache-dir jupyterlab jupyterhub
+RUN uv pip install --system --no-cache-dir notebook jupyterlab jupyterhub
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         curl ca-certificates openssl \
