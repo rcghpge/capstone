@@ -1,37 +1,24 @@
 FROM quay.io/jupyter/base-notebook:python-3.13
-ARG NB_USER
-ARG NB_UID
-ENV USER=${NB_USER} HOME=/home/${NB_USER}
-RUN apt-get update && apt-get install -y adduser
-RUN adduser --disabled-password \
-    --gecos "rc" \
-    --uid ${NB_UID} \
-    ${NB_USER}
+ARG NB_USER=jovyan
+ARG NB_UID=1000
+ENV USER=${NB_USER} \
+    HOME=/home/${NB_USER} \
+    NB_UID=${NB_UID}
 
-# USER root
+USER root
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /opt/uv/bin/
 ENV PATH="/opt/uv/bin:${PATH}"
-RUN uv pip install --system --no-cache-dir notebook jupyterlab jupyterhub
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        curl ca-certificates openssl \
-    && update-ca-certificates \
-    && curl -s https://api.github.com/repos/jupyterhub/repo2docker-action/releases/latest || true \
-    && rm -rf /var/lib/apt/lists/*
+RUN uv pip install --system --no-cache notebook jupyterlab jupyterhub
+RUN jupyter lab build --dev-build=False --minimize=False || true
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates openssl nodejs npm && rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${HOME}
-COPY --chown=${NB_UID}:${NB_UID} . ${HOME}
-RUN rm -rf ${HOME}/.git ${HOME}/__pycache__
+COPY --chown=${NB_UID}:0 . ${HOME}
 
-RUN python -m pip install --upgrade pip
-RUN uv pip install --system --no-cache -e . || uv pip install --system --no-cache -r requirements.txt
-
+RUN uv pip install --system --no-cache -e .[dev] || uv pip install --system --no-cache -r requirements.txt
 RUN python -m ipykernel install --sys-prefix --name python3
-RUN fix-permissions ${HOME} /opt/conda /opt/uv \
-    && rm -rf /tmp/*
+RUN fix-permissions ${HOME} /opt/conda /opt/uv || true && rm -rf /tmp/*
 
 USER ${NB_USER}
-#BINDER COMPAT: Inherit base-notebook entrypoint
-#ENTRYPOINT ["start-notebook.py"]
-#full CMD:
-#CMD ["start-notebook.py", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--NotebookApp.token=''"]
+EXPOSE 8888
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--NotebookApp.token=''", "--NotebookApp.allow_origin='*'"]
