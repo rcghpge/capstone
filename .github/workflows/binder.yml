@@ -22,7 +22,7 @@ jobs:
       with:
         ref: ${{ github.event.pull_request.head.sha }}
 
-    - name: Build/Push DockerHub 
+    - name: Build/Push to DockerHub 
       uses: jupyterhub/repo2docker-action@master # latest version is 0.2
       with:
         DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -30,7 +30,7 @@ jobs:
         DOCKER_REGISTRY: "docker.io"
         LATEST_TAG_OFF: false
         BINDER_CACHE: true
-        MYBINDERORG_TAG: ${{ github.event.ref }}
+        # MYBINDERORG_TAG: ${{ github.event.ref }}
         # MYBINDERORG_TAG: false  # ca-cert/ssl conflicts
         IMAGE_NAME: "rcdpge/capstone-binder"
         PUBLIC_REGISTRY_CHECK: true
