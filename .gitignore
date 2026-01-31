@@ -84,6 +84,9 @@ prototype/
 !test/
 tools/
 
+# Remote development
+!devcontainer.json
+
 # Testing
 .pytest_cache/
 .tox/
