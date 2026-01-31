@@ -1,4 +1,0 @@
-image: rcdpge/capstone-binder:latest
-ports:
-  - 8888:8888
-command: jupyter lab --ip=0.0.0.0 --no-browser --allow-root

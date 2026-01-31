@@ -1,0 +1,11 @@
+{
+  "name": "Capstone Binder",
+  "image": "rcdpge/capstone-binder:latest",
+  "features": {
+    "ghcr.io/devcontainers/features/python:1": {}
+  },
+  "forwardPorts": [8888],
+  "postCreateCommand": "jupyter lab --generate-config --allow-root && echo 'c.ServerApp.ip = \"0.0.0.0\"' >> ~/.jupyter/jupyter_lab_config.py",
+  "remoteUser": "jovyan",
+  "overrideFeatureInstallOrder": ["python"]
+}

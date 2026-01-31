@@ -1,5 +1,0 @@
-{
-  "image": "rcdpge/capstone-binder:latest",
-  "forwardPorts": [8888],
-  "postCreateCommand": "jupyter lab --ip=0.0.0.0 --allow-root"
-}
