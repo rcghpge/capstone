@@ -8,8 +8,10 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /opt/uv/bin/
 ENV PATH="/opt/uv/bin:${PATH}"
 RUN uv pip install --system --no-cache-dir jupyterlab jupyterhub
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl gnupg \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl ca-certificates openssl \
     && update-ca-certificates \
+    && curl -s https://api.github.com/repos/jupyterhub/repo2docker-action/releases/latest || true \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR ${HOME}
