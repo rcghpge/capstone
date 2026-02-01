@@ -45,7 +45,14 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split, KFold, cross_val_score, learning_curve
 from catboost import CatBoostRegressor, Pool
 from scipy import stats
-
+"""
+Example usage
+!python catboost_regression.py \
+--data ../data/Key_indicator_districtwise.csv --target "Infant_Mortality_Rate_Imr_Total_Person" \
+--id-cols "State_Name" "State_District_Name" --cv-folds 7 --correlation 75 --test-size 0.20 --random-state 42 \
+--iterations 10000 --depth 3 --learning-rate 0.01 --l2-leaf-reg 50 --min-child-weight 75 --early-stopping-rounds 5000 \
+--top-n-plot 10 --chunk-size 50000 --out_dir artifacts/catboost
+"""
 sns.set_palette('husl')
 plt.style.use('default')
 logging.basicConfig(

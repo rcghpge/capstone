@@ -37,9 +37,9 @@ from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, explained_variance_score
 """
 Example Usage:
-python -m models.xgboost_base --data data/Key_indicator_districtwise.csv \
+!python xgboost_base.py --data data/Key_indicator_districtwise.csv \
 --target YY_Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
---outdir ./xgboost
+--outdir artifacts/xgboost
 """
 
 def plot_and_save(y_true, y_pred, outdir):

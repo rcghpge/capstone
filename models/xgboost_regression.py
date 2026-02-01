@@ -53,7 +53,7 @@ from sklearn.model_selection import train_test_split, KFold, learning_curve, cro
 Example usage: See Jupyter Notebooks for more information.
 
 # Basic model run
-python xgboost_regression.py \
+!python xgboost_regression.py \
 --data ../data/Key_indicator_districtwise.csv \
 --target "Infant_Mortality_Rate_Imr_Total_Person" \
 --id-cols "State_Name" "State_District_Name" \
@@ -63,7 +63,7 @@ python xgboost_regression.py \
 --outdir artifacts/xgboost
 
 # Hyperparameter Tuning
-python xgboost_regression.py \
+!python xgboost_regression.py \
 --data ../data/Key_indicator_districtwise.csv \
 --target "Infant_Mortality_Rate_Imr_Total_Person" \
 --id-cols "State_Name" "State_District_Name" \

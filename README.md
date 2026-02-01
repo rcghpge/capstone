@@ -1,8 +1,10 @@
 [![Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=rcghpge/capstone)
 
-[![Binder Container Image](https://github.com/rcghpge/capstone/actions/workflows/binder.yml/badge.svg)](https://github.com/rcghpge/capstone/actions/workflows/binder.yml)
+[![Docker](https://img.shields.io/badge/Docker-rcdpge/capstone--binder-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/rcdpge/capstone-binder)
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rcghpge/capstone/blob/main/notebooks/index.ipynb)
+[![Binder Container Image](https://github.com/rcghpge/capstone/actions/workflows/binder.yml/badge.svg)](https://github.com/rcghpge/capstone/actions/workflows/binder.yml)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab)
 
 <div align="center">
 
@@ -20,25 +22,29 @@
   </tr>
 </table>
 
-<p style="font-size: clamp(25px, 7vw, 33px); line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto 20px auto;">
- <strong>Machine learning utilizing key health indicators for infant mortality rate prediction.</strong><br>
+<p style="font-size: clamp(16px, 3.5vw, 20px); line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto 20px auto;">
+  Machine learning utilizing key health indicators for infant mortality rate prediction.
 </p>
 </div>
-<!--- <div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
+<div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
 <strong>References</strong><br>
-Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
+Kaggle. (2017). Annual Health Survey (India AHS 2012-13) Retrieved September 12, 2025, from<br>
 <a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey</a>
 </div>
-</div> --->
+</div>
 
 ---
 
 # Project Structure
 ```bash
 .
+├── .devontainerjson
+├── .github
 ├── assets
+├── binder
 ├── models
 ├── notebooks
+├── .dockerignore
 ├── .gitattributes
 ├── .gitignore
 ├── CITATION.cff
@@ -51,7 +57,7 @@ Kaggle. Health Analytics. India. Annual Health Survey (AHS)<br>
 ├── pyproject.toml
 └── requirements.txt
 
-3 directories, 11 files
+4 directories, 12 files
 ```
 
 ---
@@ -101,9 +107,9 @@ pixi info
 ```
 
 ## Binder
-Binder provides a development environment but takes a bit to launch. Launch a Jupyter environment via Binder above or link provided below. More information about The Binder Project, a project within Project Jupyter [here](https://jupyter.org/binder)
+Binder provides a Jupyter development environment. Launch a Jupyter environment via Binder above or link provided below. More information about The Binder Project, a project within Project Jupyter [here](https://jupyter.org/binder)
 
-[Binder](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab) - Not fully tested. Still in development for stable workflow environments
+[Capstone Binder](https://mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab) - Still wip
 
 ---
 

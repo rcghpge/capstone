@@ -1,8 +1,9 @@
 # Git
 .git
 .gitignore
+.github
 
-# Python envs
+# Python
 venv/
 .pixi/
 uv-cache/
@@ -30,10 +31,16 @@ data/
 
 # Docker
 work/
+**/work/
 .dockerignore
 
 # !Include core builds
-!pyproject.toml !requirements.txt !README.md
+!pyproject.toml 
+!requirements.txt 
+!README.md 
+!LICENSE 
+!CITATION.cff
 !models/
 !notebooks/
-!src/
+!assets/
+

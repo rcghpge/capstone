@@ -43,8 +43,9 @@ keywords:
   - pixi
   - uta
   - ut arlington
+  - linux
 license: MIT
-version: 0.10.0
+version: 0.11.0
 date-released: '2025-11-25'
 references:
   - type: dataset
