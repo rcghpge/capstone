@@ -26,6 +26,7 @@ wheels/
 pip-wheel-metadata/
 share/python-wheels/
 bin/
+src/
 .installed.cfg
 *.cfg
 MANIFEST
@@ -45,7 +46,7 @@ __pycache__/
 # Keras
 *.keras
 
-# SQLite journaling files
+# SQLite 
 *-journal
 *-shm
 *-wal
@@ -114,9 +115,9 @@ nosetests-*.log
 Thumbs.db
 
 # Security/Reports (optional)
-# security-report.json  # Uncomment if you want to exclude
+# security-report.json 
 # bandit-report.json
 
-# pixi environments
+# Pixi
 .pixi/*
 !.pixi/config.toml

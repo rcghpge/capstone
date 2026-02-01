@@ -1,0 +1,30 @@
+name: Update Pip Badge
+on: [push, pull_request]  # [release], [workflow_dispatch] - wip for dynamic pip version badges
+
+jobs:
+  badge:
+    runs-on: ubuntu-latest 
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.13' 
+    - name: Install pybadges
+      run: pip install pybadges standard-imghdr
+    - name: Generate Badge
+      run: |
+        python -c "
+        import warnings
+        warnings.filterwarnings('ignore', message='pkg_resources')
+        from pybadges import badge
+        pip_version = '$(pip --version | awk '{print \$2}' | cut -d'(' -f1)'
+        svg = badge(left_text='pip', right_text=pip_version, left_color='grey', right_color='green')
+        svg = svg.replace('<svg ', '<svg xmlns:xlink=\"http://www.w3.org/1999/xlink\" ')
+        svg = svg.replace('<rect fill=\"#555\"', '<a xlink:href=\"https://pypi.org/project/pip/\"><rect fill=\"#555\"', 1)
+        svg = svg.replace('fill=\"#00aa00\"', 'fill=\"#00aa00\" /></a><rect', 1)  # Close </a> after second rect
+        with open('assets/pip-version.svg', 'w') as f: f.write(svg)
+        "
+    - uses: stefanzweifel/git-auto-commit-action@v5
+      with:
+        commit_message: 'Update pip badge [skip ci]'
+        file_pattern: assets/pip-version.svg
