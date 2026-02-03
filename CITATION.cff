@@ -41,11 +41,13 @@ keywords:
   - jupyter
   - binder
   - pixi
+  - pip
+  - uv
   - uta
   - ut arlington
   - linux
 license: MIT
-version: 0.12.0
+version: 0.13.0
 date-released: '2025-11-25'
 references:
   - type: dataset

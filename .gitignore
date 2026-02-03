@@ -82,7 +82,7 @@ data/
 docs/
 out/
 prototype/
-!test/
+!/notebooks/test/
 tools/
 
 # Remote development
