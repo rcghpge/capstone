@@ -4,7 +4,18 @@
   "features": {
     "ghcr.io/devcontainers/features/python:1": {}
   },
-  "forwardPorts": [8888],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "bierner.markdown-preview-github-styles",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "markdown.styles": ["https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.css"]
+      }
+    }
+  },
+  "forwardPorts": [8888, 3000],
   "postCreateCommand": "jupyter lab --generate-config --allow-root && echo 'c.ServerApp.ip = \"0.0.0.0\"' >> ~/.jupyter/jupyter_lab_config.py",
   "remoteUser": "jovyan",
   "overrideFeatureInstallOrder": ["python"]
