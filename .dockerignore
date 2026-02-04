@@ -9,6 +9,7 @@ venv/
 uv-cache/
 __pycache__/
 *.py[cod]
+*.cfg
 .pytest_cache/
 .coverage
 .cache
@@ -25,14 +26,24 @@ Thumbs.db
 # Jupyter
 **/*.ipynb_checkpoints/
 
-# Data/large
+# Data
 data/
 *.zip
 
 # Docker
 work/
 **/work/
-.dockerignore
+
+# Local development
+docs/
+out/
+tools/
+prototype/
+notebooks/model-tests/
+notebooks/test/
+*.log
+*.bak
+*.egg-info
 
 # !Include core builds
 !pyproject.toml 
@@ -41,6 +52,8 @@ work/
 !LICENSE 
 !CITATION.cff
 !models/
+!notebooks/test/keras-test/
 !notebooks/
 !assets/
 !binder/
+!.dockerignore

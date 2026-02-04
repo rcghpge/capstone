@@ -1,4 +1,4 @@
-{
+k{
   "name": "Capstone Binder",
   "image": "rcdpge/capstone-binder:latest",
   "features": {
@@ -16,7 +16,8 @@
     }
   },
   "forwardPorts": [8888, 3000],
-  "postCreateCommand": "jupyter lab --generate-config --allow-root && echo 'c.ServerApp.ip = \"0.0.0.0\"' >> ~/.jupyter/jupyter_lab_config.py",
+  "postCreateCommand": "apt-get update && apt-get install -y -qq git && pip install -e .[dev] && jupyter lab --generate-config --allow-root && echo 'c.ServerApp.ip = \"0.0.0.0\"' >> ~/.jupyter/jupyter_lab_config.py",
   "remoteUser": "jovyan",
   "overrideFeatureInstallOrder": ["python"]
 }
+

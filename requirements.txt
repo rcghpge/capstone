@@ -58,6 +58,7 @@ iniconfig==2.3.0
 ipykernel==7.1.0
 ipython==9.9.0
 ipython_pygments_lexers==1.1.1
+ipywidgets==8.1.8
 iso8601==2.1.0
 isoduration==20.11.0
 jax==0.9.0
@@ -69,6 +70,7 @@ json5==0.13.0
 jsonpointer==3.0.0
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
+jupyter==1.1.1
 jupyter-events==0.12.0
 jupyter-lsp==2.3.0
 jupyter-repo2docker==2025.12.0

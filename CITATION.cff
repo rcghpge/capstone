@@ -20,7 +20,7 @@ authors:
 repository-code: 'https://github.com/rcghpge.com/capstone'
 url: 'https://uta.edu'
 abstract: >-
-  Machine learning utilizing key health indicators for infant mortality rate prediction. 
+  Health Analytics. Machine learning utilizing key health indicators for infant mortality rate prediction. 
 keywords:
   - data science
   - machine learning
@@ -47,7 +47,7 @@ keywords:
   - ut arlington
   - linux
 license: MIT
-version: 0.13.0
+version: 0.14.0
 date-released: '2025-11-25'
 references:
   - type: dataset
