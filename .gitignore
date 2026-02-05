@@ -86,7 +86,9 @@ notebooks/test/*
 tools/
 
 # Remote development
-!devcontainer.json
+!.vscode
+!.devcontainer
+!.devcontainer.json
 !settings.json
 !notebooks/eda/EDA_Proposal_Start.ipynb
 !notebooks/test/*.ipynb
@@ -107,7 +109,6 @@ nosetests-*.log
 .pytest_cache/
 
 # IDEs
-!.vscode/
 .idea/
 *.swp
 *.swo
