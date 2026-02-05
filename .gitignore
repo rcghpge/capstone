@@ -81,11 +81,15 @@ ENV/
 docs/
 out/
 prototype/
-notebooks/test/
+notebookts/eda/*
+notebooks/test/*
 tools/
 
 # Remote development
 !devcontainer.json
+!settings.json
+!notebooks/eda/EDA_Proposal_Start.ipynb
+!notebooks/test/*.ipynb
 
 # Testing
 .pytest_cache/
@@ -103,7 +107,7 @@ nosetests-*.log
 .pytest_cache/
 
 # IDEs
-#.vscode/
+!.vscode/
 .idea/
 *.swp
 *.swo
