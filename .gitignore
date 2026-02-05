@@ -103,7 +103,7 @@ nosetests-*.log
 .pytest_cache/
 
 # IDEs
-.vscode/
+#.vscode/
 .idea/
 *.swp
 *.swo
