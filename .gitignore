@@ -86,12 +86,15 @@ notebooks/test/*
 tools/
 
 # Remote development
-!.vscode
-!.devcontainer
+!.vscode/
+!.devcontainer/
 !.devcontainer.json
 !settings.json
 !notebooks/eda/EDA_Proposal_Start.ipynb
+!notebooks/artifacts/
+!notebooks/test/keras-test/
 !notebooks/test/*.ipynb
+!notebooks/index.ipynb
 
 # Testing
 .pytest_cache/
