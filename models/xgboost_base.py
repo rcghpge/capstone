@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 from pathlib import Path
+from sklearn.base import clone
 import matplotlib.pyplot as plt
 from xgboost import XGBRegressor
 from sklearn.pipeline import Pipeline
@@ -33,13 +34,14 @@ from sklearn.impute import SimpleImputer
 from sklearn.feature_selection import RFECV
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder, RobustScaler
-from sklearn.model_selection import train_test_split, KFold
+from sklearn.model_selection import train_test_split, KFold, learning_curve, validation_curve
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score, explained_variance_score
 """
 Example Usage:
-!python xgboost_base.py --data data/Key_indicator_districtwise.csv \
+!python xgboost_base.py \
+--data ../data/Key_indicator_districtwise.csv \
 --target YY_Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
---outdir artifacts/xgboost
+--outdir ../notebooks/artifacts/xgboost-base
 """
 
 def plot_and_save(y_true, y_pred, outdir):
@@ -126,22 +128,80 @@ def plot_statewise_facets(df, value_col, state_col, outdir):
     plt.savefig(Path(outdir)/'statewise_facets.png')
     plt.close()
 
-def parse_args():
-    p = argparse.ArgumentParser(description="IMR XGBoost Regression with RFECV feature selection")
-    p.add_argument("--data", required=True, help="Path to dataset CSV file")
-    p.add_argument("--target", required=True, help="Target column to predict")
-    p.add_argument("--id-cols", nargs="*", default=[], help="ID columns to exclude from features")
-    p.add_argument("--outdir", default="./artifacts_xgb_rfecv", help="Output directory")
-    p.add_argument("--test-size", type=float, default=0.2, help="Test split fraction")
-    p.add_argument("--random-state", type=int, default=42, help="Random state")
-    p.add_argument("--n-estimators", type=int, default=2000)
-    p.add_argument("--learning-rate", type=float, default=0.03)
-    p.add_argument("--max-depth", type=int, default=6)
-    p.add_argument("--subsample", type=float, default=0.8)
-    p.add_argument("--colsample-bytree", type=float, default=0.8)
-    p.add_argument("--early-stopping-rounds", type=int, default=100)
-    return p.parse_args()
+def plot_learning_curve(estimator, X, y, outdir, cv=5):
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    
+    train_sizes = np.linspace(0.1, 1.0, 10)
+    # FIXED: learning_curve returns 3 values (train_sizes, train_scores, val_scores)
+    train_sizes, train_scores, val_scores = learning_curve(
+        estimator, X, y, 
+        train_sizes=train_sizes, 
+        cv=cv, 
+        scoring='r2', 
+        n_jobs=-1, 
+        shuffle=True, 
+        random_state=42
+    )
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(train_sizes, np.mean(train_scores, axis=1), 'o-', color='steelblue', label='Training R²', lw=2)
+    plt.plot(train_sizes, np.mean(val_scores, axis=1), 'o-', color='coral', label='CV R²', lw=2)
+    plt.fill_between(train_sizes, 
+                     np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), 
+                     alpha=0.2, color='steelblue')
+    plt.fill_between(train_sizes, 
+                     np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), 
+                     alpha=0.2, color='coral')
+    plt.xlabel('Training Set Size')
+    plt.ylabel('R² Score')
+    plt.title('XGBoost Base Model Learning Curve')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(outdir/'learning_curve.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print('learning_curve.png saved')
+    print(f'Final CV R²: {np.mean(val_scores[-1]):.4f} (+/- {np.std(val_scores[-1]):.4f})')
+    print(f'Final Train R²: {np.mean(train_scores[-1]):.4f} (+/- {np.std(train_scores[-1]):.4f})')
 
+def plot_validation_curve(estimator, X, y, param_name, param_range, outdir, cv=5):
+    outdir = Path(outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+    
+    est = clone(estimator)
+    train_scores, val_scores = validation_curve(
+        est, X, y, param_name=param_name, param_range=param_range, cv=cv,
+        scoring='r2', n_jobs=-1
+    )
+    
+    plt.figure(figsize=(10, 6))
+    plt.plot(param_range, np.mean(train_scores, axis=1), 'o-', color='steelblue', label='Training R²', lw=2)
+    plt.plot(param_range, np.mean(val_scores, axis=1), 'o-', color='coral', label='CV R²', lw=2)
+    plt.fill_between(param_range, np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
+                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), alpha=0.2, color='steelblue')
+    plt.fill_between(param_range, np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
+                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), alpha=0.2, color='coral')
+    plt.xlabel(param_name.replace('_', ' ').title())
+    plt.ylabel('R² Score')
+    plt.title('XGBoost Base Model Validation Curve')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(outdir/'validation_curve.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    best_idx = np.argmax(np.mean(val_scores, axis=1))
+    print('validation_curve.png saved')
+    print(f'Best CV R²: {np.mean(val_scores[best_idx]):.4f} (+/- {np.std(val_scores[best_idx]):.4f})')
+    print(f'Best param: {param_range[best_idx]}')
+
+def adjusted_r2(r2, n, p):
+    return 1 - (1 - r2) * (n - 1) / (n - p - 1)
+    
 def build_preprocessor(X: pd.DataFrame):
     num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
     cat_cols = [c for c in X.columns if c not in num_cols]
@@ -161,11 +221,26 @@ def build_preprocessor(X: pd.DataFrame):
         ("cat", cat_pipe, cat_ok)
     ])
     return preprocessor
-
-def adjusted_r2(r2, n, p):
-    return 1 - (1 - r2) * (n - 1) / (n - p - 1)
+    
+def parse_args():
+    p = argparse.ArgumentParser(description="IMR XGBoost Regression with RFECV feature selection")
+    p.add_argument("--data", required=True, help="Path to dataset CSV file")
+    p.add_argument("--target", required=True, help="Target column to predict")
+    p.add_argument("--id-cols", nargs="*", default=[], help="ID columns to exclude from features")
+    p.add_argument("--outdir", default="./artifacts", help="Output directory")
+    p.add_argument("--test-size", type=float, default=0.2, help="Test split fraction")
+    p.add_argument("--random-state", type=int, default=42, help="Random state")
+    p.add_argument("--n-estimators", type=int, default=2000)
+    p.add_argument("--learning-rate", type=float, default=0.03)
+    p.add_argument("--max-depth", type=int, default=6)
+    p.add_argument("--subsample", type=float, default=0.8)
+    p.add_argument("--colsample-bytree", type=float, default=0.8)
+    p.add_argument("--early-stopping-rounds", type=int, default=100)
+    return p.parse_args()
 
 def main():
+    print("XGBoost Base Regression Model")
+    print("="*70)
     args = parse_args()
     outdir = Path(args.outdir)
     outdir.mkdir(parents=True, exist_ok=True)
@@ -214,7 +289,6 @@ def main():
     X_train_selected = selector.transform(X_train_processed)
     X_test_selected = selector.transform(X_test_processed)
 
-    # Train final model on selected features
     xgb_model = XGBRegressor(
         n_estimators=args.n_estimators,
         learning_rate=args.learning_rate,
@@ -313,6 +387,7 @@ def main():
         "mae": mean_absolute_error(y_test, y_pred),
     }
 
+    print("\n📊 Generating model inference plots...")
     plot_and_save(y_test, y_pred, outdir)
     plot_true_vs_pred(y_train, y_pred_train, outdir, "Train", train_metrics)
     plot_true_vs_pred(y_test, y_pred, outdir, "Test", test_metrics)
@@ -320,6 +395,8 @@ def main():
     feature_importances = xgb_model.feature_importances_
     feature_names = selected_features
     plot_feature_importances(feature_importances, feature_names, outdir)
+    plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), outdir)
+    plot_validation_curve(xgb_model, X_train_selected, y_train.values.ravel(), 'n_estimators', range(100, 2001, 200), outdir)
     plot_statewise_histogram(df, value_col=args.target, state_col="State_Name", outdir=outdir)
     plot_statewise_facets(df, value_col=args.target, state_col="State_Name", outdir=outdir)
 

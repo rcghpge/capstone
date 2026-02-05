@@ -1,23 +1,22 @@
-k{
+{
   "name": "Capstone Binder",
   "image": "rcdpge/capstone-binder:latest",
-  "features": {
-    "ghcr.io/devcontainers/features/python:1": {}
-  },
+  "features": {},
   "customizations": {
     "vscode": {
       "extensions": [
+        "ms-toolsai.jupyter",
+        "ms-python.python",
         "bierner.markdown-preview-github-styles",
         "yzhang.markdown-all-in-one"
       ],
       "settings": {
-        "markdown.styles": ["https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.css"]
+        "markdown.styles": ["https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.css"],
+        "python.defaultInterpreterPath": "/opt/conda/bin/python"
       }
     }
   },
   "forwardPorts": [8888, 3000],
-  "postCreateCommand": "apt-get update && apt-get install -y -qq git && pip install -e .[dev] && jupyter lab --generate-config --allow-root && echo 'c.ServerApp.ip = \"0.0.0.0\"' >> ~/.jupyter/jupyter_lab_config.py",
-  "remoteUser": "jovyan",
-  "overrideFeatureInstallOrder": ["python"]
+  "postCreateCommand": "/opt/conda/bin/python -m pip install --upgrade ipykernel && /opt/conda/bin/python -m ipykernel install --sys-prefix --name capstone-python3.13 --display-name 'Capstone Python 3.13' && /opt/conda/bin/python -m pip install -e .[dev] && jupyter lab --generate-config --allow-root && echo 'c.ServerApp.ip = \"0.0.0.0\"' >> ~/.jupyter/jupyter_lab_config.py"
+  "remoteUser": "jovyan"
 }
-

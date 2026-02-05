@@ -8,30 +8,34 @@
 [![Binder Container Image](https://github.com/rcghpge/capstone/actions/workflows/binder.yml/badge.svg)](https://github.com/rcghpge/capstone/actions/workflows/binder.yml)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab)
 
+
 <div align="center">
-<h2 style="font-size: clamp(20px, 4.5vw, 28px) !important; color: #6a737d; margin: 0 0 20px 0 !important; font-weight: 600 !important;">
-  Capstone Project | Division of Data Science | University of Texas at Arlington
-</h2>
+<h1 style="font-size: 2.2em; margin: 0 0 1.5em 0; line-height: 1.2;">Capstone Project | University of Texas at Arlington</h1>
 
-<table style="width: 100%; margin: 40px auto 30px auto; border-collapse: collapse;">
-  <tr>
-    <td style="padding: 20px 0; text-align: center; border-top: 3px solid #1f6feb; border-bottom: 3px solid #1f6feb;">
+<div style="width: 100%; max-width: 1000px; margin: 0 auto 1.5em auto; padding: 2em 1em;">
+  <div align="center" style="border-top: 6px solid #1f6feb; border-bottom: 6px solid #1f6feb; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 16px; padding: 3em 2em;">
+    <picture>
+      <source media="(max-width: 480px)" srcset="https://raw.githubusercontent.com/lugnuts-at-UTA/graphics/refs/heads/main/img/Artboard%2022color.png">
+      <source media="(max-width: 768px)" srcset="https://raw.githubusercontent.com/lugnuts-at-UTA/graphics/refs/heads/main/img/Artboard%2022color.png">
+      <source media="(max-width: 1200px)" srcset="https://raw.githubusercontent.com/lugnuts-at-UTA/graphics/refs/heads/main/img/Artboard%2022color.png">
       <img src="https://raw.githubusercontent.com/lugnuts-at-UTA/graphics/refs/heads/main/img/Artboard%2022color.png" 
-           alt="UTA Division of Data Science" 
-           style="max-width: 200px; height: auto; border-radius: 0; box-shadow: 0 8px 24px rgba(0,0,0,0.15); display: block; margin: 0 auto;" />
-    </td>
-  </tr>
-</table>
+           alt="UTA Logo" 
+           style="width: 100%; max-width: 380px; height: auto; border-radius: 16px; box-shadow: 0 20px 48px rgba(0,31,235,0.18); display: block; margin: 0 auto;" />
+    </picture>
+  </div>
+</div>
 
-<p style="font-size: clamp(16px, 3.5vw, 20px); line-height: 1.6; color: #24292f; max-width: 800px; margin: 0 auto 20px auto;">
-  <strong>Health Analytics: Machine learning utilizing key health indicators for infant mortality rate prediction.</strong>
-</p>
+<h2 style="font-size: 1.5em; margin: 1em 0 1.5em 0; line-height: 1.4;">
+<strong>Health Analytics: Machine learning utilizing key health indicators for infant mortality rate prediction.</strong>
+</h2>
 </div>
-<div style="max-width: 800px; margin: 0 auto 40px auto; text-align: left !important; padding-left: 20px; line-height: 1.4;">
+
+<div align="left" style="max-width: 1000px; margin: 3em auto; padding: 0 2em;">
 <strong>References</strong><br>
-Kaggle. (2017). Annual Health Survey (India AHS 2012-13) from<br>
-<a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey</a>
-</div>
+Kaggle. (2017). Annual Health Survey (India AHS 2012-13). Retrieved from<br>
+<a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">
+https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
+</a>
 </div>
 
 ---
@@ -82,25 +86,17 @@ source venv/bin/activate
 pip install -e .[dev]
 
 # Environment Checks
-python -c "from models import *; print('✅ Model import dependencies OK')"
-bandit -r . # scan current build environment
-bandit -r models/ # scan Python models
+bandit -r models/ # security scanning for Python models
 bandit -r models/ -f json -o security-report.json # secure report summary
 pip-audit --local # audit current build environment
 pip check # check for broken Python dependencies
-pytest --cov=models/ --cov-report=term-missing
-pip list --outdated # check for outdated Python packages
 pip install --upgrade <package> # upgrade outdated packages in build environment
-pip install --upgrade -e . # upgrade build environment
-pip freeze > requirements.txt # set requirements for current build environment
-python -m venv --upgrade ~/capstone # upgrade build environment with Python
+pip install --upgrade -e .[dev] # upgrade build environment
 python -m pip lock -e . # lock packages and dependencies in current build environment 
 
-# Run Python models and Launch Jupyter for EDA 
-jupyter lab notebooks/ # launch Jupyter Notebook in a web browser environment
-jupyter lab notebooks/ --no-browser # intiliaze Jupyter server with no web browser
+# Jupyterlab
+jupyter lab notebooks/
 jupyter lab/models/ 
-jupyter lab/models/ --no-browser
 
 # Builds with Pixi
 pixi install
@@ -108,19 +104,21 @@ pixi shell
 pixi info
 ```
 
-## Docker Desktop
-docs wip
-
-## WSL2
-docs wip
-
 ## Binder
-Binder provides a Jupyter development environment. Launch a Jupyter environment via Binder above or link provided below. More information about The Binder Project, a project within Project Jupyter [here](https://jupyter.org/binder)
+Binder provides a Jupyter development environment. This project provides a Linux-based Binder container that runs in a Jupyter development environment. Launch a Jupyter environment via Binder above or link provided below. More information about The Binder Project, a project within Project Jupyter, [here](https://jupyter.org/binder)
 
-[Capstone binder](https://mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab) - Portable Jupyter environment
+[Capstone binder](https://mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab) - Portable Linux-based Jupyter environment
+
+## Docker Desktop on Microsoft Windows
+[dockerdocs](https://docs.docker.com/desktop/setup/install/windows-install/) - Docker Desktop technical documentation. Full Binder image containerization for `capstone-binder` builds and JupyterLab runtime. 
+
+## WSL on Microsoft Windows
+[WSL](https://learn.microsoft.com/en-us/windows/wsl/install) - WSL technical documentation. Linux environments for containerization development on Microsoft Windows.
 
 ## Streamlit
-[Streamlit dashboard](https://health-analytics-dashboard.streamlit.app/) - still wip
+Streamlit provides an interactive web dashboard for the KNN model simulation, exploration, and predictions. Launch the Streamlit app via the button above or link provided below. The Streamlit dashboard utilizes synthetic data for simulation and educational purposes. More information about Streamlit, an open-source Python framework for data apps, [here](https://streamlit.io)
+
+[Streamlit dashboard](https://health-analytics-dashboard.streamlit.app/) - Streamlit interactive dashboard
 
 ---
 

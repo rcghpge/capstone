@@ -53,7 +53,7 @@ Example Usage: See Jupyter Notebooks for more information.
 --data ../data/Key_indicator_districtwise.csv \
 --target YY_Infant_Mortality_Rate_Imr_Total_Person \
 --id-cols State_Name State_District_Name \
---test-size 0.25 --random-state 42 --outdir artifacts/knn
+--test-size 0.25 --random-state 42 --outdir artifacts/knn-base
 
 """
 warnings.filterwarnings("ignore")

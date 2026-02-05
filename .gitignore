@@ -78,11 +78,10 @@ ENV/
 *.yml~
 *.py~
 *.json
-data/
 docs/
 out/
 prototype/
-/notebooks/test/
+notebooks/test/
 tools/
 
 # Remote development

@@ -51,7 +51,6 @@ Example Usage: See Jupyter Notebooks for more information
 !python knn_regression.py --data ../data/Key_indicator_districtwise.csv \
 --target Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
 --correlation 60 --test-size 0.25 --random-state 42 --outdir artifacts/knn
-
 """
 warnings.filterwarnings("ignore")
 
@@ -866,7 +865,7 @@ def main(args):
     X_train_selected = selector.transform(X_train_processed)
     X_test_selected = selector.transform(X_test_processed)
     
-    model = KNeighborsRegressor(n_neighbors=5, weights='distance', metric='manhattan')
+    model = KNeighborsRegressor(n_neighbors=5, weights='uniform', metric='manhattan')
     model.fit(X_train_selected, y_train)
     
     y_train_pred = model.predict(X_train_selected)
@@ -897,7 +896,7 @@ def main(args):
         model, X_train_selected, y_train, X_sample_selected
     )
     #plot_neighbor_contributions(distances, neigh_targets, y_pred_sample, out_dir, sample_label=f"test_{sample_idx}")
-    #print(f"True={y_true_sample:.3f}, Pred={y_pred_sample:.3f}")
+    #print(f"True={y_true_sample:.3f}, Pred={y_pred_sample:.3f}") # residual architecture builds.
 
     joblib.dump(model, out_dir/'knn_model.joblib')
     joblib.dump(preprocessor, out_dir/'preprocessor.joblib')
