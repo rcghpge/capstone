@@ -2,6 +2,8 @@
   "name": "Capstone Binder",
   "build": { "dockerfile": "../Dockerfile", "context": ".." },
   "workspaceFolder": "/workspaces/capstone",
+  "postStartCommand": "sleep 10 && code .",
+  "postCreateCommand": "bash .devcontainer/post-build.sh",
   "features": {},
   "customizations": {
     "vscode": {
@@ -26,7 +28,5 @@
       "onAutoForward": "notify"
     }
   },
-  "postAttachCommand": "code .",
-  "postCreateCommand": "bash .devcontainer/post-build.sh",
   "remoteUser": "jovyan"
 }
