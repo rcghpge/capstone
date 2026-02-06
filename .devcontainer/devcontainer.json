@@ -1,6 +1,6 @@
 {
   "name": "Capstone Binder",
-  "build": { "dockerfile": "../Dockerfile", "context": ".." },
+  "image": "rcdpge/capstone-binder:latest",
   "workspaceFolder": "/workspaces/capstone",
   "postCreateCommand": "bash .devcontainer/post-build.sh",
   "features": {},
