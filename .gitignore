@@ -82,6 +82,8 @@ docs/
 out/
 prototype/
 notebookts/eda/*
+notebooks/test/*
+notebooks/test/xgboost-base-test/
 tools/
 
 # Remote development
@@ -89,8 +91,8 @@ tools/
 !.devcontainer/
 !.devcontainer.json
 !settings.json
-!notebooks/eda/EDA_Proposal_Start.ipynb
 !notebooks/artifacts/
+!notebooks/eda/EDA_Proposal_Start.ipynb
 !notebooks/test/keras-test/
 !notebooks/test/*.ipynb
 !notebooks/index.ipynb
