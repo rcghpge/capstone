@@ -113,7 +113,7 @@ Binder provides a Jupyter development environment. This project provides a Linux
 [Docker Desktop](https://docs.docker.com/desktop/) - Docker Desktop technical documentation. Docker Desktop is a one-click-install application for your Mac, Linux, or Windows environment that lets you build, share, and run containerized applications and microservices. 
 
 ## Windows Subsystem for Linux 
-[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) - WSL technical documentation. ntegrated Linux environment for cross-platform development on Windows without virtual machines or dual-booting.
+[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) - WSL technical documentation. Integrated Linux environment for cross-platform development on Windows without virtual machines or dual-booting.
 
 ## Streamlit
 Streamlit provides an interactive web dashboard for the KNN model simulation, exploration, and predictions. Launch the Streamlit app via the button above or link provided below. The Streamlit dashboard utilizes synthetic data for simulation and educational purposes. More information about Streamlit, an open-source Python framework for data apps, [here](https://streamlit.io)
