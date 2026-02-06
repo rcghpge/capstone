@@ -1,6 +1,6 @@
 {
   "name": "Capstone Binder",
-  "build": { "dockerfile": "Dockerfile" },
+  "build": { "dockerfile": "../Dockerfile", "context": ".." },
   "workspaceFolder": "/workspaces/capstone",
   "features": {},
   "customizations": {

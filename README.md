@@ -109,11 +109,11 @@ Binder provides a Jupyter development environment. This project provides a Linux
 
 [Capstone binder](https://mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab) - Portable Linux-based Jupyter environment
 
-## Docker Desktop on Microsoft Windows
-[dockerdocs](https://docs.docker.com/desktop/setup/install/windows-install/) - Docker Desktop technical documentation. Full Binder image containerization for `capstone-binder` builds and JupyterLab runtime. 
+## Docker Desktop 
+[Docker Desktop](https://docs.docker.com/desktop/) - Docker Desktop technical documentation. Docker Desktop is a one-click-install application for your Mac, Linux, or Windows environment that lets you build, share, and run containerized applications and microservices. 
 
-## WSL on Microsoft Windows
-[WSL](https://learn.microsoft.com/en-us/windows/wsl/install) - WSL technical documentation. Linux environments for containerization development on Microsoft Windows.
+## Windows Subsystem for Linux 
+[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) - WSL technical documentation. ntegrated Linux environment for cross-platform development on Windows without virtual machines or dual-booting.
 
 ## Streamlit
 Streamlit provides an interactive web dashboard for the KNN model simulation, exploration, and predictions. Launch the Streamlit app via the button above or link provided below. The Streamlit dashboard utilizes synthetic data for simulation and educational purposes. More information about Streamlit, an open-source Python framework for data apps, [here](https://streamlit.io)
