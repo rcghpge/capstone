@@ -26,6 +26,7 @@
       "onAutoForward": "notify"
     }
   },
+  "postAttachCommand": "code .",
   "postCreateCommand": "bash .devcontainer/post-build.sh",
   "remoteUser": "jovyan"
 }
