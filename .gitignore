@@ -82,7 +82,6 @@ docs/
 out/
 prototype/
 notebookts/eda/*
-notebooks/test/*
 tools/
 
 # Remote development
