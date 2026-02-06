@@ -81,7 +81,7 @@ ENV/
 docs/
 out/
 prototype/
-notebookts/eda/*
+notebooks/eda/*
 notebooks/test/*
 notebooks/test/xgboost-base-test/
 tools/
