@@ -45,7 +45,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/azure-storage-blobs-cpp-12.16.0-h75daedc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/azure-storage-common-cpp-12.12.0-h3d7a050_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/azure-storage-files-datalake-cpp-12.14.0-hd454692_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/babel-2.17.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/babel-2.18.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/backports.zstd-1.3.0-py314h680f03e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bcrypt-5.0.0-py314h2e6c369_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/beautifulsoup4-4.14.3-pyha770c72_0.conda
@@ -499,7 +499,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/azure-storage-blobs-cpp-12.16.0-h75daedc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/azure-storage-common-cpp-12.12.0-h3d7a050_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/azure-storage-files-datalake-cpp-12.14.0-hd454692_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/babel-2.17.0-pyhd8ed1ab_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/babel-2.18.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/backports.zstd-1.3.0-py314h680f03e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/bcrypt-5.0.0-py314h2e6c369_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/beautifulsoup4-4.14.3-pyha770c72_0.conda
@@ -1415,18 +1415,18 @@ packages:
   purls: []
   size: 302378
   timestamp: 1768501952777
-- conda: https://conda.anaconda.org/conda-forge/noarch/babel-2.17.0-pyhd8ed1ab_0.conda
-  sha256: 1c656a35800b7f57f7371605bc6507c8d3ad60fbaaec65876fce7f73df1fc8ac
-  md5: 0a01c169f0ab0f91b26e77a3301fbfe4
+- conda: https://conda.anaconda.org/conda-forge/noarch/babel-2.18.0-pyhcf101f3_0.conda
+  sha256: 7377bce9fcc03fecd3607843d20b50546c30a923a3517a322a2a784fa6e380eb
+  md5: ea5be9abc2939c8431893b4e123a2065
   depends:
-  - python >=3.9
+  - python >=3.10
   - pytz >=2015.7
+  - python
   license: BSD-3-Clause
-  license_family: BSD
   purls:
-  - pkg:pypi/babel?source=hash-mapping
-  size: 6938256
-  timestamp: 1738490268466
+  - pkg:pypi/babel?source=compressed-mapping
+  size: 7684373
+  timestamp: 1770326844118
 - conda: https://conda.anaconda.org/conda-forge/noarch/backports.zstd-1.3.0-py314h680f03e_0.conda
   noarch: generic
   sha256: c31ab719d256bc6f89926131e88ecd0f0c5d003fe8481852c6424f4ec6c7eb29
@@ -1735,7 +1735,7 @@ packages:
 - pypi: ./
   name: capstone
   version: 0.15.0
-  sha256: 9f9be4037b49f8817bbcdffac85b81657885e452e70c5b93fae8c601eb53c240
+  sha256: 3e7f7d8353aa20234c90feede6902e683f33e53a44a2aa50462eec7ad4a5581c
   requires_dist:
   - jupyterlab
   - jupyterlab-widgets
@@ -1756,7 +1756,7 @@ packages:
   - pyale>=1.2.0,<2
   - plotly
   - pip
-  - tree>=0.2.4,<0.3
+  - tree
   - jupyterlab-widgets
   - fonttools
   - urllib3
@@ -1764,16 +1764,16 @@ packages:
   - plotly>=6.5.1
   - kaggle>=1.8.4,<2
   - keras
-  - pytest>=9.0.2,<10
-  - pytest-cov>=7.0.0,<8
-  - nbval>=0.11.0,<0.12
-  - black>=26.1.0,<27
-  - flake8>=7.3.0,<8
-  - pre-commit>=4.5.1,<5
-  - jupyterlab-lsp>=5.2.0,<6
-  - pip-tools>=7.5.2,<8
-  - bandit>=1.9.3,<2
-  - pip-audit>=2.10.0,<3
+  - pytest
+  - pytest-cov
+  - nbval
+  - black
+  - flake8
+  - pre-commit
+  - jupyterlab-lsp
+  - pip-tools
+  - bandit
+  - pip-audit
   - pybadges>=3.0.1,<4
   - pytest>=7.4 ; extra == 'dev'
   - pytest-cov ; extra == 'dev'

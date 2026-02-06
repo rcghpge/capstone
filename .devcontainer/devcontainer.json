@@ -1,6 +1,7 @@
 {
   "name": "Capstone Binder",
   "image": "rcdpge/capstone-binder:latest",
+  "workspaceFolder": "/workspaces/capstone",
   "features": {},
   "customizations": {
     "vscode": {
@@ -11,7 +12,9 @@
         "yzhang.markdown-all-in-one"
       ],
       "settings": {
-        "markdown.styles": ["https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.css"],
+        "markdown.styles": [
+          "https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.css"
+        ],
         "python.defaultInterpreterPath": "/opt/conda/bin/python"
       }
     }
@@ -23,6 +26,6 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "/opt/conda/bin/python -m pip install --upgrade ipykernel && /opt/conda/bin/python -m ipykernel install --sys-prefix --name capstone-python3.13 --display-name 'Capstone Python 3.13' && /opt/conda/bin/python -m pip install -e .[dev] && jupyter lab --generate-config --allow-root && echo 'c.ServerApp.ip = \"0.0.0.0\"' >> ~/.jupyter/jupyter_lab_config.py && echo 'c.ServerApp.token = \"\"' >> ~/.jupyter/jupyter_lab_config.py",
+  "postCreateCommand": "bash .devcontainer/post-build.sh",
   "remoteUser": "jovyan"
 }
