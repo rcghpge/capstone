@@ -8,5 +8,3 @@ set -e
 jupyter lab --generate-config --allow-root
 echo 'c.ServerApp.ip = "0.0.0.0"' >> ~/.jupyter/jupyter_lab_config.py
 echo 'c.ServerApp.token = ""' >> ~/.jupyter/jupyter_lab_config.py
-
-code .

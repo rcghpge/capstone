@@ -1,6 +1,6 @@
 {
   "name": "Capstone Binder",
-  "image": "rcdpge/capstone-binder:latest",
+  "build": { "dockerfile": "Dockerfile" },
   "workspaceFolder": "/workspaces/capstone",
   "features": {},
   "customizations": {
