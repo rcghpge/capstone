@@ -2,7 +2,6 @@
   "name": "Capstone Binder",
   "build": { "dockerfile": "../Dockerfile", "context": ".." },
   "workspaceFolder": "/workspaces/capstone",
-  "postStartCommand": "sleep 10 && code .",
   "postCreateCommand": "bash .devcontainer/post-build.sh",
   "features": {},
   "customizations": {
@@ -17,7 +16,19 @@
         "markdown.styles": [
           "https://cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.css"
         ],
-        "python.defaultInterpreterPath": "/opt/conda/bin/python"
+        "python.defaultInterpreterPath": "/opt/conda/bin/python",
+        "explorer.autoReveal": true,
+        "explorer.compactFolders": false,
+        "files.exclude": {
+          "**/__pycache__/**": true,
+          "**/.pixi/**": true
+        },
+        "files.watcherExclude": {
+          "**/__pycache__/**": true
+        }
+      },
+      "codespaces": {
+        "openFiles": ["README.md"]
       }
     }
   },
