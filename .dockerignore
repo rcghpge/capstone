@@ -34,7 +34,6 @@ work/
 # Local development
 dev/
 notebooks/test/
-notebooks/eda/
 *.log
 *.bak
 *.egg-info
@@ -48,7 +47,6 @@ notebooks/eda/
 !models/
 !notebooks/test/keras-test/
 !notebooks/test/*.ipynb
-!notebooks/eda/EDA_Proposal_Start.ipynb
 !notebooks/
 !assets/
 !binder/

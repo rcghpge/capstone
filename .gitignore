@@ -79,7 +79,6 @@ ENV/
 *.py~
 *.json
 dev/
-notebooks/eda/*
 notebooks/test/*
 
 # Remote development
@@ -88,7 +87,6 @@ notebooks/test/*
 !.devcontainer.json
 !settings.json
 !notebooks/artifacts/
-!notebooks/eda/EDA_Proposal_Start.ipynb
 !notebooks/test/keras-test/
 !notebooks/test/*.ipynb
 !notebooks/index.ipynb

@@ -12,12 +12,16 @@ USER root
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /opt/uv/bin/
 ENV PATH="/opt/uv/bin:${PATH}"
 RUN apt-get update && \
+    apt-get install -y software-properties-common && \
+    add-apt-repository ppa:git-core/ppa -y && \
+    apt-get update && \
     apt-get install -y --no-install-recommends curl ca-certificates gnupg openssl && \
     curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
     apt-get install -y --no-install-recommends git tree nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* && \
     node --version | grep -q '^v20' && npm --version
+    git --version
 
 RUN uv pip install --system --no-cache notebook jupyterlab kagglehub jupyterhub
 RUN jupyter lab build --dev-build=False --minimize=False
