@@ -22,18 +22,23 @@
 # SOFTWARE.
 import os
 import jax
+import logging
 import warnings
 os.environ["KERAS_BACKEND"] = "jax"  # add "tensorflow" to build if no dep conflicts
 jax.config.update('jax_platform_name', 'cpu')
-warnings.filterwarnings("ignore", category=RuntimeWarning, module="numpy.lib.function_base")
-warnings.filterwarnings("ignore", message="sklearn.utils.parallel.delayed.*")
-warnings.filterwarnings("ignore", category=UserWarning, module="sklearn.utils.parallel")
+logging.getLogger('jax._src.xla_bridge').setLevel(logging.ERROR)
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", category=UserWarning)
+    warnings.simplefilter("ignore", category=RuntimeWarning)
+    warnings.filterwarnings("ignore", message="Unable to initialize backend 'tpu'")
+    warnings.filterwarnings("ignore", message="jaxlib is not installed. Falling back to cpu")
+    warnings.filterwarnings("ignore", message="Skipping features without any observed values")
+    warnings.filterwarnings("ignore", category=RuntimeWarning, module="numpy.lib.function_base")
 import re
 import sys
 import time
 import json
 import joblib
-import logging
 import argparse
 import numpy as np
 import pandas as pd
@@ -106,13 +111,28 @@ def load_data(data_path):
     elif data_path.endswith('.parquet'):
         return pd.read_parquet(data_path)
     raise ValueError('Unsupported file type. Use .csv or .parquet')
-
+    
 def build_preprocessor(X):
     num_cols = X.select_dtypes(include=np.number).columns.tolist()
     cat_cols = [c for c in X.columns if c not in num_cols]
     num_pipeline = Pipeline([('imputer', SimpleImputer(strategy='median', add_indicator=True)), ('scaler', RobustScaler())])
     cat_pipeline = Pipeline([('imputer', SimpleImputer(strategy='most_frequent', add_indicator=True)), ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))])
     return ColumnTransformer([('num', num_pipeline, num_cols), ('cat', cat_pipeline, cat_cols)])
+
+def preprocessor_checkpoint(X_train, preprocessor):
+    with warnings.catch_warnings(record=True) as warning_list:
+        warnings.simplefilter("ignore") 
+        with np.errstate(divide='ignore', invalid='ignore'):
+            X_proc = preprocessor.fit_transform(X_train)
+
+        for w in warning_list:
+            if "Skipping features without any observed values" in str(w.message):
+                skipped_str = str(w.message).split("['")[1].split("'].")[0]
+                skipped_features = [f.strip().strip("'") for f in skipped_str.split("', '")]
+                print(f"[INFO] Skipping all-NaN features: {skipped_features}")
+                break
+                
+    return X_proc
 
 def get_feature_names(preprocessor):
     feature_names = list(preprocessor.get_feature_names_out())
@@ -126,7 +146,9 @@ def drop_feature_correlations(X_train, X_test, y_train, feature_names, drop_pct)
     n_features = X_train.shape[1]
     if n_features <= 1:
         return X_train, X_test, feature_names
-    corrs = np.corrcoef(X_train.T, y_arr)[-1, :-1]
+    with np.errstate(divide='ignore', invalid='ignore'):
+        corrs = np.corrcoef(X_train.T, y_arr)[-1, :-1]
+    
     abs_corrs = np.abs(corrs)
     n_drop = int(round(n_features * drop_pct/100.0))
     if n_drop <= 0 or n_drop >= n_features:
@@ -582,8 +604,9 @@ def main(args):
     out_dir.mkdir(exist_ok=True, parents=True)
     
     preprocessor = build_preprocessor(X_train)
-    X_train_processed = preprocessor.fit_transform(X_train)
-    X_test_processed = preprocessor.transform(X_test)
+    X_train_processed = preprocessor_checkpoint(X_train, preprocessor)  
+    X_test_processed = preprocessor.transform(X_test) 
+
     feature_names = get_feature_names(preprocessor)
     X_train_processed, X_test_processed, feature_names = drop_feature_correlations(
         X_train_processed, X_test_processed, y_train, feature_names, args.correlation)

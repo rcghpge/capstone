@@ -30,8 +30,8 @@ keywords:
   - mortality rate
   - python
   - kaggle
-  - googl colab
-  - github codespaces
+  - colab
+  - codespaces
   - vs code
   - scikit-learn
   - keras
@@ -50,7 +50,7 @@ keywords:
   - ut arlington
   - linux
 license: MIT
-version: 0.15.0
+version: 0.16.0
 date-released: '2025-11-25'
 references:
   - type: dataset

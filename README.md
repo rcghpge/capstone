@@ -4,7 +4,7 @@
 [![pip](assets/pip-version.svg)](https://pypi.org/project/pip/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Demo-orange?style=flat&logo=streamlit&logoColor=white)](https://health-analytics-dashboard.streamlit.app/)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rcghpge/capstone/blob/main/notebooks/index.ipynb)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab)
 [![Docker](https://img.shields.io/badge/Docker-rcdpge/capstone--binder-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/rcdpge/capstone-binder)
 [![Binder Container Image](https://github.com/rcghpge/capstone/actions/workflows/binder.yml/badge.svg)](https://github.com/rcghpge/capstone/actions/workflows/binder.yml)
 
@@ -113,15 +113,17 @@ pixi info
 ## Binder
 [The Binder Project](https://jupyter.org/binder) - Binder is an open-source web service that allows you to build, share, and run interactive computational environments in the cloud directly from your Git repositories.
 
-[Capstone Binder](https://mybinder.org/v2/gh/rcghpge/capstone/HEAD?urlpath=lab) - Binder container image with a portable Linux-based Jupyter environment.
+[Capstone Binder](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab) - Binder container image with a portable Linux-based Jupyter environment.
 
 ## Docker Desktop 
 [Docker Desktop](https://docs.docker.com/desktop/) - Docker Desktop is a one-click-install application for your Mac, Linux, or Windows environment that lets you build, share, and run containerized applications and microservices. 
 
 ## Windows Subsystem for Linux (WSL)
-[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) - Windows Subsystem for Linx is an integrated Linux environment for cross-platform development on Microsoft Windows without virtual machines or dual-booting.
+[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/) - Windows Subsystem for Linx is an integrated Linux environment for cross-platform development on Microsoft Windows without virtual machines or dual-booting.
 
 
 ---
+
 License: MIT
+
 ---
