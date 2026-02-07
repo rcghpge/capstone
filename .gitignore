@@ -78,13 +78,9 @@ ENV/
 *.yml~
 *.py~
 *.json
-docs/
-out/
-prototype/
+dev/
 notebooks/eda/*
 notebooks/test/*
-notebooks/test/xgboost-base-test/
-tools/
 
 # Remote development
 !.vscode/
