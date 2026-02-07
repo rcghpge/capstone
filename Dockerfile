@@ -20,7 +20,7 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends git tree nodejs && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* && \
-    node --version | grep -q '^v20' && npm --version
+    node --version | grep -q '^v20' && npm --version \
     git --version
 
 RUN uv pip install --system --no-cache notebook jupyterlab kagglehub jupyterhub
