@@ -1,0 +1,37 @@
+{
+  "@context": "https://openvex.dev/ns/v0.2.0",
+  "@id": "https://openvex.dev/docs/public/vex-d8db21f41dbb1c878dbf52de283bf741942904a5fee208c6a7fdf3e427226e4b",
+  "author": "rceacct@proton.me",
+  "version": 2,
+  "statements": [
+    {
+      "vulnerability": {"name": "CVE-2017-6952"},
+      "products": [{"@id": "pkg:docker/rcdpge/capstone-binder@development", "subcomponents": [{"@id": "pkg:pypi/capstone@0.17.0"}]}],
+      "status": "not_affected",
+      "justification": "vulnerable_code_not_in_execute_path",
+      "timestamp": "2026-02-13T11:44:33Z"
+    },
+    {
+      "vulnerability": {"name": "CVE-2023-50782"},
+      "products": [{"@id": "pkg:docker/rcdpge/capstone-binder@latest", "subcomponents": [{"@id": "pkg:pypi/cryptography@46.0.5"}]}],
+      "status": "not_affected",
+      "justification": "inline_superseded",
+      "timestamp": "2026-02-13T21:38:00Z"
+    },
+    {
+      "vulnerability": {"name": "CVE-2026-26007"},
+      "products": [{"@id": "pkg:docker/rcdpge/capstone-binder@latest", "subcomponents": [{"@id": "pkg:pypi/cryptography@46.0.5"}]}],
+      "status": "not_affected",
+      "justification": "inline_superseded",
+      "timestamp": "2026-02-13T21:38:00Z"
+    },
+    {
+      "vulnerability": {"name": "CVE-2024-26130"},
+      "products": [{"@id": "pkg:docker/rcdpge/capstone-binder@latest", "subcomponents": [{"@id": "pkg:pypi/cryptography@46.0.5"}]}],
+      "status": "not_affected",
+      "justification": "inline_superseded",
+      "timestamp": "2026-02-13T21:38:00Z"
+    }
+  ],
+  "timestamp": "2026-02-13T21:38:00Z"
+}

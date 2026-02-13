@@ -43,7 +43,7 @@ https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
 ## Project Structure
 ```bash
 .
-├── .devontainerjson
+├── .devontainer
 ├── .github
 ├── assets
 ├── binder
@@ -108,12 +108,12 @@ pixi info
 ## Streamlit
 [Streamlit](https://streamlit.io/) - Streamlit is the fastest way to build and share data apps, letting you transform Python scripts into interactive web applications with just a few lines of code.
 
-[Streamlit Dashboard](https://health-analytics-dashboard.streamlit.app/) - Streamlit demo interactive dashboard
+[Streamlit dashboard](https://health-analytics-dashboard.streamlit.app/) - Streamlit interactive simulation dashboard
 
 ## Binder
-[The Binder Project](https://jupyter.org/binder) - Binder is an open-source web service that allows you to build, share, and run interactive computational environments in the cloud directly from your Git repositories.
+[Binder](https://jupyter.org/binder) - Binder is an open-source web service that allows you to build, share, and run interactive computational environments in the cloud directly from your Git repositories.
 
-[Capstone Binder](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab) - Binder container image with a portable Linux-based Jupyter environment.
+[Capstone binder](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab) - Binder container image for capstone project with a portable Linux-based Jupyter environment.
 
 ## Docker Desktop 
 [Docker Desktop](https://docs.docker.com/desktop/) - Docker Desktop is a one-click-install application for your Mac, Linux, or Windows environment that lets you build, share, and run containerized applications and microservices. 
