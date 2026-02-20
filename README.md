@@ -2,15 +2,14 @@
 
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
 [![pip](assets/pip-version.svg)](https://pypi.org/project/pip/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-Demo-orange?style=flat&logo=streamlit&logoColor=white)](https://health-analytics-dashboard.streamlit.app/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Simulation-orange?style=flat&logo=streamlit&logoColor=white)](https://health-analytics-dashboard.streamlit.app/)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rcghpge/capstone/blob/main/notebooks/index.ipynb)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab)
 [![Docker](https://img.shields.io/badge/Docker-rcdpge/capstone--binder-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/rcdpge/capstone-binder)
 [![Binder Container Image](https://github.com/rcghpge/capstone/actions/workflows/binder.yml/badge.svg)](https://github.com/rcghpge/capstone/actions/workflows/binder.yml)
-
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab)
 
 <div align="center">
-<h2 style="font-size: 2.2em; margin: 0 0 1.5em 0; line-height: 1.2;">Capstone Project. University of Texas at Arlington</h2>
+<h2 style="font-size: 2.2em; margin: 0 0 1.5em 0; line-height: 1.2;">Capstone Project | University of Texas at Arlington</h2>
 
 <div style="width: 100%; max-width: 1000px; margin: 0 auto 1.5em auto; padding: 2em 1em;">
   <div align="center" style="border-top: 6px solid #1f6feb; border-bottom: 6px solid #1f6feb; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 16px; padding: 3em 2em;">
@@ -32,7 +31,7 @@
 
 <div align="left" style="max-width: 1000px; margin: 3em auto; padding: 0 2em;">
 <strong>References</strong><br>
-Kaggle. (2017). Annual Health Survey (India AHS 2012-13). Retrieved from<br>
+Kaggle (2017). Annual Health Survey (India AHS 2012-13):<br>
 <a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">
 https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
 </a>
@@ -63,7 +62,7 @@ https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
 ├── pyproject.toml
 └── requirements.txt
 
-6 directories, 13 files
+7 directories, 13 files
 ```
 
 ---
@@ -117,6 +116,15 @@ pixi info
 
 ## Docker Desktop 
 [Docker Desktop](https://docs.docker.com/desktop/) - Docker Desktop is a one-click-install application for your Mac, Linux, or Windows environment that lets you build, share, and run containerized applications and microservices. 
+
+### Binder Containers on Docker Desktop
+
+Run:
+```bash
+docker run -it -p 8888:8888 rcdpge/capstone-binder:latest
+```
+Access Jupyter at http://localhost:8888 (token printed in logs).
+
 
 ## Windows Subsystem for Linux (WSL)
 [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/) - Windows Subsystem for Linx is an integrated Linux environment for cross-platform development on Microsoft Windows without virtual machines or dual-booting.

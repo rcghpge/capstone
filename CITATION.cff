@@ -26,11 +26,13 @@ keywords:
   - machine learning
   - deep learning
   - regression
+  - health analytics
   - infant mortality rate
   - mortality rate
   - python
   - kaggle
   - colab
+  - github
   - codespaces
   - vs code
   - scikit-learn
@@ -40,6 +42,7 @@ keywords:
   - catboost
   - xgboost
   - streamlit
+  - dockerhub
   - docker
   - jupyter
   - binder
@@ -50,9 +53,9 @@ keywords:
   - ut arlington
   - linux
 license: MIT
-version: 0.17.0
+version: 0.17.1
 date-released: '2025-11-25'
-references:
+'references:
   - type: dataset
     title: "Health Analytics"
     authors:
