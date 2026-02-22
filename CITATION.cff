@@ -4,6 +4,7 @@ message: >-
   If you use this software, please cite it using the
   metadata from this file.
 type: software
+
 authors:
   - given-names: Alex
     family-names: Nguyen
@@ -11,16 +12,20 @@ authors:
     email: alex.nguyen2@mavs.uta.edu
   - given-names: Landon
     family-names: Nguyen
-    email: lmn4121@mavs.uta.edu
     affiliation: The University of Texas at Arlington
+    email: lmn4121@mavs.uta.edu
   - given-names: Robert
     family-names: Cocker
-    email: robert.cocker@mavs.uta.edu
     affiliation: The University of Texas at Arlington
-repository-code: 'https://github.com/rcghpge.com/capstone'
-url: 'https://uta.edu'
+    email: robert.cocker@mavs.uta.edu
+
+repository-code: https://github.com/rcghpge.com/capstone
+url: https://www.uta.edu/academics/schools-colleges/science/departments/division-data-science
+
 abstract: >-
-  Health Analytics. Machine learning utilizing key health indicators for infant mortality rate prediction. 
+  Health Analytics. Machine learning utilizing key health indicators
+  for infant mortality rate prediction.
+
 keywords:
   - data science
   - machine learning
@@ -52,16 +57,18 @@ keywords:
   - uta
   - ut arlington
   - linux
+
 license: MIT
 version: 0.17.1
 date-released: '2025-11-25'
-'references:
+
+references:
   - type: dataset
-    title: "Health Analytics"
+    title: Health Analytics
     authors:
-      - given-names: "Rajanand"
-        family-names: "Ilangovan"
+      - given-names: Rajanand
+        family-names: Ilangovan
     year: 2017
-    url: "https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey"
-    repository: "Kaggle"
-    notes: "Kaggle Health Analytics dataset utilized as primary data source for this capstone project."
+    url: https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
+    repository: Kaggle
+    notes: Kaggle Health Analytics dataset utilized as primary data source for this capstone project.
