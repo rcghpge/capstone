@@ -1,6 +1,7 @@
 [![Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=rcghpge/capstone)
 
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
+[![Conda](https://img.shields.io/badge/conda-%3E%3D26.1.0-blue?logo=anaconda&logoColor=white)](https://docs.conda.io/en/latest/)
 [![pip](assets/pip-version.svg)](https://pypi.org/project/pip/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Simulation-orange?style=flat&logo=streamlit&logoColor=white)](https://health-analytics-dashboard.streamlit.app/)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rcghpge/capstone/blob/main/notebooks/index.ipynb)
@@ -68,8 +69,8 @@ https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
 ---
 
 ## Getting Started
-Clone the GitHub repository and generate a Pixi or Python virtual environment. Install required software dependencies.
-Runs in Jupyter Notebook, Jupyter Lab, and Bash command-line environments.
+Clone the GitHub repository and generate a Pixi or Python virtual environment. Install required software dependencies. 
+Developed for Jupyter Notebooks, Jupyter Lab, Docker Desktop, Binder containers, and Bash CLI environments.
 
 ```bash
 # Clone repository

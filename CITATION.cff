@@ -51,6 +51,7 @@ keywords:
   - docker
   - jupyter
   - binder
+  - conda
   - pixi
   - pip
   - uv
@@ -59,9 +60,8 @@ keywords:
   - linux
 
 license: MIT
-version: 0.17.1
+version: 0.17.2
 date-released: '2025-11-25'
-
 references:
   - type: dataset
     title: Health Analytics

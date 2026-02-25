@@ -45,7 +45,6 @@ notebooks/test/
 !LICENSE 
 !CITATION.cff
 !models/
-!notebooks/test/keras-test/
 !notebooks/test/*.ipynb
 !notebooks/
 !assets/
