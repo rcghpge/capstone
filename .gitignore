@@ -78,6 +78,7 @@ ENV/
 *.yml~
 *.py~
 *.json
+artifacts/
 dev/
 notebooks/test/*
 
@@ -87,7 +88,6 @@ notebooks/test/*
 !.devcontainer.json
 !capstone-binder.vex.json
 !settings.json
-!notebooks/artifacts/
 !notebooks/test/*.ipynb
 !notebooks/index.ipynb
 

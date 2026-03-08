@@ -96,6 +96,17 @@ def plot_true_vs_pred(y_true, y_pred, outdir, subset_label, metrics):
     plt.savefig(Path(outdir)/f'baseline_{subset_label.lower()}_scatter.png')
     plt.close()
 
+def get_raw_feature_names(preprocessor, original_cols):
+    feat_names = list(preprocessor.get_feature_names_out())
+    raw_mapping = {}
+    
+    for feat in feat_names:
+        if feat.startswith('num__'):
+            raw_mapping[feat] = feat[5:]
+        elif feat.startswith('cat__'):
+            raw_mapping[feat] = feat[5:].split('_', 1)[1] if '_' in feat[5:] else feat[5:]
+    
+    return [raw_mapping.get(name, name) for name in feat_names]
 def plot_feature_importances(importances, feature_names, outdir, top_n=10):
     top_n = min(top_n, len(importances), len(feature_names))
     idx = np.argsort(importances)[-top_n:]
@@ -358,9 +369,9 @@ def main():
             f.write(f"{feat}: {importance:.4f}\n")
 
 
-    print("\nModel Metrics:")
-    for metric_name, metric_value in metrics.items():
-        print(f"{metric_name}: {metric_value:.6f}")
+    #print("\nXGBoost Base Model Performance Metrics:")
+    #for metric_name, metric_value in metrics.items():
+    #    print(f"{metric_name}: {metric_value:.6f}")
 
     print("\nSelected features by RFECV:")
     for feat in selected_features:
@@ -394,11 +405,20 @@ def main():
 
     feature_importances = xgb_model.feature_importances_
     feature_names = selected_features
+    raw_feature_names = get_raw_feature_names(preprocessor, X_train.columns.tolist())
     plot_feature_importances(feature_importances, feature_names, outdir)
     plot_learning_curve(xgb_model, X_train_selected, y_train.values.ravel(), outdir)
     plot_validation_curve(xgb_model, X_train_selected, y_train.values.ravel(), 'n_estimators', range(100, 2001, 200), outdir)
     plot_statewise_histogram(df, value_col=args.target, state_col="State_Name", outdir=outdir)
     plot_statewise_facets(df, value_col=args.target, state_col="State_Name", outdir=outdir)
+
+    print("\n" + "="*70)
+    print("✅ XGBoost Base Model Results:")
+    print("="*70)
+    print(f"🎯 Test: R²={r2:.4f} | Adj R²={adj_r2:.4f} | RMSE={rmse:.4f} | MAE={mae:.4f}")
+    print(f"📊 Features: {selector.n_features_}/{len(raw_feature_names)}")
+    print(f"📁 Outputs: {outdir}")
+    print("="*70)
 
 if __name__ == "__main__":
     main()

@@ -32,6 +32,7 @@ work/
 **/work/
 
 # Local development
+artifacts/
 dev/
 notebooks/test/
 *.log
