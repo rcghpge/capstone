@@ -1,9 +1,9 @@
 [![Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=rcghpge/capstone)
 
 [![Pixi Badge](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/prefix-dev/pixi/main/assets/badge/v0.json)](https://pixi.sh)
-[![Conda](https://img.shields.io/badge/conda-%3E%3D26.1.0-blue?logo=anaconda&logoColor=white)](https://docs.conda.io/en/latest/)
-[![pip](assets/pip-version.svg)](https://pypi.org/project/pip/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![pip](assets/pip-version.svg)](https://pypi.org/project/pip/)
+[![Conda](https://img.shields.io/badge/conda-%3E%3D26.1.0-blue?logo=anaconda&logoColor=white)](https://docs.conda.io/en/latest/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Simulation-orange?style=flat&logo=streamlit&logoColor=white)](https://health-analytics-dashboard.streamlit.app/)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rcghpge/capstone/blob/main/notebooks/index.ipynb)
 [![Docker](https://img.shields.io/badge/Docker-rcdpge/capstone--binder-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/rcdpge/capstone-binder)
