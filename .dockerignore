@@ -46,8 +46,9 @@ notebooks/test/
 !LICENSE 
 !CITATION.cff
 !models/
-!notebooks/test/*.ipynb
 !notebooks/
+!notebooks/test/keras
+!notebooks/test/*.ipynb
 !assets/
 !binder/
 !.dockerignore
