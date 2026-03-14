@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo 'export PATH="/home/jovyan/.local/bin:/opt/conda/bin:/usr/local/bin:/usr/bin:/bin"' > ~/.bashrc
+echo 'export PATH="/home/jovyan/.local/bin:/opt/conda/bin:/opt/uv/bin:/usr/local/bin:/usr/bin:/bin"' > ~/.bashrc
 source ~/.bashrc
 
 /opt/conda/bin/python -m pip install --upgrade --user ipykernel
