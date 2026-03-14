@@ -8,7 +8,7 @@ Repository = "https://github.com/rcghpge/capstone"
 
 [project]
 name = "capstone"
-version = "0.17.4"
+version = "0.17.5"
 requires-python = ">=3.11,<3.15"
 authors = [
   { name = "Robert Cocker"},
@@ -19,7 +19,7 @@ authors = [
 description = "Health Analytics. Machine learning utilizing key health indicators for infant mortality rate prediction. University of Texas at Arlington."
 license = "MIT"
 readme = "README.md"
-dependencies = [ "cryptography", "jupyterlab", "jupyterlab-widgets", "jupyter", "ipywidgets", "ipykernel", "jax", "jaxlib", "pandas", "numpy", "scikit-learn", "xgboost", "scipy", "joblib", "matplotlib", "plotly", "pip", "fonttools", "urllib3", "streamlit", "keras", "rulefit>=0.3.1,<0.4", "seaborn>=0.13.2,<0.14", "pyale>=1.2.0,<2", "tree>=0.2.4,<0.3", "kaggle>=2.0.0,<3", "pytest>=9.0.2,<10", "pytest-cov>=7.0.0,<8", "nbval>=0.11.0,<0.12", "black>=26.3.1,<27", "flake8>=7.3.0,<8", "pre-commit>=4.5.1,<5", "jupyterlab-lsp>=5.2.0,<6", "pip-tools>=7.5.3,<8", "bandit>=1.9.4,<2", "pip-audit>=2.10.0,<3", "pybadges>=3.0.1,<4"]
+dependencies = [ "cryptography", "jupyterlab", "jupyterlab-widgets", "jupyter", "ipywidgets", "ipykernel", "jax", "jaxlib", "pandas", "numpy", "scikit-learn", "xgboost", "scipy", "joblib", "matplotlib", "plotly", "pip", "fonttools", "urllib3", "streamlit", "keras", "rulefit>=0.3.1,<0.4", "seaborn>=0.13.2,<0.14", "pyale>=1.2.0,<2", "tree>=0.2.4,<0.3", "kaggle>=2.0.0,<3", "pytest>=9.0.2,<10", "pytest-cov>=7.0.0,<8", "nbval>=0.11.0,<0.12", "black>=26.3.1,<27", "flake8>=7.3.0,<8", "pre-commit>=4.5.1,<5", "jupyterlab-lsp>=5.2.0,<6", "pip-tools>=7.5.3,<8", "bandit>=1.9.4,<2", "pip-audit>=2.10.0,<3", "pybadges>=3.0.1,<4", "shap>=0.51.0,<0.52", "lime>=0.2.0.1,<0.3"]
 
 [project.optional-dependencies]
 dev = [

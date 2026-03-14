@@ -55,12 +55,13 @@ keywords:
   - pixi
   - pip
   - uv
+  - pixi
   - uta
   - ut arlington
   - linux
 
 license: MIT
-version: 0.17.4
+version: 0.17.5
 date-released: '2025-11-25'
 references:
   - type: dataset

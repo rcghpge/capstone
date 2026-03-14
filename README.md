@@ -50,6 +50,7 @@ https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
 ├── binder
 ├── models
 ├── notebooks
+├── pixi
 ├── .dockerignore
 ├── .gitattributes
 ├── .gitignore
