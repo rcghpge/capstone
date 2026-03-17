@@ -49,19 +49,20 @@ keywords:
   - streamlit
   - dockerhub
   - docker
+  - jupyter notebook
+  - jupyter lab
   - jupyter
   - binder
   - conda
   - pixi
   - pip
   - uv
-  - pixi
   - uta
   - ut arlington
   - linux
 
 license: MIT
-version: 0.17.5
+version: 0.17.7
 date-released: '2025-11-25'
 references:
   - type: dataset
