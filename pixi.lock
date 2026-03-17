@@ -1850,7 +1850,7 @@ packages:
 - pypi: ./
   name: capstone
   version: 0.17.7
-  sha256: e47b05c05814c915a2871cb93d6da5581c210c03c96a8a8da5cae3b3bae23dcf
+  sha256: 7e3cbd5667f43cea596d7247cc1a8c8a1308f2ec0f9b96c4300f319ead576f17
   requires_dist:
   - cryptography
   - jupyterlab
@@ -1876,22 +1876,22 @@ packages:
   - keras
   - shap
   - lime
-  - rulefit
-  - seaborn
-  - pyale
-  - tree
-  - kaggle
-  - pytest
-  - pytest-cov
-  - nbval
-  - black
-  - flake8
-  - pre-commit
-  - jupyterlab-lsp
-  - pip-tools
-  - bandit
-  - pip-audit
-  - pybadges
+  - rulefit>=0.3.1,<0.4
+  - seaborn>=0.13.2,<0.14
+  - pyale>=1.2.0,<2
+  - tree>=0.2.4,<0.3
+  - kaggle>=2.0.0,<3
+  - pytest>=9.0.2,<10
+  - pytest-cov>=7.0.0,<8
+  - nbval>=0.11.0,<0.12
+  - black>=26.3.1,<27
+  - flake8>=7.3.0,<8
+  - pre-commit>=4.5.1,<5
+  - jupyterlab-lsp>=5.2.0,<6
+  - pip-tools>=7.5.3,<8
+  - bandit>=1.9.4,<2
+  - pip-audit>=2.10.0,<3
+  - pybadges>=3.0.1,<4
   - pytest>=7.4 ; extra == 'dev'
   - pytest-cov ; extra == 'dev'
   - nbval ; extra == 'dev'

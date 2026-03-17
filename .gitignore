@@ -80,7 +80,6 @@ ENV/
 *.json
 artifacts/
 dev/
-notebooks/test/*
 
 # Remote development
 !.vscode/
@@ -88,7 +87,7 @@ notebooks/test/*
 !.devcontainer.json
 !capstone-binder.vex.json
 !settings.json
-!notebooks/test/xgboost-baseline
+!notebooks/test/xgboost-baseline/*.json
 !notebooks/test/keras
 !notebooks/test/*.ipynb
 !notebooks/index.ipynb

@@ -34,7 +34,6 @@ work/
 # Local development
 artifacts/
 dev/
-notebooks/test/
 *.log
 *.bak
 *.egg-info
@@ -47,7 +46,7 @@ notebooks/test/
 !CITATION.cff
 !models/
 !notebooks/
-!notebooks/test/xgboost-baseline
+!notebooks/test/xgboost-baseline/*.json
 !notebooks/test/keras
 !notebooks/test/*.ipynb
 !assets/
