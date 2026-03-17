@@ -96,10 +96,17 @@ pip install --upgrade <package> # upgrade packages
 pip install --upgrade -e .[dev] # upgrade development environment
 python -m pip lock -e . # lock packages and dependencies  
 
-# Jupyterlab
+# Jupyter Notebook
+jupyter notebook --generate-config # if needed
+jupyter notebook
+jupyter notebook notebooks/
+jupyter notebook models/
+
+# JupyterLab
+jupyter lab --generate-config # if needed
 jupyter lab
 jupyter lab notebooks/
-jupyter lab/models/ 
+jupyter lab models/ 
 
 # Builds with Pixi
 pixi install

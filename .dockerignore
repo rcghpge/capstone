@@ -47,6 +47,7 @@ notebooks/test/
 !CITATION.cff
 !models/
 !notebooks/
+!notebooks/test/xgboost-baseline
 !notebooks/test/keras
 !notebooks/test/*.ipynb
 !assets/
