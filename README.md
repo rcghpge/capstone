@@ -133,7 +133,8 @@ Run:
 ```bash
 docker run -it -p 8888:8888 rcdpge/capstone-binder:latest
 ```
-Access Jupyter at http://localhost:8888 (token printed in logs).
+- Set port in Docker Desktop to 8888.
+- Access Jupyter at http://localhost:8888 (token printed in logs).
 
 
 ## Windows Subsystem for Linux (WSL)
