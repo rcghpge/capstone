@@ -59,6 +59,8 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split, KFold, learning_curve, validation_curve
 
 # Keras Build
+import shap
+import lime
 import keras
 from keras import layers, callbacks
 from keras.models import Sequential
@@ -73,12 +75,23 @@ python keras_regression.py --data ../data/Key_indicator_districtwise.csv \
 sns.set_palette("husl")
 plt.style.use('default')
 
-logging.basicConfig(
-    level=logging.DEBUG if '--debug' in sys.argv else logging.INFO,
-    format='%(asctime)s | %(levelname)s | %(message)s',
-    handlers=[logging.FileHandler('keras_debug.log'), logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
+def setup_logging(out_dir: str, debug: bool):
+    log_path = Path(out_dir)
+    log_path.mkdir(parents=True, exist_ok=True)
+
+    logging.basicConfig(
+        level=logging.DEBUG if debug else logging.INFO,
+        format='%(asctime)s | %(levelname)s | %(message)s',
+        handlers=[
+            logging.FileHandler(log_path/'keras_debug.log'),
+            logging.StreamHandler()
+        ],
+        force=True 
+    )
+
+    logger = logging.getLogger(__name__)
+    logger.info("Keras logging initialized at %s", log_path)
+    return logger
 
 @contextmanager
 def spinner_progress(total_steps=64):
@@ -99,11 +112,6 @@ def spinner_progress(total_steps=64):
     yield update
     elapsed = time.time() - start
     print(f'\r✅ RFECV Feature Selection Complete! {elapsed/60:.1f}m total')
-
-def calculate_adjusted_r2(r2_score, n_samples, n_features):
-    if n_samples <= n_features + 1:
-        return np.nan
-    return 1 - (1 - r2_score) * (n_samples - 1)/(n_samples - n_features - 1)
 
 def load_data(data_path):
     if data_path.endswith('.csv'):
@@ -157,7 +165,7 @@ def drop_feature_correlations(X_train, X_test, y_train, feature_names, drop_pct)
     X_train_new = X_train[:, keep_idx]
     X_test_new = X_test[:, keep_idx]
     feature_names_new = [feature_names[i] for i in keep_idx]
-    print(f"✓ Dropped {n_drop}/{n_features} features ({drop_pct:.2f}%) by |corr|; {len(feature_names_new)} remain.")
+    print(f"✅ Dropped {n_drop}/{n_features} features ({drop_pct:.2f}%) by |corr|; {len(feature_names_new)} remain.")
     return X_train_new, X_test_new, feature_names_new
 
 def find_state_columns(df, id_cols):
@@ -206,7 +214,7 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
     if total_missing == 0:
         print("✅ No missing null/nan values!")
     
-    print(f"✅ RFECV Ready: {n_features} → will look to select best features")
+    print(f"✅ RFECV Ready: {n_features} → will look to select the best features")
     print("="*80)
 
 def plot_feature_importance(importances, feature_names, selector_support, out_dir, top_n=25):
@@ -566,7 +574,12 @@ def plot_validation_curves(history, out_dir, param_name="Learning Rate"):
     plt.savefig(out_dir/"validation_curves.png", dpi=300, bbox_inches='tight')
     plt.close()
     print("✓ validation_curves.png")
-
+    
+def calculate_adjusted_r2(r2_score, n_samples, n_features):
+    if n_samples <= n_features + 1:
+        return np.nan
+    return 1 - (1 - r2_score) * (n_samples - 1)/(n_samples - n_features - 1)
+    
 def save_metrics(train_metrics, test_metrics, out_dir):
     results = pd.DataFrame([train_metrics, test_metrics], index=['Train', 'Test'])
     results.index.name = 'Split'
@@ -575,9 +588,9 @@ def save_metrics(train_metrics, test_metrics, out_dir):
 
 def main(args):
     print("="*80)
-    print("Keras Regression Deep Learning Neural Network")
+    print("Keras Regression Deep Neural Network")
     print("="*80)
-    
+    logger = setup_logging(args.outdir, args.debug)
     df = load_data(args.data)
     original_target = args.target
     df.columns = [re.sub(r'^([A-Z]{2})_', '', col) for col in df.columns]
@@ -610,7 +623,10 @@ def main(args):
     feature_names = get_feature_names(preprocessor)
     X_train_processed, X_test_processed, feature_names = drop_feature_correlations(
         X_train_processed, X_test_processed, y_train, feature_names, args.correlation)
-    
+
+    num_features = X_train_processed.shape[1]
+    target_min, target_max = y.min(), y.max()
+    print(f"✅ Features: {num_features} | Target Range: {target_min:.1f}-{target_max:.1f}")
     print_pre_rfecv_stats(X_train_processed, y_train, feature_names, X_train_processed.shape[1])
     cv = KFold(n_splits=5, shuffle=True, random_state=args.random_state)
     rf = RandomForestRegressor(random_state=42, n_jobs=-1)
@@ -637,6 +653,91 @@ def main(args):
     
     keras_model, history = train_keras_model(
         model, X_train_final, y_train_final, X_val, y_val, out_dir)
+
+    print("\n" + "="*80)
+    print("Test SHAP + LIME Implementation ...")
+    X_tensor = X
+    X_test_final = X_test_selected
+    rng_seed = args.random_state
+    rng = np.random.default_rng(seed=42)
+
+    n_rows = X_train_final.shape[0]
+    if n_rows <= 0:
+        raise ValueError("X_train_final is empty; cannot sample background data.")
+
+    min_samples = 3              
+    target_samples = 500         
+
+    if n_rows <= min_samples:
+        n_samples = n_rows
+    else:
+        n_samples = min(target_samples, n_rows)
+
+    print(f"Utilizing {n_samples} out of {n_rows} rows as SHAP background data.")
+
+    idx = rng.choice(n_rows, size=n_samples, replace=False)
+    background_data = X_train_final[idx]
+    
+    def pred_fn(X):
+        return keras_model.predict(X).flatten()
+        
+    shap_explainer = shap.KernelExplainer(pred_fn, background_data)
+    shap_values = shap_explainer.shap_values(X_test_final)
+
+    explainer = shap.Explainer(pred_fn, background_data)
+    shap_values = explainer(X_test_final)
+
+    shap.summary_plot(
+        shap_values.values,
+        features=X_test_final,
+        feature_names=feature_names,
+        plot_type="bar",
+        max_display=20,          
+        show=False
+    )
+    plt.tight_layout(pad=2.0)    
+    plt.savefig("out_dir/shap_global_bar.png", dpi=300, bbox_inches="tight")
+    plt.close()
+
+    shap.waterfall_plot(
+    shap.Explanation(
+        values=shap_values[0].values,
+        base_values=shap_values[0].base_values,
+        data=X_test_final[0],
+        feature_names=feature_names,
+        show=False
+    ),
+    plt.savefig("out_dir/shap_local_waterfall.png", dpi=300, bbox_inches="tight")
+    plt.close()
+
+    lime_explainer = lime.lime_tabular.LimeTabularExplainer(
+        training_data=X_train_final,      
+        mode='regression',
+        feature_names=feature_names,        
+        categorical_features=[],            
+        kernel_width=3,
+        random_state=rng_seed
+    )
+
+    lime_exp = lime_explainer.explain_instance(
+        X_test_final[0],            
+        pred_fn,
+        num_features=10      
+    )
+
+    lime_list = lime_exp.as_list()
+    print("LIME Top Features:")
+    for feat, weight in lime_list:
+        print(f"  {feat}: {weight:.4f}")
+
+    fig = lime_exp.as_pyplot_figure()
+    plt.tight_layout()
+    plt.savefig("lime_local_bar.png", dpi=300, bbox_inches="tight")
+    plt.close()
+
+    #html = lime_exp.as_html(labels=None, predict_proba=True, show_predicted_value=True)
+    #with open("lime_explanation.html", "w") as f:
+    #    f.write(html)
     
     y_train_pred = keras_model.predict(X_train_selected, verbose=0).ravel()
     y_test_pred = keras_model.predict(X_test_selected, verbose=0).ravel()
@@ -681,9 +782,9 @@ def main(args):
                           orig_indices=train_indices, state_col='State_Name', district_col='State_District_Name')
     print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, 
                           orig_indices=test_indices, state_col='State_Name', district_col='State_District_Name')
-    
+
     print("\n" + "="*80)
-    print("✅ Keras Neural Network Results:")
+    print("✅ Keras Deep Neural Network Results:")
     print("="*80)
     print(f"🎯 Test: R²={test_r2:.4f} | Adj R²={test_adj_r2:.4f} | RMSE={test_rmse:.4f} | MAE={test_mae:.4f}")
     print(f"📊 Features: {selector.n_features_}/{len(feature_names)} (RFECV Selected)")

@@ -895,8 +895,6 @@ def main(args):
     distances, idxs, neigh_targets = get_neighbors_for_sample(
         model, X_train_selected, y_train, X_sample_selected
     )
-    #plot_neighbor_contributions(distances, neigh_targets, y_pred_sample, out_dir, sample_label=f"test_{sample_idx}")
-    #print(f"True={y_true_sample:.3f}, Pred={y_pred_sample:.3f}") # residual architecture builds.
 
     joblib.dump(model, out_dir/'knn_model.joblib')
     joblib.dump(preprocessor, out_dir/'preprocessor.joblib')
