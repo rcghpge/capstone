@@ -28,7 +28,7 @@ import streamlit as st
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'models'))
 
-from knn_base import generate_and_train, generate_prediction_df, drop_highly_correlated
+from knn_baseline import generate_and_train, generate_prediction_df, drop_highly_correlated
 
 st.set_page_config(page_title="Dashboard", layout="wide")
 st.title("🩺 Health Analytics Dashboard")
