@@ -87,7 +87,7 @@ dev/
 !.devcontainer.json
 !capstone-binder.vex.json
 !settings.json
-!notebooks/test/xgboost-baseline/*.json
+!notebooks/test/xgboost-baseline/*/*.json
 !notebooks/test/keras
 !notebooks/test/*.ipynb
 !notebooks/index.ipynb

@@ -46,7 +46,7 @@ dev/
 !CITATION.cff
 !models/
 !notebooks/
-!notebooks/test/xgboost-baseline/*.json
+!notebooks/test/xgboost-baseline/*/*.json
 !notebooks/test/keras
 !notebooks/test/*.ipynb
 !assets/
