@@ -47,7 +47,7 @@ dev/
 !models/
 !notebooks/
 !notebooks/test/xgboost-baseline/*/*.json
-!notebooks/test/keras
+!notebooks/test/keras-dnn/*.csv
 !notebooks/test/*.ipynb
 !assets/
 !binder/
