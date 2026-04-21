@@ -27,16 +27,8 @@
 </div>
 
 <h3 style="font-size: 1.5em; margin: 1em 0 1.5em 0; line-height: 1.4;">
-<strong>Health Analytics: Machine learning utilizing key health indicators for infant mortality rate prediction.</strong>
+<strong>Machine learning utilizing key health indicators for health analytics.</strong>
 </h3>
-</div>
-
-<div align="left" style="max-width: 1000px; margin: 3em auto; padding: 0 2em;">
-<strong>References</strong><br>
-Kaggle (2017). Annual Health Survey (India AHS 2012-13):<br>
-<a href="https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey">
-https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
-</a>
 </div>
 
 ---
@@ -61,7 +53,6 @@ https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
 ├── __init__.py
 ├── app.py
 ├── pixi.lock
-├── pylock.toml
 ├── pyproject.toml
 └── requirements.txt
 
@@ -108,26 +99,28 @@ jupyter lab
 jupyter lab notebooks/
 jupyter lab models/ 
 
-# Builds with Pixi
-pixi install
+# Pixi
+./pixi/install/install.sh
+source ~/.bashrc
+
 pixi shell
 pixi info
 ```
 
 ## Streamlit
-[Streamlit](https://streamlit.io/) - Streamlit is the fastest way to build and share data apps, letting you transform Python scripts into interactive web applications with just a few lines of code.
+[Streamlit](https://streamlit.io/) - Streamlit is the fastest way to build and share data apps, letting you transform Python scripts into interactive web applications with a few lines of code.
 
-[Streamlit dashboard](https://health-analytics-dashboard.streamlit.app/) - Streamlit interactive simulation dashboard
+[Streamlit dashboard](https://health-analytics-dashboard.streamlit.app/) - Streamlit preview dashboard
 
 ## Binder
 [Binder](https://jupyter.org/binder) - Binder is an open-source web service that allows you to build, share, and run interactive computational environments in the cloud directly from your Git repositories.
 
-[Capstone binder](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab) - Binder container image for capstone project with a portable Linux-based Jupyter environment.
+[Capstone binder](https://mybinder.org/v2/gh/rcghpge/capstone/main?urlpath=lab) - Binder cloud containers for capstone project.
 
 ## Docker Desktop 
-[Docker Desktop](https://docs.docker.com/desktop/) - Docker Desktop is a one-click-install application for your Mac, Linux, or Windows environment that lets you build, share, and run containerized applications and microservices. 
+[Docker Desktop](https://docs.docker.com/desktop/) - Docker Desktop is a one-click-install application for your Mac, Linux, or Windows that lets you build, share, and run containerized applications and microservices. 
 
-### Binder Containers on Docker Desktop
+### Binder Cloud Containers with Docker Desktop
 
 Run:
 ```bash
@@ -138,7 +131,7 @@ docker run -it -p 8888:8888 rcdpge/capstone-binder:latest
 
 
 ## Windows Subsystem for Linux (WSL)
-[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/) - Windows Subsystem for Linx is an integrated Linux environment for cross-platform development on Microsoft Windows without virtual machines or dual-booting.
+[Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/) - Windows Subsystem for Linx is an integrated Linux environment for cross-platform development on Microsoft Windows without virtual machines or dual-booting your machine.
 
 
 ---

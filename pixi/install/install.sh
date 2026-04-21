@@ -1,6 +1,6 @@
-#!/bin/sh
+k#!/bin/sh
 set -eu
-# Version: v0.63.2
+# Version: v0.67.0
 
 __wrap__() {
     # Function to mask username and password in URLs for safe printing

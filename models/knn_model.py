@@ -46,9 +46,8 @@ from sklearn.neighbors import NearestNeighbors, KNeighborsRegressor
 from sklearn.model_selection import train_test_split, KFold, learning_curve, validation_curve
 from sklearn.metrics import mean_absolute_error, mean_squared_error, root_mean_squared_error, r2_score
 """
-Example Usage: See Jupyter Notebooks for more information
-
-!python knn.py --data ../data/Key_indicator_districtwise.csv \
+Example Usage:
+python knn_model.py --data ../data/Key_indicator_districtwise.csv \
 --target Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
 --correlation 60 --test-size 0.25 --random-state 42 --outdir artifacts/knn
 """
@@ -69,7 +68,7 @@ def spinner_progress(total_steps=64):
     spinners = ['|', '/', '-', '\\']
     start = time.time()
     iter_count = 0
-    
+
     def update(n_features):
         nonlocal iter_count
         iter_count += 1
@@ -79,7 +78,7 @@ def spinner_progress(total_steps=64):
         spinner = spinners[iter_count%4]
         sys.stdout.write(f'\r[{spinner} {iter_count:3d}/{total_steps}] {n_features:4d} feats | ETA: {eta:.0f}m | {pct:3.0f}% ')
         sys.stdout.flush()
-    
+
     yield update
     elapsed = time.time() - start
     print(f'\r✅ RFECV Feature Selection Complete! {elapsed/60:.1f}m total')
@@ -95,7 +94,7 @@ def print_dataset_stats(df, target_col):
     print("\n" + "="*80)
     print("📈 Raw Dataset Summary")
     print("="*80)
-    
+
     total_samples, total_features = df.shape
     print(f"📊 Dataset Shape: ({total_samples}, {total_features})")
     print(f"🎯 Target Column: '{target_col}'")
@@ -107,13 +106,13 @@ def print_dataset_stats(df, target_col):
     target_missing = df[target_col].isnull().sum()
     target_missing_pct = (target_missing / total_samples) * 100
     print(f"🎯 Target Missing: {target_missing:,}/{total_samples} ({target_missing_pct:.1f}%)")
-    
+
     if target_missing > 0:
         print(f"⚠️ Warning: Target has missing values!")
 
     feature_missing = df.drop(columns=[target_col]).isnull().sum()
     missing_features = feature_missing[feature_missing > 0].sort_values(ascending=False)
-    
+
     if len(missing_features) > 0:
         print(f"\n📋 Top 10 Features with Missing Null/NaN Values:")
         print("-" * 60)
@@ -123,11 +122,11 @@ def print_dataset_stats(df, target_col):
         print(f"\n📊 Total features with missing values: {len(missing_features)}/{total_features - 1}")
     else:
         print("\n✅ No missing values in features!")
-    
+
     dtype_counts = df.dtypes.value_counts()
     print(f"\n🔧 Data Types:")
     for dtype, count in dtype_counts.items():
-        dtype_str = str(dtype)[:14] 
+        dtype_str = str(dtype)[:14]
         print(f"{dtype_str:15s} | {count:3d} columns")
     print("="*80)
 
@@ -135,26 +134,25 @@ def print_pre_rfecv_stats(X_processed, y_train, feature_names, num_features):
     print("\n" + "="*80)
     print("📈 Pre-RFECV Feature Selection Summary (Post-Preprocessing + Feature Correlation Drop)")
     print("="*80)
-    
+
     n_samples, n_features = X_processed.shape
     print(f"📊 Processed Dataset: ({n_samples}, {n_features})")
     print(f"🎯 Target Samples: {len(y_train)}")
     print(f"📋 Feature Name Count: {len(feature_names)}")
-    
+
     total_missing = np.isnan(X_processed).sum()
     missing_pct = (total_missing / (n_samples * n_features)) * 100
     print(f"🔍 Post-Preprocessing Missing Null/NaN Values: {total_missing:,} ({missing_pct:.2f}%)")
-    
+
     if total_missing == 0:
         print("✅ No missing Null/NaN values after preprocessing!")
     else:
         print("⚠️ Warning: Missing Null/NaN values persist after preprocessing!")
-    
-    # Target stats
+
     y_train = np.asarray(y_train).ravel()
     target_missing = np.isnan(y_train).sum()
     print(f"🎯 Target Missing Null/NaN Values: {target_missing:,}/{len(y_train)} ({target_missing/len(y_train)*100:.1f}%)")
-    
+
     numeric_feats = sum(1 for name in feature_names if any(c.isdigit() or c in '.-' for c in name))
     ohe_features = sum('__' in name for name in feature_names)
     print(f"\n🔧 Feature Breakdown:")
@@ -244,7 +242,7 @@ def plot_true_vs_pred(y_true, y_pred, out_dir, subset_label, metrics):
     plt.title(f'{subset_label} Predictions')
     plt.legend()
     plt.grid(True, alpha=0.5)
-    
+
     textstr = f'R²: {metrics["R2"]:.3f}\nAdj R²: {metrics["Adj_R2"]:.3f}\nRMSE: {metrics["RMSE"]:.3f}\nMAE: {metrics["MAE"]:.3f}'
     plt.gca().text(0.02, 0.98, textstr, transform=plt.gca().transAxes, fontsize=11,
                    verticalalignment='top', bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.7))
@@ -262,25 +260,25 @@ def plot_residuals(y_true, y_pred, out_dir, split_name):
     axes[0,0].set_ylabel('Residuals')
     axes[0,0].set_title('Residuals vs Predicted')
     axes[0,0].grid(True, alpha=0.5)
-    
+
     axes[0,1].hist(residuals, bins=10, color='steelblue', alpha=0.7, edgecolor='coral')
     axes[0,1].set_xlabel('Residuals')
     axes[0,1].set_ylabel('Frequency')
     axes[0,1].set_title('Residuals Distribution')
     axes[0,1].grid(True, alpha=0.5)
-    
+
     stats.probplot(residuals, dist="norm", plot=axes[1,0])
     axes[1,0].get_lines()[0].set_markerfacecolor('steelblue')
     axes[1,0].get_lines()[0].set_markeredgecolor('coral')
     axes[1,0].set_title('Q-Q Plot (Normality)')
-    
+
     axes[1,1].scatter(range(len(residuals)), residuals, alpha=0.7, s=20, color='steelblue')
     axes[1,1].axhline(0, color='coral', linestyle='--', linewidth=2)
     axes[1,1].set_xlabel('Predicted')
     axes[1,1].set_ylabel('Residuals')
     axes[1,1].set_title('Residuals vs Predicted')
     axes[1,1].grid(True, alpha=0.5)
-    
+
     plt.suptitle(f'{split_name} Residuals Analysis', fontsize=14)
     plt.tight_layout()
     plt.savefig(Path(out_dir)/f'{split_name.lower()}_residuals.png', dpi=300, bbox_inches='tight')
@@ -309,7 +307,7 @@ def plot_feature_importance(importances, feature_names, selector_support, out_di
     top_n = min(top_n, len(importances))
     idx = np.argsort(importances)[-top_n:][::-1]
     colors = ['steelblue' if selector_support[i] else 'coral' for i in idx]
-    
+
     plt.figure(figsize=(12, 10))
     bars = plt.barh(range(top_n), importances[idx], color=colors, alpha=0.7)
     plt.yticks(range(top_n), [feature_names[i][:35] + '...' if len(feature_names[i]) > 35 else feature_names[i] for i in idx])
@@ -340,7 +338,7 @@ def plot_feature_target_correlations(X_processed, y_train, feature_names, select
     if y_std == 0:
         print("Target has zero variance; skipping correlation plot.")
         return
-        
+
     best = []
     for start in range(0, n_features, chunk_size):
         end = min(start + chunk_size, n_features)
@@ -448,7 +446,7 @@ def plot_statewise_histogram(df, valuecol, statecol, outdir):
         common_norm=False,
         palette=palette,
         alpha=0.4,
-        multiple="layer", 
+        multiple="layer",
     )
 
     plt.title("Infant Mortality Rate by State")
@@ -466,7 +464,7 @@ def plot_statewise_facets(df, value_col, state_col, out_dir):
 
     g = sns.FacetGrid(plot_data, col=state_col, col_wrap=3, height=3, aspect=1.3, sharex=False, sharey=False)
     g.map_dataframe(sns.histplot, x=value_col, bins=9, color="steelblue", alpha=0.7)
-    
+
     for ax in g.axes.flatten():
         if ax is not None:
             ax.grid(True, alpha=0.5)
@@ -526,23 +524,23 @@ def plot_prediction_distribution(y_true, y_pred, out_dir, split_name):
 
 def plot_model_comparison(train_metrics, test_metrics, out_dir):
     metrics_df = pd.DataFrame([train_metrics, test_metrics], index=['Train', 'Test'])
-    x = np.arange(len(metrics_df)) 
+    x = np.arange(len(metrics_df))
     width = 0.35
-    
+
     fig, ax = plt.subplots(figsize=(10, 6))
-    
-    bars1 = ax.bar(x - width/2, metrics_df['R2'], width, label='R²', 
+
+    bars1 = ax.bar(x - width/2, metrics_df['R2'], width, label='R²',
                    color='steelblue', alpha=0.8, edgecolor='black')
-    
-    bars2 = ax.bar(x + width/2, metrics_df['Adj_R2'], width, label='Adj R²', 
+
+    bars2 = ax.bar(x + width/2, metrics_df['Adj_R2'], width, label='Adj R²',
                    color='coral', alpha=0.8, edgecolor='black')
-    
+
     for bars in [bars1, bars2]:
         for bar in bars:
             height = bar.get_height()
             ax.text(bar.get_x() + bar.get_width()/2., height + 0.005,
                    f'{height:.3f}', ha='center', va='bottom', fontsize=11, weight='normal')
-    
+
     ax.set_xlabel('Dataset Split')
     ax.set_ylabel('Score')
     ax.set_title('KNN Regression Model Performance: Train vs Test')
@@ -558,26 +556,26 @@ def plot_model_comparison(train_metrics, test_metrics, out_dir):
 def plot_learning_curve(estimator, X_df, y, out_dir, cv=5, train_sizes=np.linspace(0.1, 1.0, 10)):
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    
+
     est = clone(estimator)
-    
+
     train_sizes, train_scores, val_scores = learning_curve(
-        est, X_df, y,  
+        est, X_df, y,
         train_sizes=train_sizes, cv=cv, scoring='r2',
         n_jobs=-1, shuffle=True, random_state=42,
-        error_score='raise'  
+        error_score='raise'
     )
-    
+
     plt.figure(figsize=(10, 6))
     plt.plot(train_sizes, np.mean(train_scores, axis=1), 'o-', color='steelblue', label='Training R²', lw=2)
     plt.plot(train_sizes, np.mean(val_scores, axis=1), 'o-', color='coral', label='CV R²', lw=2)
-    plt.fill_between(train_sizes, 
+    plt.fill_between(train_sizes,
                      np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
-                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), 
+                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1),
                      alpha=0.2, color='steelblue')
-    plt.fill_between(train_sizes, 
+    plt.fill_between(train_sizes,
                      np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
-                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), 
+                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1),
                      alpha=0.2, color='coral')
     plt.xlabel('Training Set Size')
     plt.ylabel('R² Score')
@@ -593,35 +591,35 @@ def plot_learning_curve(estimator, X_df, y, out_dir, cv=5, train_sizes=np.linspa
 
 def plot_validation_curve(estimator, X, y, param_name, param_range, out_dir, cv=5, **kwargs):
     out_dir = Path(out_dir); out_dir.mkdir(parents=True, exist_ok=True)
-    
+
     est = clone(estimator)
-    
+
     train_scores, val_scores = validation_curve(
-        est, X, y, 
-        param_name=param_name, 
+        est, X, y,
+        param_name=param_name,
         param_range=param_range,
-        cv=cv, 
-        scoring='r2', 
+        cv=cv,
+        scoring='r2',
         n_jobs=-1
     )
-    
+
     plt.figure(figsize=(10, 6))
     plt.plot(param_range, np.mean(train_scores, axis=1), 'o-', color='steelblue', label='Training R²', lw=2)
     plt.plot(param_range, np.mean(val_scores, axis=1), 'o-', color='coral', label='CV R²', lw=2)
-    plt.fill_between(param_range, 
+    plt.fill_between(param_range,
                      np.mean(train_scores, axis=1) - np.std(train_scores, axis=1),
-                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1), 
+                     np.mean(train_scores, axis=1) + np.std(train_scores, axis=1),
                      alpha=0.2, color='steelblue')
-    plt.fill_between(param_range, 
+    plt.fill_between(param_range,
                      np.mean(val_scores, axis=1) - np.std(val_scores, axis=1),
-                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1), 
+                     np.mean(val_scores, axis=1) + np.std(val_scores, axis=1),
                      alpha=0.2, color='coral')
     plt.xlabel(param_name.replace('_', ' ').title())
     plt.ylabel('R² Score')
     plt.title('KNN + RFECV Regression Model Validation Curve')
     plt.legend(); plt.grid(True, alpha=0.3); plt.tight_layout()
     plt.savefig(out_dir/'validation_curve.png', dpi=300, bbox_inches='tight'); plt.close()
-    
+
     best_idx = np.argmax(np.mean(val_scores, axis=1))
     print(f"✓ validation_curve.png | Best CV R²: {np.mean(val_scores[best_idx]):.4f} ±{np.std(val_scores[best_idx]):.4f} (n_neighbors={param_range[best_idx]})")
 
@@ -645,26 +643,26 @@ def plot_neighbor_contributions(distances, neighbor_targets, pred_value, out_dir
     xs = np.arange(k)
     w = 1/(distances + 1e-8)
     w = w/w.sum()
-    
+
     plt.figure(figsize=(10, 6))
     plt.bar(xs, neighbor_targets, color="steelblue", alpha=0.7, label="Neighbor Targets", width=0.6)
     plt.plot(xs, [pred_value]*k, color="coral", linestyle="--", label="Model Prediction", linewidth=3)
-    
+
     for i, (yt, wi) in enumerate(zip(neighbor_targets, w)):
         plt.text(i, yt + 0.2, f"w={wi:.2f}", ha="center", va="bottom", fontsize=10, fontweight="normal")
-    
+
     plt.xlabel("Neighbor Rank (1st closest → kth closest)")
     plt.ylabel("Infant Mortality Rate (IMR)")
     plt.title("KNN k-Nearest Neighbor Targets & Weighted Prediction")
     plt.legend(fontsize=11)
     plt.grid(True, alpha=0.3)
-    
-    plt.text(0.70, 0.98, f"Prediction = Σ(w_i × target_i) = {pred_value:.2f}", 
+
+    plt.text(0.70, 0.98, f"Prediction = Σ(w_i × target_i) = {pred_value:.2f}",
          transform=plt.gca().transAxes, fontsize=12,
          bbox=dict(boxstyle="round,pad=0.4", facecolor="wheat", alpha=0.7),
          verticalalignment="top",
-         horizontalalignment="left")  
-    
+         horizontalalignment="left")
+
     plt.xticks(xs, [f"k={i+1}" for i in range(k)], fontsize=10)
     plt.tight_layout()
     out_path = Path(out_dir)/f"{sample_label}_neighbor_contributions.png"
@@ -689,7 +687,7 @@ def evaluate_knn_metrics(X_train_sel, X_test_sel, y_train, y_test, out_dir):
         knn.fit(X_train_sel, y_train)
         y_pred = knn.predict(X_test_sel)
         r2 = r2_score(y_test, y_pred)
-        rmse = root_mean_squared_error(y_test, y_pred) 
+        rmse = root_mean_squared_error(y_test, y_pred)
         mae = mean_absolute_error(y_test, y_pred)
         results.append((label, r2, rmse, mae))
         print(f"✓ {label}: R2={r2:.3f}, RMSE={rmse:.3f}, MAE={mae:.3f}")
@@ -716,29 +714,29 @@ def evaluate_knn_metrics(X_train_sel, X_test_sel, y_train, y_test, out_dir):
 def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None, orig_indices=None, state_col='State_Name', district_col='State_District_Name'):
     print(f"\n🔍 {split_name} Outlier Analysis")
     print("-"*80)
-    
+
     y_true = np.asarray(y_true).ravel()
     y_pred = np.asarray(y_pred).ravel()
     residuals = y_true - y_pred
     abs_residuals = np.abs(residuals)
-    
+
     Q1, Q3 = np.percentile(residuals, [25, 75])
     IQR = Q3 - Q1
     lower_bound = Q1 - 1.5 * IQR
     upper_bound = Q3 + 1.5 * IQR
     stat_outliers = np.abs(residuals) > np.max(np.abs([lower_bound, upper_bound]))
     stat_outlier_pct = stat_outliers.sum()/len(residuals) * 100
-    
+
     print(f"📊 Statistical Outliers (IQR 1.5): {stat_outliers.sum():3d}/{len(residuals):3d} ({stat_outlier_pct:4.1f}%)")
-    
+
     worst_idx = np.argsort(abs_residuals)[-5:][::-1]
     print(f"\n🚨 Top 5 KNN Regression Model Inference Worst Predictions (Residuals Errors):")
     print(f"{'#':3s} | {'State':15s} | {'District':20s} | {'True':6s} | {'Pred':6s} | {'Error':6s}")
     print("-"*80)
-    
+
     for i, rel_idx in enumerate(worst_idx):
         orig_idx = int(orig_indices[rel_idx]) if orig_indices is not None else rel_idx
-        
+
         state = "N/A"
         district = "N/A"
         if df_deduped is not None:
@@ -750,10 +748,10 @@ def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None,
                         district = str(df_deduped.iloc[orig_idx].get(district_col, "N/A"))[:19]
             except Exception:
                 state, district = "LookupError", "LookupError"
-        
+
         print(f"{i+1:2d}  | {state:15s} | {district:20s} | "
               f"{y_true[rel_idx]:6.1f} | {y_pred[rel_idx]:6.1f} | {abs_residuals[rel_idx]:6.1f}")
-    
+
     outliers_df = pd.DataFrame({
         'relative_idx': np.arange(len(residuals)),
         'original_index': orig_indices if orig_indices is not None else np.arange(len(residuals)),
@@ -761,7 +759,7 @@ def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None,
         'is_outlier': stat_outliers,
         'abs_error': abs_residuals
     })
-    
+
     if df_deduped is not None:
         states = []
         districts = []
@@ -779,7 +777,7 @@ def print_outlier_analysis(y_true, y_pred, split_name, out_dir, df_deduped=None,
                 districts.append("Error")
         outliers_df['state'] = states
         outliers_df['district'] = districts
-    
+
     outliers_df.to_csv(Path(out_dir)/f'{split_name.lower()}_outliers_summary.csv', index=False)
     print(f"💾 Saved: {split_name.lower()}_outliers_summary.csv")
 
@@ -796,12 +794,12 @@ def main(args):
     original_target = args.target
     df.columns = [re.sub(r'^([A-Z]{2})_', '', col) for col in df.columns]
     args.target = find_target_columns(df, original_target)
-    
+
     print(f"📊 Dataset: {df.shape}")
     print(f"🎯 Target: '{original_target}' → '{args.target}'")
 
     id_cols_fixed = [re.sub(r'^([A-Z]{2})_', '', col) for col in args.id_cols]
-    
+
     print(f"🧹 Deduplicating: {len(df)} → ", end="")
     mask = ~df.duplicated().values
     df_deduped = df[mask].copy()
@@ -813,28 +811,28 @@ def main(args):
         df_deduped = df_deduped.dropna(subset=[args.target])
         print(f"📊 After target cleanup: {df_deduped.shape}")
     print(f"✅ Raw dataset for preprocessing ({df_deduped.shape})")
-    
+
     if args.target not in df_deduped.columns:
         raise ValueError(f"Target '{args.target}' not found")
-    
+
     X = df_deduped.drop(columns=[args.target] + [col for col in id_cols_fixed if col in df_deduped.columns])
     y = df_deduped[args.target]
-    
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=args.test_size, random_state=args.random_state, shuffle=True)
 
     train_indices = X_train.index.values
     test_indices = X_test.index.values
-    
+
     out_dir = Path(args.outdir)
     out_dir.mkdir(exist_ok=True, parents=True)
-    
+
     state_col = find_state_columns(df_deduped, id_cols_fixed)
     print(f"🗺️ State Column: {state_col or 'None'}")
     if state_col and state_col in df_deduped.columns:
         plot_statewise_histogram(df_deduped, args.target, state_col, out_dir)
         plot_statewise_facets(df_deduped, args.target, state_col, out_dir)
-    
+
     preprocessor = build_preprocessor(X_train)
     X_train_processed = preprocessor.fit_transform(X_train)
     X_test_processed = preprocessor.transform(X_test)
@@ -842,16 +840,15 @@ def main(args):
     X_train_processed, X_test_processed, feature_names = drop_feature_correlations(
     X_train_processed, X_test_processed, y_train, feature_names, args.correlation)
 
-
     num_features = X_train_processed.shape[1]
     target_min, target_max = y.min(), y.max()
     print(f"✅ Features: {num_features} | Target Range: {target_min:.1f}-{target_max:.1f}")
     print_pre_rfecv_stats(X_train_processed, y_train, feature_names, num_features)
-    print("🔍 RFECV Feature Selector:") 
+    print("🔍 RFECV Feature Selector:")
     print("🔍 Running a pass on the data..")
     cv = KFold(n_splits=5, shuffle=True, random_state=args.random_state)
     rf = RandomForestRegressor(random_state=42, n_jobs=-1)
-    
+
     with spinner_progress(min(64, X_train_processed.shape[1]//10)):
         selector = RFECV(rf, step=10, cv=cv, scoring='neg_mean_absolute_error', verbose=0, n_jobs=-1)
         print("🔍 X_train Shape:", X_train.shape)
@@ -861,29 +858,29 @@ def main(args):
         print(f"✅ Original Numeric Columns: {len(X_train.select_dtypes(include=np.number).columns)} features")
         selector.fit(X_train_processed, y_train)
         print(f"✅ RFECV: {X_train_processed.shape[1]} → {selector.n_features_} features selected")
-    
+
     X_train_selected = selector.transform(X_train_processed)
     X_test_selected = selector.transform(X_test_processed)
-    
+
     model = KNeighborsRegressor(n_neighbors=5, weights='uniform', metric='manhattan')
     model.fit(X_train_selected, y_train)
-    
+
     y_train_pred = model.predict(X_train_selected)
     y_test_pred = model.predict(X_test_selected)
-    
+
     n_train, p = len(y_train), X_train_selected.shape[1]
     n_test = len(y_test)
-    
+
     train_r2 = r2_score(y_train, y_train_pred)
     train_adj_r2 = calculate_adjusted_r2(train_r2, n_train, p)
     train_rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
     train_mae = mean_absolute_error(y_train, y_train_pred)
-    
+
     test_r2 = r2_score(y_test, y_test_pred)
     test_adj_r2 = calculate_adjusted_r2(test_r2, n_test, p)
     test_rmse = np.sqrt(mean_squared_error(y_test, y_test_pred))
     test_mae = mean_absolute_error(y_test, y_test_pred)
-    
+
     train_metrics = {'R2': train_r2, 'Adj_R2': train_adj_r2, 'RMSE': train_rmse, 'MAE': train_mae}
     test_metrics = {'R2': test_r2, 'Adj_R2': test_adj_r2, 'RMSE': test_rmse, 'MAE': test_mae}
 
@@ -900,7 +897,7 @@ def main(args):
     joblib.dump(preprocessor, out_dir/'preprocessor.joblib')
     joblib.dump(selector, out_dir/'rfecv_selector.joblib')
     save_metrics(train_metrics, test_metrics, out_dir)
-    
+
     print("\n📊 Generating model inference plots...")
     plot_residuals(y_train, y_train_pred, out_dir, "Train")
     plot_residuals(y_test, y_test_pred, out_dir, "Test")
@@ -920,9 +917,9 @@ def main(args):
     plot_learning_curve(model, X_train_selected, y_train.values.ravel(), out_dir, cv=5)
     print(f"✓ Neighbor Analysis Test: True={y_true_sample:.3f}, Pred={y_pred_sample:.3f}")
     plot_neighbor_contributions(distances, neigh_targets, y_pred_sample, out_dir, sample_label=f"test_{sample_idx}")
-    print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices, 
+    print_outlier_analysis(y_train, y_train_pred, "Train", out_dir, df_deduped=df_deduped, orig_indices=train_indices,
                            state_col='State_Name', district_col='State_District_Name')
-    print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, orig_indices=test_indices, 
+    print_outlier_analysis(y_test, y_test_pred, "Test", out_dir, df_deduped=df_deduped, orig_indices=test_indices,
                            state_col='State_Name', district_col='State_District_Name')
     print(f"\n📊 Distance Metric Test:")
     evaluate_knn_metrics(X_train_selected, X_test_selected, y_train, y_test, out_dir)
@@ -935,7 +932,7 @@ def main(args):
     print("="*70)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='KNN Regression w/ 13 Color-Matched Plots')
+    parser = argparse.ArgumentParser(description='KNN Regression w/ 13 Color-Matched Plots. Machine learning for health analytics. The University of Texas at Arlington.')
     parser.add_argument('--data', required=True)
     parser.add_argument('--target', required=True)
     parser.add_argument('--id-cols', nargs='+', default=[])

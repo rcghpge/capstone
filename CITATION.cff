@@ -23,8 +23,7 @@ repository-code: https://github.com/rcghpge.com/capstone
 url: https://www.uta.edu/academics/schools-colleges/science/departments/division-data-science
 
 abstract: >-
-  Health Analytics. Machine learning utilizing key health indicators
-  for infant mortality rate prediction. The University of Texas at Arlington.
+  Machine learning utilizing key health indicators for health analytics. The University of Texas at Arlington.
 
 keywords:
   - data science
@@ -36,15 +35,15 @@ keywords:
   - mortality rate
   - python
   - kaggle
-  - colab
+  - google colab
   - github
-  - codespaces
+  - github codespaces
   - vs code
   - scikit-learn
   - keras
   - jax
   - knn
-  - catboost
+  - k-nearest neighbors
   - xgboost
   - streamlit
   - dockerhub
@@ -53,6 +52,7 @@ keywords:
   - jupyter lab
   - jupyter
   - binder
+  - anaconda
   - conda
   - pixi
   - pip
@@ -62,7 +62,7 @@ keywords:
   - linux
 
 license: MIT
-version: 0.17.8
+version: 0.17.9
 date-released: '2025-11-25'
 references:
   - type: dataset
@@ -72,5 +72,5 @@ references:
         family-names: Ilangovan
     year: 2017
     url: https://www.kaggle.com/datasets/rajanand/key-indicators-of-annual-health-survey
-    repository: Kaggle
-    notes: Kaggle Health Analytics dataset utilized as primary data source for this capstone project.
+    repository: Kaggleg
+    notes: Kaggle health analytics dataset utilized as primary data source for this capstone project.

@@ -32,7 +32,6 @@ from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
 from xgboost import XGBRegressor
 import json
-
 """
 Example Usage:
 python xgboost_baseline.py --data ../data/Key_indicator_districtwise.csv \
@@ -40,9 +39,15 @@ python xgboost_baseline.py --data ../data/Key_indicator_districtwise.csv \
 --outdir xgboost-baseline
 """
 
-def adjusted_r2(r2, n, p):
+def calculate_adjusted_r2(r2, n, p):
     return 1 - (1 - r2) * (n - 1)/(n - p - 1)
 
+def save_model_metrics(train_metrics, test_metrics, outdir):
+    results = pd.DataFrame([train_metrics, test_metrics], index=['Train', 'Test'])
+    results.index.name = 'Split'
+    results.to_csv(Path(args.outdir)/'metrics.csv', float_format='%.4f')
+    print("✓ metrics.csv")
+    
 def build_preprocessor(X):
     num_cols = X.select_dtypes(include=[np.number]).columns.tolist()
     cat_cols = [c for c in X.columns if c not in num_cols]
@@ -66,7 +71,7 @@ def parse_args():
     p.add_argument("--random-state", type=int, default=42)
     return p.parse_args()
 
-def main():
+def main(args):
     args = parse_args()
     outdir = Path(args.outdir)
     outdir.mkdir(exist_ok=True)
@@ -83,36 +88,41 @@ def main():
     )
 
     preprocessor = build_preprocessor(X_train)
-    X_train_proc = preprocessor.fit_transform(X_train)
-    X_test_proc = preprocessor.transform(X_test)
+    X_train_processed = preprocessor.fit_transform(X_train)
+    X_test_processed = preprocessor.transform(X_test)
 
     model = XGBRegressor(random_state=args.random_state, verbosity=0, n_jobs=-1)
-    model.fit(X_train_proc, y_train)
+    model.fit(X_train_processed, y_train)
+    
+    y_train_pred = model.predict(X_train_processed).ravel()
+    y_test_pred = model.predict(X_test_processed).ravel()
 
-    y_test_pred = model.predict(X_test_proc)
+    n_train, p = len(y_train), X_train_processed.shape[1]
+    n_test = len(y_test)
+
+    train_r2 = r2_score(y_train, y_train_pred)
+    train_adj_r2 = calculate_adjusted_r2(train_r2, n_train, p)
+    train_rmse = np.sqrt(mean_squared_error(y_train, y_train_pred))
+    train_mae = mean_absolute_error(y_train, y_train_pred)
 
     test_r2 = r2_score(y_test, y_test_pred)
+    test_adj_r2 = calculate_adjusted_r2(test_r2, n_test, p)
     test_rmse = np.sqrt(mean_squared_error(y_test, y_test_pred))
     test_mae = mean_absolute_error(y_test, y_test_pred)
-
-    n_samples, n_features = len(y_test), X_train_proc.shape[1]
-    adj_r2 = adjusted_r2(test_r2, n_samples, n_features)
-
-    metrics = {
-        "test_r2": float(test_r2),
-        "test_rmse": float(test_rmse),
-        "test_mae": float(test_mae),
-        "adj_r2": float(adj_r2),
-        "n_samples": n_samples,
-        "n_features": n_features
-    }
-
-    with open(outdir/"metrics.json", "w") as f:
-        json.dump(metrics, f, indent=2)
+    
+    train_metrics = {'R2': train_r2, 'Adj_R2': train_adj_r2, 'RMSE': train_rmse, 'MAE': train_mae}
+    test_metrics = {'R2': test_r2, 'Adj_R2': test_adj_r2, 'RMSE': test_rmse, 'MAE': test_mae}
+    save_model_metrics(train_metrics, test_metrics, (Path(args.outdir)))
 
     print(f"✅ XGBoost Baseline Model Results")
-    print(f"R²: {test_r2:.4f} | Adj R²={adj_r2:.4f} | RMSE: {test_rmse:.4f} | MAE: {test_mae:.4f}")
-    print(f"Metrics: {outdir/'metrics.json'}")
+    print(f"🎯 Test: R²={test_r2:.4f} | Adj R²={test_adj_r2:.4f} | RMSE={test_rmse:.4f} | MAE={test_mae:.4f}")
+    print(f"📁 Outputs: {Path(args.outdir)}")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='XGBoost nonlinear regression baseline model. Machine learning for health analytics. The University of Texas at Arlington.')
+    parser.add_argument('--data', required=True)
+    parser.add_argument('--target', required=True)
+    parser.add_argument('--id-cols', nargs='+', default=[])
+    parser.add_argument('--outdir', default='artifacts')
+    args = parser.parse_args()
+    main(args)
