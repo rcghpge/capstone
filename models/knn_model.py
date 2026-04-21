@@ -49,7 +49,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, root_mean_s
 Example Usage:
 python knn_model.py --data ../data/Key_indicator_districtwise.csv \
 --target Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
---correlation 60 --test-size 0.25 --random-state 42 --outdir artifacts/knn
+--correlation 60 --test-size 0.25 --random-state 42 --outdir knn_model
 """
 warnings.filterwarnings("ignore")
 

@@ -505,9 +505,9 @@ if st.session_state.get("results_df") is not None:
                     st.error(f"🚨 {len(high_vif)} High-VIF Features (>10): {', '.join(high_vif['feature'].tolist())}")
                     fig_vif = px.bar(high_vif.head(10), x="feature", y="VIF", title="Top Features By Multicollinearity")
                     st.plotly_chart(fig_vif, width='stretch')
-                    
+
 else:
     st.info("Upload a dataset to begin")
 
 st.markdown("---")
-st.caption("Health Analytics Dashboard • For research and educational purposes only") 
+st.caption("Health Analytics Dashboard • For research and educational purposes only")

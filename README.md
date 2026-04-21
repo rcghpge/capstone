@@ -27,7 +27,7 @@
 </div>
 
 <h3 style="font-size: 1.5em; margin: 1em 0 1.5em 0; line-height: 1.4;">
-<strong>Machine learning utilizing key health indicators for health analytics.</strong>
+<strong>Machine learning utilizing key health indicators for health analytics</strong>
 </h3>
 </div>
 
@@ -36,7 +36,7 @@
 ## Project Structure
 ```bash
 .
-├── .devontainer
+├── .devcontainer
 ├── .github
 ├── assets
 ├── binder

@@ -36,7 +36,7 @@ import json
 Example Usage:
 python xgboost_baseline.py --data ../data/Key_indicator_districtwise.csv \
 --target YY_Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
---outdir xgboost-baseline
+--outdir xgboost_baseline
 """
 
 def calculate_adjusted_r2(r2, n, p):

@@ -17,7 +17,7 @@ RUN apt-get update && \
     add-apt-repository ppa:git-core/ppa -y && \
     apt-get update && \
     apt-get upgrade -y && \  
-    apt-get install --no-install-recommends git tree nodejs -y && \
+    apt-get install --no-install-recommends git nano tree nodejs -y && \
     npm install -g npm@latest tar@latest validator@latest qs@latest && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /root/.npm
 
@@ -48,4 +48,4 @@ RUN fix-permissions ${HOME} "${HOME}/.local"
 
 USER ${NB_USER}
 EXPOSE 8888
-CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--NotebookApp.token=''", "--NotebookApp.allow_origin='*'"]
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--ServerApp.allow_origin='*'"]

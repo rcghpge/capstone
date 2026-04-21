@@ -74,7 +74,7 @@ Example Usage:
 python keras_dnn.py --data ../data/Key_indicator_districtwise.csv \
 --target Infant_Mortality_Rate_Imr_Total_Person --id-cols State_Name State_District_Name \
 --lr 0.0009 --dropout 0.15 --l2-reg 0.01 --epochs 500 --correlation 72 --vif-threshold 10 \
---test-size 0.25 --val-size 0.10 --random-state 42 --outdir keras-dnn-final-test
+--test-size 0.25 --val-size 0.10 --random-state 42 --outdir keras_dnn
 """
 sns.set_palette("husl")
 plt.style.use('default')

@@ -36,7 +36,7 @@ artifacts/
 dev/
 *.log
 *.bak
-*.egg-info
+*.egg-info/*
 
 # !Include core builds
 !pyproject.toml 

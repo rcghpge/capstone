@@ -62,7 +62,7 @@ keywords:
   - linux
 
 license: MIT
-version: 0.17.9
+version: 0.17.10
 date-released: '2025-11-25'
 references:
   - type: dataset
