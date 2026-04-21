@@ -4,7 +4,7 @@
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![pip](assets/pip-version.svg)](https://pypi.org/project/pip/)
 [![Conda](https://img.shields.io/badge/conda-%3E%3D26.1.0-blue?logo=anaconda&logoColor=white)](https://docs.conda.io/en/latest/)
-[![Streamlit](https://img.shields.io/badge/Streamlit-Simulation-orange?style=flat&logo=streamlit&logoColor=white)](https://health-analytics-dashboard.streamlit.app/)
+[![Streamlit](https://img.shields.io/badge/Streamlit-Preview-orange?style=flat&logo=streamlit&logoColor=white)](https://your-link-here)
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/rcghpge/capstone/blob/main/notebooks/index.ipynb)
 [![Docker](https://img.shields.io/badge/Docker-rcdpge/capstone--binder-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/rcdpge/capstone-binder)
 [![Binder Container Image](https://github.com/rcghpge/capstone/actions/workflows/binder.yml/badge.svg)](https://github.com/rcghpge/capstone/actions/workflows/binder.yml)

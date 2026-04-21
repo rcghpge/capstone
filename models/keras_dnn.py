@@ -898,7 +898,9 @@ def compute_adjusted_r2(r2_score, n_samples, n_features):
 
 # XAI
 """
-This is a barebones proposal implementation for an explainability mechanism in artifical intelligence (AI). Inspired by the work of Bahdanau et. al, 2016, Luong et. al, 2015, Lundberg and Lee, 2017, Ribeiro et. al, 2017, and Vaswani et. al, 2017. This JAX/Keras DNN implementation had these considerations in mind during research and development. No formal research publication was published at the time of this project's development.
+This is a barebones proposal implementation for an explainability mechanism in artifical intelligence (AI). Inspired by the work of Bahdanau et. al, 2016, Luong et. al, 2015,
+Lundberg and Lee, 2017, Ribeiro et. al, 2017, and Vaswani et. al, 2017. This JAX/Keras DNN implementation had these considerations in mind during research and development.
+No formal research publication was published at the time of this project's development.
 
 See references for more infomration:
 - https://arxiv.org/abs/1409.0473
