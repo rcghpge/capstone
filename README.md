@@ -8,13 +8,17 @@
 
 ![](https://raw.githubusercontent.com/rcghpge/version-llm/refs/heads/main/assets/uta-datascience-logo.png)
 
-Machine learning for health analytics utilizing district-level indicators. This project focuses on **Infant Mortality Rate (IMR)** as the primary target variable while supporting a broader health analytics workflow.
+Machine learning for health analytics utilizing district-level indicators. This project focuses on **Infant Mortality Rate (IMR)** as the primary target variable 
+while supporting a broader health analytics workflow.
 
 ## Business Problem/Motivation
-Public health datasets contain many interacting variables, including nutrition, sanitation, literacy, and demographic indicators. This project builds a reproducible machine learning workflow that utilizes district-level health data to predict IMR and support data-driven health analytics.
+Public health datas contain many interacting variables, including nutrition, sanitation, literacy, and demographic indicators. This project builds a reproducible 
+machine learning workflow that utilizes district-level health data to predict IMR and support data-driven health analytics.
 
 ## Project Overview
-This repository presents an end-to-end health analytics pipeline that includes data preprocessing, exploratory data analysis, feature selection, model training, evaluation, explainability, and deployment. The current implementation targets IMR as a focus in advanced analytics, but the framework is structured so the same workflow can be extended to other health outcome variables.
+This repository presents an end-to-end health analytics pipeline that includes data preprocessing, exploratory data analysis, feature selection, model training, 
+evaluation, explainability, and deployment. The current implementation targets IMR as a focus in advanced analytics, but the framework is structured so the 
+same development workflow can be extended to other research areas of focus..
 
 ## Data
 - **Source:** Key Indicator District Wise dataset from Indian public health statistics.
@@ -33,7 +37,8 @@ The preprocessing workflow was designed to improve data quality and reduce noise
 - RF-RFECV for additional feature selection.
 
 ## Exploratory Data Analysis
-Exploratory analysis was used to understand data distributions, state-level variation, and feature relationships with IMR. The project includes visualizations for statewise target distributions, feature-target correlations, prediction diagnostics, and explainability outputs.
+Exploratory analysis was used to understand data distributions, state-level variation, and feature relationships with IMR. The project includes visualizations 
+for statewise target distributions, feature-target correlations, predictive model plots, and explainability outputs.
 
 ### Example visuals
 ![Statewise Histogram](notebooks/test/keras-dnn-final-submission/dnn_plots/statewise_histogram.png)
@@ -45,7 +50,8 @@ This project compares three regression approaches:
 - **Prototype model:** K-Nearest Neighbors
 - **Advanced model:** JAX/Keras Deep Neural Network
 
-The XGBoost model serves as a simple baseline for structured tabular data, while the neural network captures more complex non-linear relationships among health indicators.
+The XGBoost model serves as a simple baseline for structured tabular data, the KNN model was developed as a prototype model, while the neural network captures 
+more complex non-linear relationships among health indicators.
 
 ## Model Training
 The neural network was implemented in Keras with a JAX backend and trained using:
@@ -81,18 +87,25 @@ Interpretability is an important part of this project because health analytics r
 - LIME local explanations.
 - Residual and outlier diagnostics.
 
-These methods help explain which health indicators contribute most to predicted IMR values and how individual district-level predictions are influenced by specific variables.
+These methods help explain which health indicators contribute most to predicted IMR values and how individual district-level predictions are influenced by 
+specific variables.
 
 ## Key Insights
-- **Feature selection improved model quality:** VIF pruning and RFECV reduced redundant or highly collinear features, helping create a cleaner and more stable input set for modeling.
-- **District-level health indicators contain meaningful predictive signal:** The trained models were able to explain a substantial share of variation in IMR using public health, demographic, and sanitation-related features.
-- **Explainability adds practical value:** SHAP and LIME outputs make it easier to identify which factors are most associated with higher or lower predicted IMR, supporting interpretation beyond raw performance metrics.
+- **Feature selection improved model quality:** VIF pruning and RFECV reduced redundant or highly collinear features, helping create a cleaner and more stable 
+input set for modeling.
+- **District-level health indicators contain meaningful predictive signal:** The models were able to explain a substantial share of variation in IMR utilizing 
+public health, demographic, and sanitation-related features.
+- **Explainability adds practical value:** SHAP and LIME outputs provide insights into which factors are most associated with higher or lower predicted 
+IMR, supporting interpretation beyond raw performance metrics.
 
 ## Real-World Impact
-This project demonstrates how machine learning can support health analytics by identifying patterns in district-level public health data and estimating outcomes such as IMR. In practice, a workflow like this could help analysts, policymakers, or public health organizations prioritize intervention areas, allocate resources more effectively, and better understand the indicators associated with elevated health risk.
+This project demonstrates how machine learning can support health analytics by identifying patterns in district-level public health data and estimating outcomes 
+such as IMR. In practice, a workflow like this could help analysts, policymakers, or public health organizations prioritize intervention areas, allocate 
+resources more effectively, and better understand the indicators associated with elevated health risk.
 
 ## Conclusion
-This repository demonstrates a complete and reproducible health analytics project with machine learning, explainability, and deployment. Although IMR is the current focus variable, the framework is structured to support relevant fields of study in future work.
+This codebase repository contributes toward health analytics research for machine learning, explainability, and cloud-based deployments. Although IMR is the 
+current focus variable, the framework is structured to support relevant fields of study in future work.
 
 ## Future Work
 Potential next steps include:

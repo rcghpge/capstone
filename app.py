@@ -45,7 +45,7 @@ try:
 except Exception:
     HAS_XGBOOST = False
 
-st.set_page_config(page_title="Streamlit", layout="wide")
+st.set_page_config(page_title="Dashboard", layout="wide")
 
 APP_TITLE = "📊 Health Analytics Dashboard"
 st.title(APP_TITLE)
