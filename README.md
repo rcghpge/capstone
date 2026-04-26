@@ -36,8 +36,8 @@ The preprocessing workflow was designed to improve data quality and reduce noise
 Exploratory analysis was used to understand data distributions, state-level variation, and feature relationships with IMR. The project includes visualizations for statewise target distributions, feature-target correlations, prediction diagnostics, and explainability outputs.
 
 ### Example visuals
-![Statewise Histogram](notebooks/test/keras-final-submission/dnn_plots/statewise_histogram.png)
-![SHAP Global Plot](notebooks/test/xai_plots/shap_beeswarm.png)
+![Statewise Histogram](notebooks/test/keras-dnn-final-submission/dnn_plots/statewise_histogram.png)
+![SHAP Global Plot](notebooks/keras-dnn-final-submission/test/xai_plots/shap_beeswarm.png)
 
 ## Modeling Approach
 This project compares three regression approaches:
@@ -116,12 +116,12 @@ source venv/bin/activate
 
 ### 3. Install dependencies
 ```bash
-pip install -r requirements.txt
+pip install -e .[dev]
 ```
 
 ### 4. Run the model pipeline
 ```bash
-python kerasdnn.py --data data/Keyindicatordistrictwise.csv --target InfantMortalityRateImrTotalPerson
+python keras_dnn.py --data data/Key_indicator_districtwise.csv --target YY_Infant_Mortality_Rate_Imr_Total_Person
 ```
 
 ### 5. Launch the Streamlit app
@@ -167,10 +167,10 @@ jupyter notebook notebooks/
 Install project dependencies with:
 
 ```bash
-pip install -r requirements.txt
+pip install -e .[dev]
 ```
 
-## Recommended development environment: Pixi
+## Pixi for Data Science:
 ```bash
 # Pixi
 ./pixi/install/install.sh
