@@ -124,5 +124,7 @@ if __name__ == "__main__":
     parser.add_argument('--target', required=True)
     parser.add_argument('--id-cols', nargs='+', default=[])
     parser.add_argument('--outdir', default='artifacts')
+    parser.add_argument("--test-size", type=float, default=0.2)
+    parser.add_argument("--random-state", type=int, default=42)
     args = parser.parse_args()
     main(args)
