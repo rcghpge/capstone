@@ -37,7 +37,7 @@ Exploratory analysis was used to understand data distributions, state-level vari
 
 ### Example visuals
 ![Statewise Histogram](notebooks/test/keras-dnn-final-submission/dnn_plots/statewise_histogram.png)
-![SHAP Global Plot](notebooks/keras-dnn-final-submission/test/xai_plots/shap_beeswarm.png)
+![SHAP Global Plot](notebooks/test/keras-dnn-final-submission/xai_plots/shap_beeswarm.png)
 
 ## Modeling Approach
 This project compares three regression approaches:
