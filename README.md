@@ -4,7 +4,7 @@
 
 # Machine Learning for Health Analytics
 
-## **DATA 4382-002 | University of Texas at Arlington**
+## **DATA 4382 | University of Texas at Arlington**
 
 ![](https://raw.githubusercontent.com/rcghpge/version-llm/refs/heads/main/assets/uta-datascience-logo.png)
 
@@ -41,9 +41,9 @@ Exploratory analysis was used to understand data distributions, state-level vari
 
 ## Modeling Approach
 This project compares three regression approaches:
-- **Baseline model:** XGBoost.
-- **Prototype model:** K-Nearest Neighbor
-- **Advanced model:** JAX/Keras Deep Neural Network.
+- **Baseline model:** XGBoost
+- **Prototype model:** K-Nearest Neighbors
+- **Advanced model:** JAX/Keras Deep Neural Network
 
 The XGBoost model serves as a simple baseline for structured tabular data, while the neural network captures more complex non-linear relationships among health indicators.
 
@@ -70,7 +70,7 @@ Model performance was evaluated using standard regression metrics:
 | K-Nearest Neighbors | Test | 0.9936 | 0.9930 | 1.2581 | 0.7158 |
 | Keras Deep Neural Network | Test | 0.9694 | 0.9643 | 2.7082 | 2.1835 |
 
-### Prediction diagnostics
+### Advanced analytics
 ![Test Predictions](notebooks/test/keras-dnn-final-submission/dnn_plots/test_dnn_predictions.png)
 ![Test Residuals](notebooks/test/keras-dnn-final-submission/dnn_plots/test_dnn_residuals.png)
 
@@ -92,14 +92,15 @@ These methods help explain which health indicators contribute most to predicted 
 This project demonstrates how machine learning can support health analytics by identifying patterns in district-level public health data and estimating outcomes such as IMR. In practice, a workflow like this could help analysts, policymakers, or public health organizations prioritize intervention areas, allocate resources more effectively, and better understand the indicators associated with elevated health risk.
 
 ## Conclusion
-This repository demonstrates a complete and reproducible health analytics project built around machine learning, explainability, and deployment. Although IMR is the current focus variable, the framework is structured to support broader health outcome modeling tasks in future work.
+This repository demonstrates a complete and reproducible health analytics project with machine learning, explainability, and deployment. Although IMR is the current focus variable, the framework is structured to support relevant fields of study in future work.
 
 ## Future Work
 Potential next steps include:
-- Extending the workflow to additional health outcome variables.
+- Extending this research to other research areas of focus.
 - Comparing more model families and ensemble approaches.
-- Incorporating additional datasets or longitudinal features.
-- Improving deployment and monitoring for production-style usage.
+- Incorporating additional data or longitudinal features.
+- Improving deployment and monitoring for production-grade technologies.
+- Advanced data science research.
 
 ## How to Run
 ### 1. Clone the repository
