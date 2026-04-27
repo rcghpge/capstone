@@ -9,7 +9,7 @@
 ![](https://raw.githubusercontent.com/rcghpge/version-llm/refs/heads/main/assets/uta-datascience-logo.png)
 
 Machine learning for health analytics utilizing district-level indicators. This project focuses on **Infant Mortality Rate (IMR)** as the primary target variable 
-while supporting a broader health analytics workflow.
+while supporting broader research areas of focus.
 
 ## Business Problem/Motivation
 Public health datas contain many interacting variables, including nutrition, sanitation, literacy, and demographic indicators. This project builds a reproducible 
@@ -21,7 +21,7 @@ evaluation, explainability, and deployment. The current implementation targets I
 same development workflow can be extended to other research areas of focus..
 
 ## Data
-- **Source:** Key Indicator District Wise dataset from Indian public health statistics.
+- **Source:** Key Indicator District Wise dataset from Indian public health data.
 - **Type:** Structured tabular dataset.
 - **Unit of analysis:** District-level records.
 - **Key features:** Demographic, sanitation, literacy, nutrition, and other health-related indicators.
@@ -37,7 +37,7 @@ The preprocessing workflow was designed to improve data quality and reduce noise
 - RF-RFECV for additional feature selection.
 
 ## Exploratory Data Analysis
-Exploratory analysis was used to understand data distributions, state-level variation, and feature relationships with IMR. The project includes visualizations 
+Exploratory analysis was used to understand data distributions, state-level variation, and feature relationships with IMR. The project includes data visualizations 
 for statewise target distributions, feature-target correlations, predictive model plots, and explainability outputs.
 
 ### Example visuals
@@ -78,7 +78,7 @@ Model performance was evaluated using standard regression metrics:
 
 ### Advanced analytics
 ![Test Predictions](notebooks/test/keras-dnn-final-submission/dnn_plots/test_dnn_predictions.png)
-![Test Residuals](notebooks/test/keras-dnn-final-submission/dnn_plots/test_dnn_residuals.png)
+![Test Residuals](notebooks/test/keras-dnn-final-submission/dnn_plots/test_residual_distribution.png)
 
 ## Model Interpretation
 Interpretability is an important part of this project because health analytics requires more than just predictive accuracy. The repository includes:
