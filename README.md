@@ -12,7 +12,7 @@ Machine learning for health analytics utilizing district-level indicators. This 
 while supporting broader research areas of focus.
 
 ## Business Problem/Motivation
-Public health datas contain many interacting variables, including nutrition, sanitation, literacy, and demographic indicators. This project builds a reproducible 
+Public health data contain many interacting variables, including nutrition, sanitation, literacy, and demographic indicators. This project builds a reproducible 
 machine learning workflow that utilizes district-level health data to predict IMR and support data-driven health analytics.
 
 ## Project Overview
@@ -34,7 +34,7 @@ The preprocessing workflow was designed to improve data quality and reduce noise
 - One-hot encoding for categorical features.
 - Robust scaling for numeric features.
 - VIF-based pruning to reduce multicollinearity.
-- RF-RFECV for additional feature selection.
+- RF-RFECV for feature selection.
 
 ## Exploratory Data Analysis
 Exploratory analysis was used to understand data distributions, state-level variation, and feature relationships with IMR. The project includes data visualizations 
@@ -91,7 +91,7 @@ These methods help explain which health indicators contribute most to predicted 
 specific variables.
 
 ## Key Insights
-- **Feature selection improved model quality:** VIF pruning and RFECV reduced redundant or highly collinear features, helping create a cleaner and more stable 
+- **Feature selection improved model quality:** VIF pruning and RF-RFECV reduced redundant or highly collinear features, helping create a cleaner and more stable 
 input set for modeling.
 - **District-level health indicators contain meaningful predictive signal:** The models were able to explain a substantial share of variation in IMR utilizing 
 public health, demographic, and sanitation-related features.
