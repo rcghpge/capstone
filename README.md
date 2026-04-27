@@ -99,7 +99,7 @@ public health, demographic, and sanitation-related features.
 IMR, supporting interpretation beyond raw performance metrics.
 
 ## Real-World Impact
-This project demonstrates how machine learning can support health analytics by identifying patterns in district-level public health data and estimating outcomes 
+This project demonstrates how machine learning can support health analytics by identifying patterns in district-level public health data and analyzing outcomes 
 such as IMR. In practice, a workflow like this could help analysts, policymakers, or public health organizations prioritize intervention areas, allocate 
 resources more effectively, and better understand the indicators associated with elevated health risk.
 
