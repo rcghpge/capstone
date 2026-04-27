@@ -41,8 +41,8 @@ Exploratory analysis was used to understand data distributions, state-level vari
 for statewise target distributions, feature-target correlations, predictive model plots, and explainability outputs.
 
 ### Example visuals
-![Statewise Histogram](notebooks/test/keras-dnn-final-submission/dnn_plots/statewise_histogram.png)
 ![SHAP Global Plot](notebooks/test/keras-dnn-final-submission/xai_plots/shap_beeswarm.png)
+![Statewise Histogram](notebooks/test/keras-dnn-final-submission/dnn_plots/statewise_histogram.png)
 
 ## Modeling Approach
 This project compares three regression approaches:
