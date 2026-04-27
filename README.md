@@ -21,7 +21,7 @@ evaluation, explainability, and deployment. The current implementation targets I
 same development workflow can be extended to other research areas of focus..
 
 ## Data
-- **Source:** Key Indicator District Wise dataset from Indian public health data.
+- **Source:** Key Indicator district-wise dataset from India public health data.
 - **Type:** Structured tabular dataset.
 - **Unit of analysis:** District-level records.
 - **Key features:** Demographic, sanitation, literacy, nutrition, and other health-related indicators.
@@ -65,7 +65,7 @@ The codebase also saves model artifacts, preprocessing objects, feature selector
 ## Results
 Model performance was evaluated using standard regression metrics:
 - **R²:** Measures how much variance in IMR is explained by the model.
-- **Adjusted R²:** Similar to R², but penalizes unnecessary complexity.
+- **Adjusted R²:** Similar to R², but penalizes variable complexity.
 - **RMSE:** Measures average prediction error with stronger penalties for larger errors.
 - **MAE:** Measures the average absolute difference between predicted and actual IMR.
 
@@ -104,15 +104,15 @@ such as IMR. In practice, a workflow like this could help analysts, policymakers
 resources more effectively, and better understand the indicators associated with elevated health risk.
 
 ## Conclusion
-This codebase repository contributes toward health analytics research for machine learning, explainability, and cloud-based deployments. Although IMR is the 
-current focus variable, the framework is structured to support relevant fields of study in future work.
+This repository contributes toward health analytics research for machine learning, explainability, and cloud-based deployments. Although IMR is the 
+current focus variable, the framework is structured to support other fields of study in future work.
 
 ## Future Work
 Potential next steps include:
 - Extending this research to other research areas of focus.
 - Comparing more model families and ensemble approaches.
 - Incorporating additional data or longitudinal features.
-- Improving deployment and monitoring for production-grade technologies.
+- Improving technologies in this space for  commercial-grade technologies.
 - Advanced data science research.
 
 ## How to Run
@@ -160,7 +160,7 @@ jupyter notebook notebooks/
 ├── assets/                 # Images, badges, and static project assets
 ├── binder/                 # Binder environment configuration
 ├── models/                 # Model code, saved models, and related artifacts
-├── notebooks/              # Jupyter notebooks for EDA, preprocessing, and experiments
+├── notebooks/              # Jupyter notebooks for research, EDA, and workflows 
 ├── pixi/                   # Pixi environment setup files
 ├── .dockerignore           # Files excluded from Docker builds
 ├── .gitattributes          # Git attribute configuration

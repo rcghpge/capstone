@@ -1852,7 +1852,7 @@ packages:
 - pypi: ./
   name: capstone
   version: 0.17.10
-  sha256: 97116824404be08fbb98ea48e9e8fa0215a8a23a32dae8412495b9b3ff8d5f74
+  sha256: a720ebe03336746bf81d3920ae9dca5cb40e0599aa07470d73583fd8cabade1b
   requires_dist:
   - cryptography
   - jupyterlab
@@ -1877,18 +1877,18 @@ packages:
   - shap
   - lime
   - seaborn>=0.13.2,<0.14
-  - tree
+  - tree>=0.2.4,<0.3
   - kaggle>=2.1.0,<3
-  - pytest
-  - pytest-cov
-  - nbval
-  - black
-  - flake8
-  - pre-commit
-  - jupyterlab-lsp
-  - pip-tools
-  - bandit
-  - pip-audit
+  - pytest>=9.0.3,<10
+  - pytest-cov>=7.1.0,<8
+  - nbval>=0.11.0,<0.12
+  - black>=26.3.1,<27
+  - flake8>=7.3.0,<8
+  - pre-commit>=4.6.0,<5
+  - jupyterlab-lsp>=5.3.0,<6
+  - pip-tools>=7.5.3,<8
+  - bandit>=1.9.4,<2
+  - pip-audit>=2.10.0,<3
   - pybadges>=3.0.1,<4
   - jax
   - jaxlib
