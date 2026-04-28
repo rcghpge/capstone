@@ -4,7 +4,7 @@
 
 # Machine Learning for Health Analytics
 
-## **DATA 4382 | University of Texas at Arlington**
+## **DATA 4381-4382 | University of Texas at Arlington**
 
 ![](https://raw.githubusercontent.com/rcghpge/version-llm/refs/heads/main/assets/uta-datascience-logo.png)
 
@@ -16,7 +16,7 @@ Public health data contain many interacting variables, including nutrition, sani
 machine learning workflow that utilizes district-level health data to predict IMR and support data-driven health analytics.
 
 ## Project Overview
-This repository presents an end-to-end health analytics pipeline that includes data preprocessing, exploratory data analysis, feature selection, model training, 
+This repository is an end-to-end health analytics pipeline that includes data preprocessing, exploratory data analysis, feature selection, model training, 
 evaluation, explainability, and deployment. The current implementation targets IMR as a focus in advanced analytics, but the framework is structured so the 
 same development workflow can be extended to other research areas of focus..
 
@@ -28,7 +28,7 @@ same development workflow can be extended to other research areas of focus..
 - **Focus target:** `YY_Infant_Mortality_Rate_Imr_Total_Person`.
 
 ## Data Preprocessing
-The preprocessing workflow was designed to improve data quality and reduce noise before training:
+The data preprocessing workflow was designed to improve data quality and reduce noise before training:
 - Median imputation for numeric variables.
 - Most-frequent imputation for categorical variables.
 - One-hot encoding for categorical features.
@@ -85,7 +85,7 @@ Interpretability is an important part of this project because health analytics r
 - Feature importance analysis.
 - SHAP global and local explanations.
 - LIME local explanations.
-- Residual and outlier diagnostics.
+- Residual and outlier model plots.
 
 These methods help explain which health indicators contribute most to predicted IMR values and how individual district-level predictions are influenced by 
 specific variables.
@@ -168,7 +168,7 @@ jupyter notebook notebooks/
 ├── CITATION.cff            # Citation metadata for the repository
 ├── Dockerfile              # Docker image build instructions
 ├── LICENSE                 # Project license
-├── README.md               # Project documentation
+├── README.md               # Project README documentation
 ├── __init__.py             # Package initialization file
 ├── app.py                  # Streamlit application entry point
 ├── pixi.lock               # Pixi lock file
