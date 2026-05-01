@@ -87,8 +87,9 @@ dev/
 !capstone-binder.vex.json
 !settings.json
 !notebooks/test/xgboost-baseline/*.csv
-!notebooks/test/keras-dnn/*/*.log
-!notebooks/test/keras-dnn/*.csv
+!notebooks/test/knn-model/*.csv
+!notebooks/test/keras-dnn-final-submission/*/*.log
+!notebooks/test/keras-dnn-final-submission/*.csv
 !notebooks/test/*.ipynb
 !notebooks/index.ipynb
 
