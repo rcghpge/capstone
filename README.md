@@ -41,8 +41,8 @@ Exploratory analysis was used to understand data distributions, state-level vari
 for statewise target distributions, feature-target correlations, predictive model plots, and explainability outputs.
 
 ### Example visuals
-![SHAP Global Plot](notebooks/test/keras-dnn-final-submission/xai_plots/shap_beeswarm.png)
-![Statewise Histogram](notebooks/test/keras-dnn-final-submission/dnn_plots/statewise_histogram.png)
+![SHAP Global Plot](assets/shap_beeswarm.png)
+![Statewise Histogram](assets/statewise_histogram.png)
 
 ## Modeling Approach
 This project compares three regression approaches:
@@ -77,8 +77,8 @@ Model performance was evaluated using standard regression metrics:
 | Keras Deep Neural Network | Test | 0.9694 | 0.9643 | 2.7082 | 2.1835 |
 
 ### Advanced analytics
-![Test Predictions](notebooks/test/keras-dnn-final-submission/dnn_plots/test_dnn_predictions.png)
-![Test Residuals](notebooks/test/keras-dnn-final-submission/dnn_plots/test_residual_distribution.png)
+![Test Predictions](assets/test_dnn_predictions.png)
+![Test Residuals](assets/test_residual_distribution.png)
 
 ## Model Interpretation
 Interpretability is an important part of this project because health analytics requires more than just predictive accuracy. The repository includes:
