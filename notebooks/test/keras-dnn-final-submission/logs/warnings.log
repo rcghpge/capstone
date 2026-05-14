@@ -1,9 +1,0 @@
-2026-04-24 01:39:38,342 | WARNING | /home/rc/Academia/capstone/models/keras_dnn.py:1033: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
-  plt.tight_layout()
-
-2026-04-24 01:39:40,163 | WARNING | /home/rc/Academia/capstone/models/keras_dnn.py:1033: UserWarning: Tight layout not applied. The bottom and top margins cannot be made large enough to accommodate all Axes decorations.
-  plt.tight_layout()
-
-2026-04-24 01:39:42,003 | WARNING | /home/rc/Academia/capstone/models/keras_dnn.py:1033: UserWarning: Tight layout not applied. The left and right margins cannot be made large enough to accommodate all Axes decorations.
-  plt.tight_layout()
-
